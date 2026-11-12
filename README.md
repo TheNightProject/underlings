@@ -209,8 +209,18 @@ If you installed the artifact hook from Setup, remove its `record-artifact.mjs` 
 `~/.claude/settings.json`. If you linked the command line, remove `~/.local/bin/underlings`. Then
 delete the folder you cloned.
 
+## Sponsors
+
+Underlings is made by [The Night Project](https://github.com/TheNightProject), a small UK studio
+that works late. If it saves you time,
+[sponsoring us on GitHub](https://github.com/sponsors/TheNightProject) pays for the hours behind
+full GitHub support and signed builds you can download instead of building.
+
+Sponsors from the Night owl tier up are listed here. Be the first.
+
 ## More
 
 [Manual](docs/manual.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) ·
+[Sponsor](https://github.com/sponsors/TheNightProject) ·
 [Changelog](CHANGELOG.md) · [Third-party notices](THIRD_PARTY_NOTICES) · MIT licence, see
 [LICENSE](LICENSE).
