@@ -19,7 +19,7 @@ const { answerLine, callReviewTool, REVIEW_TOOLS } = await import('./reviewtools
 const { claudeAgents, claudeHost } = await import('./agents/claude.js');
 const { launchReview } = await import('./actions/launch.js');
 const { loadQueue, saveQueue, updateAutoMemory, loadAutoMemory } = await import('./data/store.js');
-const { builtInReview } = await import('./agentprompts.js');
+const { reviewLine } = await import('./agentprompts.js');
 
 after(() => rmSync(root, { recursive: true, force: true }));
 beforeEach(() => saveQueue([]));
@@ -106,7 +106,7 @@ test('a review agent on the built-in prompt queues what it finds through its own
   try {
     const { handle = '' } = await launchReview(mr());
     const seen = await until(() => (existsSync(log) ? JSON.parse(readFileSync(log, 'utf8').split('\n')[0] ?? '{}') : null), 'the agent to queue');
-    assert.equal(seen.prompt, builtInReview(MR_URL));
+    assert.equal(seen.prompt, reviewLine(MR_URL));
     assert.deepEqual([seen.server, seen.tools], ['underlings', ['queue_findings', 'finish_review']]);
     await until(() => claudeAgents().find((a) => a.handle === handle)?.state === 'done', 'the agent to finish its turn');
     const queued = loadQueue();

@@ -11,6 +11,7 @@ const dir = await mkdtemp(join(tmpdir(), 'control-centre-release-'));
 const repo = join(dir, 'repo');
 const CC = 'acme/tooling/dashboard';
 const ENV = { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.com', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.com', GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_SYSTEM: '/dev/null' };
+const PLUGIN = 'plugin/underlings/.claude-plugin/plugin.json';
 const LOCK = { name: 'control-centre-desktop', version: '1.0.0', lockfileVersion: 3, requires: true, packages: { '': { name: 'control-centre-desktop', version: '1.0.0', devDependencies: { electron: '44.9.3' } } } };
 after(() => rm(dir, { recursive: true }));
 
@@ -38,10 +39,12 @@ async function pull(branch, title, number) {
 beforeEach(async () => {
   await rm(repo, { recursive: true, force: true });
   await mkdir(join(repo, 'desktop'), { recursive: true });
+  await mkdir(join(repo, 'plugin/underlings/.claude-plugin'), { recursive: true });
   git('init', '-q', '-b', 'main');
   await writeFile(join(repo, 'package.json'), '{\n  "name": "control-centre",\n  "version": "1.0.0",\n  "private": true\n}\n');
   await writeFile(join(repo, 'desktop/package.json'), '{\n  "name": "control-centre-desktop",\n  "version": "1.0.0",\n  "build": { "directories": { "output": "dist.noindex" } }\n}\n');
   await writeFile(join(repo, 'desktop/package-lock.json'), JSON.stringify(LOCK, null, 2) + '\n');
+  await writeFile(join(repo, PLUGIN), '{\n  "name": "underlings",\n  "version": "1.0.0",\n  "license": "MIT"\n}\n');
   await writeFile(join(repo, 'CHANGELOG.md'), `# Changelog\n\nIntro.\n\n## 1.0.0 (2026-11-10)\n\n### New\n\n- [Listed already](https://gitlab.com/${CC}/-/merge_requests/1)\n`);
   await writeFile(join(repo, '.gitignore'), 'build.json\n');
   git('add', '.');
@@ -63,6 +66,7 @@ test('a release drafts the merges since the last tag above the newest section an
   assert.match(await read('desktop/package.json'), /"version": "1\.0\.1",\n  "build": \{ "directories": \{ "output": "dist\.noindex" \} \}/, 'only the version line moves');
   const lock = JSON.parse(await read('desktop/package-lock.json'));
   assert.deepEqual([lock.version, lock.packages[''].version], ['1.0.1', '1.0.1']);
+  assert.equal(await read(PLUGIN), '{\n  "name": "underlings",\n  "version": "1.0.1",\n  "license": "MIT"\n}\n', 'the skills carry the app\'s version, so an installed copy can be told from the new one');
   assert.equal(git('tag'), 'v1.0.0', 'it never tags');
   assert.equal(git('log', '-1', '--format=%s'), "Merge branch 'feat/notes' into 'main'", 'and never commits');
 });
@@ -105,4 +109,5 @@ test('the build stamp records the version, commit and checkout for the app and t
   assert.deepEqual(JSON.parse(await read('build.json')), made);
   assert.match(await read('desktop/package.json'), /"version": "1\.2\.0"/);
   assert.equal(JSON.parse(await read('desktop/package-lock.json')).packages[''].version, '1.2.0');
+  assert.equal(JSON.parse(await read(PLUGIN)).version, '1.2.0');
 });

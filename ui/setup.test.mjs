@@ -4,6 +4,8 @@ import { openPage } from './testkit.mjs';
 
 const AT = '2026-11-11T09:00:00Z';
 const ENTRY = { matcher: 'Artifact', hooks: [{ type: 'command', command: "ELECTRON_RUN_AS_NODE=1 '/app/node' '/app/lib/record-artifact.mjs'", timeout: 10 }] };
+const INSTALL = { action: 'install', commands: ['claude plugin marketplace add /app/plugin --scope user', 'claude plugin install underlings@underlings --scope user'] };
+const REMOVE = { action: 'remove', commands: ['claude plugin uninstall underlings@underlings --scope user', 'claude plugin marketplace remove underlings --scope user'] };
 const COMMANDS = { reviewCommand: '', selfReviewCommand: '', kickoffCommand: '' };
 
 function snapshot(extra = {}) {
@@ -19,7 +21,8 @@ const FAILING = [
   { id: 'gitlab', state: 'fail', title: 'GitLab token', detail: 'No token yet.', scope: 'api', link: 'https://gitlab.com/-/user_settings/personal_access_tokens?scopes=api', token: true },
   { id: 'jira', state: 'off', optional: true, title: 'Jira', detail: 'Optional. Tickets stay off until you set your Atlassian site here.', site: '', link: 'https://developer.atlassian.com/cloud/acli/guides/install-acli/' },
   { id: 'workspace', state: 'fail', title: 'Workspace root', detail: 'Not set.', root: '' },
-  { id: 'agents', state: 'pass', title: 'Agent commands', detail: 'Every agent uses the built-in prompts.', commands: COMMANDS },
+  { id: 'agents', state: 'pass', title: 'Agent commands', detail: 'Every agent uses the Underlings skills.', commands: COMMANDS },
+  { id: 'skills', state: 'off', optional: true, title: 'Underlings skills', detail: 'Optional. Your agents load the skills on their own.', installed: false, plan: INSTALL },
   { id: 'hook', state: 'fail', title: 'Artifact hook', detail: 'Not installed.', file: '/home/sybil/.claude/settings.json', entry: ENTRY },
 ];
 const PASSING = [
@@ -27,7 +30,8 @@ const PASSING = [
   { id: 'gitlab', state: 'pass', title: 'GitLab token', detail: 'Signed in to GitLab as sybil, with the api scope.', scope: 'api', link: FAILING[1].link, token: true },
   { id: 'jira', state: 'pass', optional: true, title: 'Jira', detail: 'Tickets are read from acme.atlassian.net through acli.', site: 'acme.atlassian.net' },
   { id: 'workspace', state: 'pass', title: 'Workspace root', detail: '3 checkouts found under /code.', root: '/code', checkouts: 3, names: ['api', 'engine', 'web'] },
-  { id: 'agents', state: 'pass', title: 'Agent commands', detail: 'Your own review command; the rest use the built-in prompts.', commands: { ...COMMANDS, reviewCommand: '/review' } },
+  { id: 'agents', state: 'pass', title: 'Agent commands', detail: 'Your own review command; the rest use the Underlings skills.', commands: { ...COMMANDS, reviewCommand: '/review' } },
+  { id: 'skills', state: 'pass', optional: true, title: 'Underlings skills', detail: 'Installed in your Claude Code, version 1.2.0.', installed: true, remove: REMOVE },
   { id: 'hook', state: 'pass', title: 'Artifact hook', detail: 'Installed in /home/sybil/.claude/settings.json.', file: '/home/sybil/.claude/settings.json' },
 ];
 
@@ -58,13 +62,14 @@ const buttonIn = (node, label) => node.querySelectorAll('button').find((b) => b.
 
 test('every check shows its state, and the summary counts only what the app needs', async () => {
   const { page } = await setupPage(FAILING);
-  assert.deepEqual(page.$$('.setup-check').map((c) => c.id), ['setup-claude', 'setup-gitlab', 'setup-jira', 'setup-workspace', 'setup-agents', 'setup-hook']);
+  assert.deepEqual(page.$$('.setup-check').map((c) => c.id), ['setup-claude', 'setup-gitlab', 'setup-jira', 'setup-workspace', 'setup-agents', 'setup-skills', 'setup-hook']);
   assert.deepEqual(stateOf(page, 'claude'), ['setup-check s-fail', 'Needs you']);
   assert.deepEqual(stateOf(page, 'jira'), ['setup-check s-off', 'Optional']);
   assert.deepEqual(stateOf(page, 'agents'), ['setup-check s-pass', 'Ready']);
+  assert.deepEqual(stateOf(page, 'skills'), ['setup-check s-off', 'Optional']);
   assert.match(page.$('.setup-summary').textContent, /^1 of 5 ready\./);
   const done = await setupPage(PASSING);
-  assert.equal(done.page.$$('.setup-check.s-pass').length, 6);
+  assert.equal(done.page.$$('.setup-check.s-pass').length, 7);
   assert.match(done.page.$('.setup-summary').textContent, /^Everything the app needs is ready\./);
 });
 
@@ -103,6 +108,36 @@ test('the hook shows exactly the entry it will add, and where, before anything i
   assert.equal(installed.page.$('#setup-hook-install'), null);
 });
 
+test('the skills show exactly the commands they will run before anything runs, and install by sending those back', async () => {
+  const { page, posts } = await setupPage(FAILING);
+  const skills = card(page, 'skills');
+  assert.equal(skills.querySelector('.setup-entry').textContent, INSTALL.commands.join('\n'));
+  assert.match(skills.querySelector('.setup-fix .hint').textContent, /^Adds a marketplace of the skills inside this app to your Claude Code, then installs them from it\..* It runs:$/);
+  assert.equal(skills.querySelectorAll('button').length, 1, 'no remove before they are installed');
+  assert.deepEqual(posts, []);
+  page.$('#setup-skills-install').click();
+  await page.settle(100);
+  assert.deepEqual(posts, [['/api/setup/skills', INSTALL]]);
+});
+
+test('installed skills are removable from Setup, showing the removal first, and a stale copy is offered an update beside it', async () => {
+  const { page, posts } = await setupPage(PASSING);
+  assert.equal(page.$('#setup-skills-install'), null);
+  assert.equal(card(page, 'skills').querySelector('.setup-entry').textContent, REMOVE.commands.join('\n'));
+  page.$('#setup-skills-remove').click();
+  await page.settle(100);
+  assert.deepEqual(posts, [['/api/setup/skills', REMOVE]]);
+  const UPDATE = { action: 'update', commands: ['claude plugin marketplace update underlings', 'claude plugin update underlings@underlings --scope user'] };
+  const stale = await setupPage(PASSING.map((c) => (c.id === 'skills' ? { ...c, state: 'fail', plan: UPDATE } : c)));
+  assert.deepEqual(stateOf(stale.page, 'skills'), ['setup-check s-fail', 'Needs you']);
+  assert.deepEqual(stale.page.$$('.setup-skills-step .setup-entry').map((n) => n.textContent), [UPDATE.commands.join('\n'), REMOVE.commands.join('\n')]);
+  assert.equal(stale.page.$('#setup-skills-update').textContent, 'Update the skills');
+  stale.page.$('#setup-skills-update').click();
+  await stale.page.settle(100);
+  assert.deepEqual(stale.posts, [['/api/setup/skills', UPDATE]]);
+  assert.match(stale.page.$('.setup-summary').textContent, /^Everything the app needs is ready\./, 'an optional check never counts against it');
+});
+
 test('an old hook whose script is gone is offered as an update in place, sending the command it replaces', async () => {
   const old = "ELECTRON_RUN_AS_NODE=1 '/Applications/Old.app/Contents/MacOS/Old' '/Applications/Old.app/Contents/Resources/worker/lib/record-artifact.mjs'";
   const stale = FAILING.map((c) => (c.id === 'hook' ? { ...c, detail: 'The hook runs a script that is gone.', replaces: old } : c));
@@ -118,8 +153,8 @@ test('an old hook whose script is gone is offered as an update in place, sending
 test('agent commands show built in or your own, and each saves on its own', async () => {
   const { page, posts } = await setupPage(PASSING);
   assert.equal(page.$('#setup-agent-reviewCommand').getAttribute('value'), '/review');
-  assert.equal(page.$('#setup-agent-kickoffCommand').getAttribute('placeholder'), 'Built in');
-  buttonIn(card(page, 'agents'), 'Use built in').click();
+  assert.equal(page.$('#setup-agent-kickoffCommand').getAttribute('placeholder'), '/underlings:kickoff', 'blank shows the skill it runs');
+  buttonIn(card(page, 'agents'), 'Use the skill').click();
   await page.settle(100);
   assert.deepEqual(posts, [['/api/matrix/agent-commands', { agents: { reviewCommand: '' } }]]);
 });

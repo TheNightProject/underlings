@@ -37,7 +37,7 @@ function finding(iid: number, over: Partial<QueuedComment> = {}): Omit<QueuedCom
     webUrl: `https://gitlab.com/${ENGINE}/-/merge_requests/${iid}`,
     severity: 'MINOR',
     body: `on ${iid}`,
-    createdBy: 'ws:mr-review',
+    createdBy: 'review',
     ...over,
   };
 }

@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, beforeEach, test } from 'node:test';
 import { promisify } from 'node:util';
+import { pluginDir } from '../plugin.js';
 
 const root = mkdtempSync(join(tmpdir(), 'thematrix-launch-'));
 process.env['UNDERLINGS_STATE_DIR'] = join(root, 'state');
@@ -19,6 +20,9 @@ const ORCA: Record<string, unknown> = {
   'terminal create': { terminal: { handle: 'term_new', title: 'review !7', surface: 'background' } },
   'terminal send': { send: { accepted: true } },
 };
+// The word Orca's terminal is typed, quoted only where a shell would read it differently.
+const typed = (word: string): string => (/^[\w.:/@-]+$/.test(word) ? word : `'${word.replace(/'/g, `'\\''`)}'`);
+const PLUGIN = `--plugin-dir ${typed(pluginDir())}`;
 let calls: string[][] = [];
 let replies: Record<string, unknown> = ORCA;
 
@@ -88,7 +92,7 @@ test('an agent in Orca starts on its task\'s model and effort, in its worktree a
     const create = calls.find((args) => args[0] === 'worktree' && args[1] === 'create') ?? [];
     assert.deepEqual([create[create.indexOf('--model') + 1], create[create.indexOf('--effort') + 1]], ['claude-sonnet-5-5[1m]', 'low']);
     const terminal = calls.find((args) => args[0] === 'terminal' && args[1] === 'create') ?? [];
-    assert.equal(terminal[terminal.indexOf('--command') + 1], "claude --model 'claude-sonnet-5-5[1m]' --effort low");
+    assert.equal(terminal[terminal.indexOf('--command') + 1], `claude --model 'claude-sonnet-5-5[1m]' --effort low ${PLUGIN}`);
   } finally {
     store.changeSettings((s) => ({ ...s, models: before }));
   }
@@ -97,7 +101,7 @@ test('an agent in Orca starts on its task\'s model and effort, in its worktree a
   const plain = calls.find((args) => args[0] === 'worktree' && args[1] === 'create') ?? [];
   assert.ok(!plain.includes('--model') && !plain.includes('--effort'));
   const terminal = calls.find((args) => args[0] === 'terminal' && args[1] === 'create') ?? [];
-  assert.equal(terminal[terminal.indexOf('--command') + 1], 'claude');
+  assert.equal(terminal[terminal.indexOf('--command') + 1], `claude ${PLUGIN}`);
 });
 
 test('an agent in Orca whose task follows the effort for every task is started on that effort', async () => {
@@ -110,7 +114,7 @@ test('an agent in Orca whose task follows the effort for every task is started o
     assert.equal(create[create.indexOf('--effort') + 1], 'max');
     assert.ok(!create.includes('--model'));
     const terminal = calls.find((args) => args[0] === 'terminal' && args[1] === 'create') ?? [];
-    assert.equal(terminal[terminal.indexOf('--command') + 1], 'claude --effort max');
+    assert.equal(terminal[terminal.indexOf('--command') + 1], `claude --effort max ${PLUGIN}`);
   } finally {
     store.changeSettings(() => before);
   }

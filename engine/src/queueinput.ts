@@ -37,7 +37,7 @@ export function queueInput(item: unknown, index: number): QueueInput {
     body: String(c['body']),
     diffHunk: c['diffHunk'] as string | undefined,
     position: c['position'] as QueueInput['position'],
-    createdBy: String(c['createdBy'] ?? 'ws:mr-review'),
+    createdBy: String(c['createdBy'] ?? 'review'),
     ...(kind === 'reply' ? { kind: 'reply' as const, ...replyFields(c, index) } : {}),
   };
 }

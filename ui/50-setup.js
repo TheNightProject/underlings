@@ -1,9 +1,15 @@
 const SETUP_MARKS = { pass: ['check-circle', 'Ready'], fail: ['alert', 'Needs you'], off: ['circle', 'Off'] };
 const AGENT_COMMANDS = [
-  ['reviewCommand', 'Review', 'Reviews an MR and queues what it finds for you. Your own command is run with the MR link after it.'],
-  ['selfReviewCommand', 'Self-review', 'Checks an agent\'s own change before it pushes: the diff, the repo\'s checks and tests, a simpler shape.'],
-  ['kickoffCommand', 'Kickoff', 'Takes a ticket from reading it to a Draft MR. Your own command is run with the ticket key after it.'],
+  ['reviewCommand', 'Review', 'Reviews an MR and queues what it finds for you. Your own command is run with the MR link after it.', '/underlings:review'],
+  ['selfReviewCommand', 'Self-review', 'Checks an agent\'s own change before it pushes: the diff, the repo\'s checks and tests, a simpler shape.', '/underlings:pre-mr-review'],
+  ['kickoffCommand', 'Kickoff', 'Takes a ticket from reading it to a Draft MR. Your own command is run with the ticket key after it.', '/underlings:kickoff'],
 ];
+const SKILLS_ACTIONS = {
+  install: ['plus', 'Install the skills', 'Installing…', 'Adds a marketplace of the skills inside this app to your Claude Code, then installs them from it. Nothing else of your Claude Code changes.'],
+  update: ['refresh', 'Update the skills', 'Updating…', 'Brings the copy in your Claude Code up to the one in this app.'],
+  enable: ['power', 'Turn them on', 'Turning on…', 'Turns the installed skills back on.'],
+  remove: ['trash', 'Remove them', 'Removing…', 'Takes the skills and their marketplace out of your Claude Code. The agents here still load the ones in the app.'],
+};
 
 function setupBox() {
   ui.setup ??= { data: null, error: null, loading: false, drafts: {} };
@@ -65,7 +71,7 @@ function setupCheck(c) {
       slot(SETUP_FIXES[c.id], c)));
 }
 
-const SETUP_FIXES = { claude: 'setupClaudeFix', gitlab: 'setupGitlabFix', github: 'setupGithubFix', jira: 'setupJiraFix', workspace: 'setupWorkspaceFix', agents: 'setupAgentsFix', hook: 'setupHookFix' };
+const SETUP_FIXES = { claude: 'setupClaudeFix', gitlab: 'setupGitlabFix', github: 'setupGithubFix', jira: 'setupJiraFix', workspace: 'setupWorkspaceFix', agents: 'setupAgentsFix', skills: 'setupSkillsFix', hook: 'setupHookFix' };
 const GITHUB_SOURCE_WORDS = { saved: 'pasted here', GITHUB_TOKEN: 'GITHUB_TOKEN', GH_TOKEN: 'GH_TOKEN', gh: 'gh' };
 
 function setupClaudeFix(c) {
@@ -170,10 +176,10 @@ function setupAgentsFix(c) {
 
 // Shared with Settings, so a command saved in one shows in the other.
 function agentCommandRows(commands, prefix, after) {
-  return AGENT_COMMANDS.map(([key, label, hint]) => agentCommandRow({ key, label, hint, own: commands[key], id: prefix + key, after }));
+  return AGENT_COMMANDS.map(([key, label, hint, skill]) => agentCommandRow({ key, label, hint, skill, own: commands[key], id: prefix + key, after }));
 }
 
-function agentCommandRow({ key, label, hint, own, id, after }) {
+function agentCommandRow({ key, label, hint, skill, own, id, after }) {
   const busyId = 'agent:' + key;
   const save = async (value) => {
     if (!(await matrixAct('agent-commands', { agents: { [key]: String(value) } }, busyId))) return;
@@ -182,8 +188,24 @@ function agentCommandRow({ key, label, hint, own, id, after }) {
   };
   return el('div', { class: 'setting' },
     el('label', { for: id }, label),
-    el('div', { class: 'control' }, setupField(id, null, own, 'Built in', save, busyId), own ? el('button', { type: 'button', onclick: () => save('') }, icon('undo'), 'Use built in') : null),
-    el('p', { class: 'hint' }, (own ? 'Your own: ' + own + '. ' : 'The built-in prompt. ') + hint));
+    el('div', { class: 'control' }, setupField(id, null, own, skill, save, busyId), own ? el('button', { type: 'button', onclick: () => save('') }, icon('undo'), 'Use the skill') : null),
+    el('p', { class: 'hint' }, (own ? 'Your own: ' + own + '. ' : 'The Underlings skill ' + skill + '. ') + hint));
+}
+
+function setupSkillsFix(c) {
+  return el('div', { class: 'setup-fix setup-skills' }, [c.plan, c.remove].filter(Boolean).map(skillsStep));
+}
+
+// The page sends back the commands it showed, so what runs is what you read.
+function skillsStep(plan) {
+  const [mark, label, busyLabel, hint] = SKILLS_ACTIONS[plan.action];
+  const id = 'setup-skills-' + plan.action;
+  const busy = ui.busy.has(id);
+  const run = async () => setupSaved(await busyAct('/api/setup/skills', { action: plan.action, commands: plan.commands }, id), id);
+  return el('div', { class: 'setup-skills-step' },
+    el('p', { class: 'hint' }, hint + ' It runs:'),
+    el('pre', { class: 'setup-entry' }, plan.commands.join('\n')),
+    el('button', { type: 'button', class: plan.action === 'remove' ? null : 'primary', id, disabled: busy, onclick: run }, icon(mark), busy ? busyLabel : label));
 }
 
 function setupHookFix(c) {
@@ -213,13 +235,13 @@ async function finishSetupView() {
 
 function setupSettingsGroup() {
   return el('section', { class: 'section settings-group', id: 'setup-settings' }, el('h2', {}, 'Setup'),
-    el('p', { class: 'hint' }, 'Checks Claude Code, your GitLab token, GitHub, Jira, the workspace root, the agent commands and the artifact hook, with a fix for each.'),
+    el('p', { class: 'hint' }, 'Checks Claude Code, your GitLab token, GitHub, Jira, the workspace root, the agent commands, the Underlings skills and the artifact hook, with a fix for each.'),
     el('div', {}, el('a', { class: 'fix-link', ...inPage('#setup') }, icon('list-checks'), 'Open Setup')));
 }
 
 function agentSettingsGroup(data) {
   if (!data?.agents) return null;
   return el('section', { class: 'section settings-group', id: 'agent-settings' }, el('h2', {}, 'Agents'),
-    el('p', { class: 'hint' }, 'Blank runs the built-in prompt. Anything else is a slash command or a prompt your own Claude Code knows.'),
+    el('p', { class: 'hint' }, 'Blank runs the Underlings skill, which the app loads into every agent. Anything else is a slash command or a prompt your own Claude Code knows.'),
     agentCommandRows(data.agents, 'set-agent-', () => { ui.settings.at = null; render(true); }));
 }

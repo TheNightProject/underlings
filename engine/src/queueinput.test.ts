@@ -7,7 +7,7 @@ const base = { projectPath: 'acme/engine', projectId: 1001, iid: 621, body: 'a f
 test('a finding comes through as it always did', () => {
   const out = queueInput({ ...base, severity: 'minor', webUrl: 'u', diffHunk: '+x' }, 0);
   assert.equal(out.severity, 'MINOR', 'case does not matter');
-  assert.equal(out.createdBy, 'ws:mr-review');
+  assert.equal(out.createdBy, 'review');
   assert.equal(out.kind, undefined, 'still a plain finding');
   assert.throws(() => queueInput({ ...base }, 3), /queue item 3: missing severity/);
   assert.throws(() => queueInput({ ...base, severity: 'BLOCKER' }, 0), /unknown severity/);

@@ -12,7 +12,7 @@ const KEY = 'acme/engine!7';
 const BODY = 'This authorises every caller.';
 
 function item(extra = {}) {
-  return { id: 'q' + Math.random(), projectPath: 'acme/engine', iid: 7, severity: 'MINOR', createdBy: 'ws:mr-review', createdAt: before(H), status: 'posted', postedAt: before(H), body: BODY, ...extra };
+  return { id: 'q' + Math.random(), projectPath: 'acme/engine', iid: 7, severity: 'MINOR', createdBy: 'review', createdAt: before(H), status: 'posted', postedAt: before(H), body: BODY, ...extra };
 }
 
 function figures(extra = {}) {

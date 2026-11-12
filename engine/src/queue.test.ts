@@ -42,7 +42,7 @@ function finding(
     severity: 'MINOR',
     body: 'something',
     createdAt: '2026-11-01T00:00:00Z',
-    createdBy: 'ws:mr-review',
+    createdBy: 'review',
     status,
   };
 }

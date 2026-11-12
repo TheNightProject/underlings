@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+const PLUGIN_MANIFEST = 'plugin/underlings/.claude-plugin/plugin.json';
+const VERSIONED = ['package.json', 'desktop/package.json', PLUGIN_MANIFEST];
 const VERSION_LINE = /^(\s*"version": ")[^"]*(")/m;
 
 export function stamp(root = ROOT, now = new Date()) {
@@ -17,7 +19,7 @@ export function stamp(root = ROOT, now = new Date()) {
 
 // npm install rewrites a lock whose version lags its package.json, which would leave the checkout dirty.
 export function setVersion(root, version) {
-  for (const file of ['package.json', 'desktop/package.json']) {
+  for (const file of VERSIONED) {
     const path = join(root, file);
     const text = readFileSync(path, 'utf8');
     const next = text.replace(VERSION_LINE, `$1${version}$2`);

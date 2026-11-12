@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { engineStateDir } from '../../lib/home.mjs';
 import { APP_NAME } from '../../lib/product.mjs';
-import { builtInSelfReview, finishLine, reviewLine, selfReviewCommand } from './agentprompts.js';
+import { finishLine, reviewLine, selfReviewCommand } from './agentprompts.js';
 import { loadSettings } from './data/store.js';
 import { gitlabHostOf } from './settings.js';
 
@@ -145,8 +145,7 @@ export function ticketPrompt(key: string, summary: string, checkout?: string): s
 }
 
 function selfReviewStep(): string {
-  const command = selfReviewCommand();
-  return command ? `Run ${command} before pushing, not after CI has gone red.` : `${builtInSelfReview('the default branch')} Do it before pushing, not after CI has gone red.`;
+  return `Run ${selfReviewCommand()} before pushing, not after CI has gone red.`;
 }
 
 export function gitlabToken(): string {

@@ -79,7 +79,7 @@ test('the command a call runs says what it is doing, and one that says nothing i
     ['Agent', { subagent_type: 'Explore', description: 'Find the tag code' }, 'exploring'],
     ['Agent', { subagent_type: 'general-purpose', description: 'Build the phase function', run_in_background: true }, 'building'],
     ['Agent', { subagent_type: 'general-purpose', description: 'Skeptic review of the diff' }, 'testing'],
-    ['Skill', { skill: 'ws:pre-mr-review' }, 'testing'],
+    ['Skill', { skill: 'underlings:pre-mr-review' }, 'testing'],
     ['mcp__gitlab__create_merge_request', {}, 'mr'],
     ['mcp__claude_ai_Atlassian_Rovo__getJiraIssue', { issueIdOrKey: 'ABC-2753' }, 'exploring'],
     ['mcp__underlings__queue_findings', {}, null],

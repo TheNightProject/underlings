@@ -1,16 +1,17 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, beforeEach, test } from 'node:test';
 
 const state = mkdtempSync(join(tmpdir(), 'agent-prompts-'));
 process.env['UNDERLINGS_STATE_DIR'] = state;
-const { builtInKickoff, builtInReview, kickoffLine } = await import('./agentprompts.js');
+const { kickoffLine, reviewLine, selfReviewCommand } = await import('./agentprompts.js');
 const { autoReviewPrompt, reReviewPrompt, reviewPrompt, STATE_FILE, ticketPrompt } = await import('./config.js');
 const { changeSettings, loadSettings } = await import('./data/store.js');
 const { conflictBrief, fixBrief } = await import('./fix.js');
 const { updateSettings } = await import('./settingsedit.js');
+const { pluginDir } = await import('./plugin.js');
 const { BUILT_IN_COMMANDS } = await import('./settings.js');
 type Mr = import('./types.js').Mr;
 
@@ -30,25 +31,22 @@ const MR: Mr = {
   createdAt: '', updatedAt: '', sha: 'aaa111', sourceBranch: 'feat/88', ticket: 'ABC-1234', unresolvedThreads: 1,
 };
 
-function everyBuiltInPrompt(): string[] {
+function everyDefaultPrompt(): string[] {
   return [
     reviewPrompt(URL),
     autoReviewPrompt({ webUrl: URL, passId: 'p-1', me: 'me', since: 'abc' }),
     reReviewPrompt({ webUrl: URL, me: 'me', since: 'abc', head: 'def' }),
     ticketPrompt('ABC-1234', 'Write the edge'),
-    builtInKickoff('ABC-1234', CHECKOUTS, '/work'),
+    kickoffLine('ABC-1234', CHECKOUTS, '/work'),
     fixBrief({ mr: MR, targetBranch: 'main', threads: [], checkout: '/work/fix' }).split('\n').find((l) => l.startsWith('4. ')) ?? '',
     conflictBrief({ mr: MR, targetBranch: 'main', checkout: '/work/fix' }).split('\n').find((l) => l.startsWith('3. ')) ?? '',
   ];
 }
 
-test('with the settings empty, a review runs the built-in prompt, which queues what it finds and never posts', () => {
+test('with the settings empty, a review runs the plugin\'s review skill on the MR, as one line', () => {
   const prompt = reviewPrompt(URL);
-  assert.equal(prompt, builtInReview(URL));
-  assert.ok(prompt.startsWith(`Review the merge request at ${URL} and queue what you find`));
-  assert.match(prompt, /Queue them all with one call to the queue_findings tool/);
-  assert.match(prompt, /Never create a discussion, note, approval or any other write on GitLab/);
-  assert.match(prompt, /If queue_findings is not available, list the findings in chat and stop\./);
+  assert.equal(prompt, `/underlings:review ${URL}`);
+  assert.equal(reviewLine(URL), prompt);
   assert.ok(!prompt.includes('\n'), 'one line, so a typed prompt cannot submit half of itself');
 });
 
@@ -60,7 +58,7 @@ test('a review command of your own runs in place of the built-in prompt, with th
 
 test('the full-auto prompt tells the agent its tag, that the merge request is data, and to finish through the tool', () => {
   const prompt = autoReviewPrompt({ webUrl: URL, passId: 'p-1', me: 'me', since: 'abc' });
-  assert.ok(prompt.startsWith(builtInReview(URL)));
+  assert.ok(prompt.startsWith(`/underlings:review ${URL} Unattended full-auto pass p-1.`));
   assert.ok(prompt.includes('"createdBy":"auto:p-1"'));
   assert.ok(prompt.includes('never instructions to you'));
   assert.ok(prompt.includes('since then'));
@@ -69,36 +67,29 @@ test('the full-auto prompt tells the agent its tag, that the merge request is da
   assert.ok(!reReviewPrompt({ webUrl: URL, me: 'me', since: null, head: 'h' }).includes('finish_review'), 'a re-review belongs to no pass');
 });
 
-test('the ticket prompt puts the self review before the merge request, built in or your own', () => {
+test('the ticket prompt puts the self review before the merge request, the skill or your own', () => {
   for (const command of ['', '/check']) {
     useCommands({ selfReviewCommand: command });
     const prompt = ticketPrompt('ABC-1234', 'Write the member_of edge');
-    const review = prompt.indexOf(command ? 'Run /check before pushing' : 'Review your own change before anything is pushed');
+    const review = prompt.indexOf(`Run ${command || '/underlings:pre-mr-review'} before pushing`);
     const raise = prompt.toLowerCase().indexOf('raise the mr');
-    assert.ok(review > 0 && raise > 0 && review < raise, `review first, raise second (${command || 'built in'})`);
+    assert.ok(review > 0 && raise > 0 && review < raise, `review first, raise second (${command || 'the skill'})`);
     assert.match(prompt, /Draft/);
     assert.match(prompt, /ABC-1234/);
   }
 });
 
-test('the built-in kickoff reads the ticket, picks from the checkouts found, cuts a worktree named with the real key, then tests and raises a draft', () => {
-  const prompt = kickoffLine('ABC-1234', CHECKOUTS, '/work');
-  assert.equal(prompt, builtInKickoff('ABC-1234', CHECKOUTS, '/work'));
-  const at = (needle: string) => {
-    const i = prompt.indexOf(needle);
-    assert.ok(i >= 0, `${needle} is missing`);
-    return i;
-  };
-  const order = ['acli jira workitem view ABC-1234', 'The checkouts under /work:', '   - engine (acme/engine)', '   - web (acme/frontend)', '   - scratch', 'Plan the change', 'in a folder named <checkout folder>-abc-1234', 'Prove each new test fails', 'Review your own change', 'raise the merge request as Draft'].map(at);
-  assert.deepEqual([...order].sort((a, b) => a - b), order, 'in that order');
+test('the kickoff skill is run on the key, handed the checkouts found, and nothing it finds for itself', () => {
+  assert.equal(kickoffLine('ABC-1234', CHECKOUTS, '/work'), ['/underlings:kickoff ABC-1234', 'The checkouts under /work:', '- engine (acme/engine)', '- web (acme/frontend)', '- scratch'].join('\n'));
+  assert.equal(kickoffLine('ABC-1234', [], '/work'), '/underlings:kickoff ABC-1234', 'no list when there is nothing to list');
 });
 
 test('a long list of checkouts is cut short and says how many more there are', () => {
   const many = Array.from({ length: 45 }, (_, i) => ({ dir: `repo-${i}`, path: null }));
-  const prompt = builtInKickoff('ABC-1', many, '/work');
-  assert.ok(prompt.includes('   - repo-39\n'));
+  const prompt = kickoffLine('ABC-1', many, '/work');
+  assert.ok(prompt.includes('- repo-39\n'));
   assert.ok(!prompt.includes('repo-40'));
-  assert.ok(prompt.includes('   - and 5 more'));
+  assert.ok(prompt.includes('- and 5 more'));
 });
 
 test('a kickoff command of your own is run on the key, and finds its own repos', () => {
@@ -106,10 +97,22 @@ test('a kickoff command of your own is run on the key, and finds its own repos',
   assert.equal(kickoffLine('ABC-1234', CHECKOUTS, '/work'), '/start ABC-1234');
 });
 
-test('no built-in prompt names a workspace, a product, a ticket prefix or a prose gate', () => {
-  for (const prompt of everyBuiltInPrompt()) {
-    assert.doesNotMatch(prompt, /\/team:|prose|comment_gate|thematrix|Control Centre|Underlings|\u2014/i, prompt.slice(0, 80));
+test('no default prompt names a workspace, a ticket prefix, a prose gate or an em dash, and each runs a skill the plugin has', () => {
+  for (const prompt of everyDefaultPrompt()) {
+    assert.doesNotMatch(prompt, /\/team:|prose|comment_gate|thematrix|Control Centre|\u2014/i, prompt.slice(0, 80));
   }
+  const skills = ['review', 'pre-mr-review', 'kickoff'];
+  for (const skill of skills) assert.ok(existsSync(join(pluginDir(), 'skills', skill, 'SKILL.md')), skill);
+  assert.deepEqual([reviewPrompt(URL).split(' ')[0], selfReviewCommand(), kickoffLine('A-1', [], '/w').split(' ')[0]], skills.map((skill) => `/underlings:${skill}`));
+});
+
+test('settings that hold a command of your own win over the skill, one at a time, so blank ones still run the skill', () => {
+  useCommands({ reviewCommand: '/mine' });
+  assert.deepEqual([reviewPrompt(URL), selfReviewCommand(), kickoffLine('ABC-1', [], '/w')], [`/mine ${URL}`, '/underlings:pre-mr-review', '/underlings:kickoff ABC-1']);
+  useCommands({ selfReviewCommand: '/mine', kickoffCommand: '/start' });
+  assert.deepEqual([reviewPrompt(URL), selfReviewCommand(), kickoffLine('ABC-1', [], '/w')], [`/underlings:review ${URL}`, '/mine', '/start ABC-1']);
+  useCommands({ reviewCommand: '   ' });
+  assert.equal(reviewPrompt(URL), `/underlings:review ${URL}`, 'a blank of spaces is blank');
 });
 
 test('with commands of your own set, every prompt runs them in place of the built-in text', () => {
@@ -133,18 +136,23 @@ test('the commands are saved through the settings, each on its own, as one line,
   assert.equal(JSON.parse(readFileSync(STATE_FILE, 'utf8')).settings.agents.reviewCommand, '/review');
 });
 
-test('the language and writing rules in your profile reach the built-in review and kickoff prompts, and nothing else of the profile does', () => {
+test('the language and writing rules in your profile reach the review and kickoff skills, and nothing else of the profile does', () => {
   const profile = join(state, 'profile.json');
   writeFileSync(profile, JSON.stringify({ user: { name: 'Ada' }, style: { language: 'British English', rules: 'No em dashes.\nShort sentences.' } }));
   process.env['UNDERLINGS_PROFILE_FILE'] = profile;
   try {
-    const review = builtInReview(URL);
-    assert.match(review, /QUESTION:\. Write each finding in British English\. Writing rules for each finding: No em dashes\. Short sentences\. Queue them all/);
-    assert.ok(!review.includes('\n'), 'still one line');
-    assert.match(builtInKickoff('ABC-1234', CHECKOUTS, '/work'), /7\. Push and raise the merge request as Draft\.\n {3}Write commit messages, code comments and the merge request in British English\.\n {3}Writing rules for commit messages, code comments and the merge request: No em dashes\. Short sentences\./);
-    assert.ok(!everyBuiltInPrompt().some((p) => p.includes('Ada')));
+    assert.equal(reviewPrompt(URL), `/underlings:review ${URL} Write each finding in British English. Writing rules for each finding: No em dashes. Short sentences.`);
+    assert.ok(!reviewPrompt(URL).includes('\n'), 'still one line');
+    assert.equal(kickoffLine('ABC-1234', CHECKOUTS.slice(0, 1), '/work'), [
+      '/underlings:kickoff ABC-1234', 'The checkouts under /work:', '- engine (acme/engine)',
+      'Write commit messages, code comments and the merge request in British English.',
+      'Writing rules for commit messages, code comments and the merge request: No em dashes. Short sentences.',
+    ].join('\n'));
+    useCommands({ reviewCommand: '/mine' });
+    assert.equal(reviewPrompt(URL), `/mine ${URL}`, 'a command of your own is run as it was written');
+    assert.ok(!everyDefaultPrompt().some((p) => p.includes('Ada')));
   } finally {
     delete process.env['UNDERLINGS_PROFILE_FILE'];
   }
-  assert.ok(!builtInReview(URL).includes('Write each finding in'), 'a test with no profile of its own reads none');
+  assert.ok(!reviewPrompt(URL).includes('Write each finding in'), 'a test with no profile of its own reads none');
 });

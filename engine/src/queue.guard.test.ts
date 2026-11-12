@@ -45,7 +45,7 @@ function seed(count: number): QueuedComment[] {
     webUrl: `https://gitlab.com/${ENGINE}/-/merge_requests/${MERGED}`,
     severity: 'MINOR' as const,
     body: `finding ${n}`,
-    createdBy: 'ws:mr-review',
+    createdBy: 'review',
   })));
 }
 

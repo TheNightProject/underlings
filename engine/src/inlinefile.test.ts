@@ -30,7 +30,7 @@ function finding(line: number, over: Partial<QueuedComment> = {}): QueuedComment
     body: `MINOR: about line ${line}`,
     position: { base_sha: 'b', start_sha: 's', head_sha: 'head-1', new_path: 'a.py', new_line: line },
     createdAt: '',
-    createdBy: 'ws:mr-review',
+    createdBy: 'review',
     status: 'pending',
     ...over,
   };

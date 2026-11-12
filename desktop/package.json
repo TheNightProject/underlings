@@ -46,6 +46,7 @@
         "filter": ["worker.mjs", "dashboard.html", "build.json", "CHANGELOG.md", "lib/*.mjs", "ui/*.js", "ui/*.css", "!**/*.test.mjs", "!lib/testkit.mjs", "!lib/workerproc.mjs"]
       },
       { "from": "../engine/dist", "to": "worker/engine/dist", "filter": ["*.js", "!cli.js"] },
+      { "from": "../plugin", "to": "worker/plugin" },
       { "from": "../lib", "to": "lib", "filter": ["product.mjs", "home.mjs", "apphelper.mjs"] },
       { "from": "engine.package.json", "to": "worker/engine/package.json" },
       { "from": "../THIRD_PARTY_NOTICES", "to": "THIRD_PARTY_NOTICES" }

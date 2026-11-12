@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { STATE_DIR } from '../config.js';
+import { pluginArgs } from '../plugin.js';
 import { REVIEW_SERVER, REVIEW_TOOL_RULES } from '../reviewtools.js';
 import { taskOfKind } from '../../../lib/modeltiers.mjs';
 import { recordUsage } from '../models.js';
@@ -30,7 +31,7 @@ export function claudeArgs(file: AgentFile, resume: boolean): string[] {
   const streamed = file.kind === MASTER_KIND ? ['--include-partial-messages'] : [];
   const tools = file.kind === REVIEW_KIND ? reviewToolArgs() : [];
   const budget = file.budgetUsd ? ['--max-budget-usd', file.budgetUsd] : [];
-  return [...BASE_ARGS, ...mode, ...streamed, ...budget, ...launchArgs(file), ...tools, ...extraArgs(file), ...(resume ? ['--resume', file.id] : ['--session-id', file.id, '--name', file.name])];
+  return [...BASE_ARGS, ...mode, ...streamed, ...budget, ...launchArgs(file), ...tools, ...extraArgs(file), ...pluginArgs(), ...(resume ? ['--resume', file.id] : ['--session-id', file.id, '--name', file.name])];
 }
 
 // Print mode starts the first turn before MCP servers connect, so the panel's first message would find no Gmail and a review no queue.

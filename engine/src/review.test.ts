@@ -22,7 +22,7 @@ function comment(over: Partial<QueuedComment> = {}): QueuedComment {
     severity: 'MINOR',
     body: 'something',
     createdAt: '2026-10-12T10:00:00Z',
-    createdBy: 'ws:mr-review',
+    createdBy: 'review',
     status: 'pending',
     ...over,
   };

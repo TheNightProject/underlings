@@ -58,9 +58,9 @@ the same items, rebuilt field by field by `queueInput`: `projectPath`, `projectI
 `webUrl`, `severity`, `body`, `diffHunk` and `position`, or for a reply on an open thread
 `{"kind":"reply","replyTo":"<discussion id>","outcome":"fixed|not-fixed|disagree"}`, and
 `createdBy`, `auto:<pass>` for a full-auto pass. Anything else, a verdict say, is refused. A
-pass ends with `finish_review` or `queue done <pass>`. The prompts themselves, built in
-or your own commands, are in `src/agentprompts.ts`; the app's README has them under
-Agent prompts.
+pass ends with `finish_review` or `queue done <pass>`. The skills they run are in the repo's
+`plugin/`, and `src/agentprompts.ts` says which one each agent is sent to, or your own command
+in its place; the manual has them under Agent skills.
 
 The queue survives everything: it is written by the agent's own process, not the app, so
 quitting the app loses nothing, and concurrent writers take a lock so two agents finishing

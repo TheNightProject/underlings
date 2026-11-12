@@ -166,7 +166,7 @@ test('the brief stops to ask before anything is pushed or posted, and reads, cha
     assert.ok(i >= 0, `${needle} is missing`);
     return i;
   };
-  const steps = ['1. Read every thread in full', '2. Make the code changes in that checkout', '3. For a NAB, a Consider or a follow-up', '4. Review your own change before anything is pushed', '5. Then STOP and ask me', '6. Only after a yes: git push origin HEAD:feat/88'];
+  const steps = ['1. Read every thread in full', '2. Make the code changes in that checkout', '3. For a NAB, a Consider or a follow-up', '4. Run /underlings:pre-mr-review main there', '5. Then STOP and ask me', '6. Only after a yes: git push origin HEAD:feat/88'];
   const order = steps.map(at);
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'the steps are in order');
   assert.ok(at('STOP and ask') < at('git push') && at('STOP and ask') < at('Reply on each thread') && at('STOP and ask') < at('Resolve each thread'));
@@ -178,12 +178,13 @@ test('the brief stops to ask before anything is pushed or posted, and reads, cha
 });
 
 test('the self review is scoped to the branch the MR targets, so a stacked MR is not reviewed as the whole stack', () => {
-  assert.match(brief(fixableThreads(THREADS), 'feat/ABC-4299-base'), /^4\. Review your own change before anything is pushed: read the whole diff against feat\/ABC-4299-base as a stranger would/m);
-  assert.match(brief(fixableThreads(THREADS)), /^4\. Review .* against main as a stranger would/m);
-  assert.match(fixBrief({ mr: mr(), targetBranch: null, threads: THREADS.slice(0, 1), checkout: CHECKOUT }), /^4\. Review .* against main as a stranger would/m);
+  assert.match(brief(fixableThreads(THREADS), 'feat/ABC-4299-base'), /^4\. Run \/underlings:pre-mr-review feat\/ABC-4299-base there, and every gate it lists\. Prove each new test fails without its fix\.$/m);
+  assert.match(brief(fixableThreads(THREADS)), /^4\. Run \/underlings:pre-mr-review main there/m);
+  assert.match(fixBrief({ mr: mr(), targetBranch: null, threads: THREADS.slice(0, 1), checkout: CHECKOUT }), /^4\. Run \/underlings:pre-mr-review main there/m);
+  assert.match(conflictBrief({ mr: mr({ conflicts: true }), targetBranch: 'feat/base', checkout: CHECKOUT }), /^3\. Run \/underlings:pre-mr-review feat\/base there, and every gate it lists\.$/m);
 });
 
-test('a self-review command of your own runs in place of the built-in one, scoped to the same branch', () => {
+test('a self-review command of your own runs in place of the skill, scoped to the same branch', () => {
   changeSettings((s) => ({ ...s, agents: { ...s.agents, selfReviewCommand: '/team:self-review' } }));
   try {
     assert.match(brief(fixableThreads(THREADS), 'feat/ABC-4299-base'), /^4\. Run \/team:self-review feat\/ABC-4299-base there, and every gate it lists\. Prove each new test fails without its fix\.$/m);
@@ -198,7 +199,7 @@ test('the conflicts brief merges the target in, self reviews against it, and ask
   assert.match(text, /^Resolve the conflicts between feat\/88 and feat\/base on my MR !88: https:\/\/gitlab\.com\/acme\/engine\/-\/merge_requests\/88$/m);
   assert.ok(text.includes(`Work in ${CHECKOUT}`));
   const at = (needle: string) => text.indexOf(needle);
-  for (const needle of ['git merge origin/feat/base. Never a rebase.', '3. Review your own change before anything is pushed: read the whole diff against feat/base', 'Push <n> commits to feat/88? (yes/no)', '5. Only after a yes: git push origin HEAD:feat/88.']) assert.ok(at(needle) >= 0, needle);
+  for (const needle of ['git merge origin/feat/base. Never a rebase.', '3. Run /underlings:pre-mr-review feat/base there', 'Push <n> commits to feat/88? (yes/no)', '5. Only after a yes: git push origin HEAD:feat/88.']) assert.ok(at(needle) >= 0, needle);
   assert.ok(at('STOP and ask') < at('git push'));
   assert.match(text, /Never merge, never force-push, never post on the MR\./);
   assert.ok(!text.includes('\u2014'));

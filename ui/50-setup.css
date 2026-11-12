@@ -25,6 +25,8 @@
 .setup-agents { display: grid; gap: 12px; }
 .setup-agents .setting .setup-field { max-width: 440px; }
 .setup-entry { margin: 0; flex-basis: 100%; max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.5 var(--mono); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: var(--fg); }
+.setup-skills-step { flex-basis: 100%; display: grid; justify-items: start; gap: 8px; min-width: 0; }
+.setup-skills-step .setup-entry { justify-self: stretch; }
 .setup-done { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 @media (max-width: 780px) {
   .setup-check { grid-template-columns: 24px minmax(0, 1fr); gap: 10px; padding: 12px; }
