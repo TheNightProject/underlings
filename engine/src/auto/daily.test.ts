@@ -11,7 +11,7 @@ process.env['GITLAB_TOKEN'] = 'not-a-real-token';
 const { DAY_MS, moveAutomation, scheduleReReview, toggleWatch, unscheduleReReview } = await import('../actions/watch.js');
 const { backgroundPoll, fencedPorts } = await import('./driver.js');
 const { dailyReReviews } = await import('./daily.js');
-const { builtInReview } = await import('../agentprompts.js');
+const { reviewLine } = await import('../agentprompts.js');
 const store = await import('../data/store.js');
 const { MINUTE, START, context, fakeWorld, mr, resetState } = await import('./testkit.js');
 type Mr = import('../types.js').Mr;
@@ -54,7 +54,7 @@ test('an MR that moved since it was last seen gets the review command, once, and
   scheduled();
   const moved = mr({ sha: 'head-2' });
   const { fake, report } = await lookAt([moved], START + DAY_MS);
-  assert.deepEqual(fake.calls.launched.map((l) => l.prompt), [builtInReview('https://gitlab.example/acme/engine/-/merge_requests/621')]);
+  assert.deepEqual(fake.calls.launched.map((l) => l.prompt), [reviewLine('https://gitlab.example/acme/engine/-/merge_requests/621')]);
   assert.deepEqual(report.reReviewed, [KEY]);
   assert.equal(watches()[KEY]?.seen.sha, 'head-2');
   assert.deepEqual((await lookAt([moved], START + DAY_MS + MINUTE)).fake.calls.launched, [], 'the same day does not fire twice');

@@ -16,6 +16,7 @@ import {
 } from '../data/orca.js';
 import { modelArgs } from '../../../lib/modeltiers.mjs';
 import { agentLaunch, type AgentLaunch } from '../models.js';
+import { pluginArgs } from '../plugin.js';
 import type { AgentHost, AgentSpec, StartedAgent } from './host.js';
 
 // Orca reads 'active' as the caller's cwd, which for a plugin worker is in no workspace, and refuses a path it holds no workspace for.
@@ -31,7 +32,7 @@ async function linked(worktree: Partial<Worktree> | undefined, { link, name }: A
 
 // Orca types the command into a shell, where a model such as sonnet[1m] would be read as a glob.
 const shellWord = (word: string): string => (/^[\w.:/@-]+$/.test(word) ? word : `'${word.replace(/'/g, `'\\''`)}'`);
-export const terminalCommand = (launch: AgentLaunch): string => ['claude', ...modelArgs(launch)].map(shellWord).join(' ');
+export const terminalCommand = (launch: AgentLaunch): string => ['claude', ...modelArgs(launch), ...pluginArgs()].map(shellWord).join(' ');
 
 async function agentIn(created: CreatedWorktree, { prompt, title, cwd }: AgentSpec, launch: AgentLaunch): Promise<Omit<StartedAgent, 'path'>> {
   const agent = created.launch?.outcome?.handle ?? created.agentTerminalHandle;

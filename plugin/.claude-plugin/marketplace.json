@@ -1,0 +1,12 @@
+{
+  "name": "underlings",
+  "owner": { "name": "TheNightProject" },
+  "description": "The skills Underlings' agents run, for your own Claude Code too.",
+  "plugins": [
+    {
+      "name": "underlings",
+      "source": "./underlings",
+      "description": "Review, pre-MR checks, ticket kickoff, standup, progress log, MR message and Jira ticket workflows."
+    }
+  ]
+}

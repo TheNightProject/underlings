@@ -1,4 +1,4 @@
-import { builtInSelfReview, selfReviewCommand } from './agentprompts.js';
+import { selfReviewCommand } from './agentprompts.js';
 import type { Discussion } from './data/forge.js';
 import { loadSettings } from './data/store.js';
 import { refNumber } from './refs.js';
@@ -81,8 +81,7 @@ export function conflictBrief({ mr, targetBranch, checkout }: Omit<FixBriefInput
 }
 
 function selfReviewStep(target: string): string {
-  const command = selfReviewCommand();
-  return command ? `Run ${command} ${target} there, and every gate it lists.` : builtInSelfReview(target);
+  return `Run ${selfReviewCommand()} ${target} there, and every gate it lists.`;
 }
 
 function workIn(checkout: string, mr: Mr): string {

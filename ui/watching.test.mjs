@@ -205,7 +205,7 @@ test('Settings groups the engine\'s rows with their hints, and leaves out the on
   assert.match(p.$('#main .repos .match').textContent, /^2 of 40 repos match/);
 });
 
-test('Settings links to Setup, and has the three agent commands, blank for built in, each saved on its own', async () => {
+test('Settings links to Setup, and has the three agent commands, blank for the Underlings skill, each saved on its own', async () => {
   const p = await page({ settings: { ...SETTINGS, agents: { reviewCommand: '/team:review', selfReviewCommand: '', kickoffCommand: '' } } });
   p.show(snapshot(), 'settings');
   await p.settle();
@@ -214,13 +214,13 @@ test('Settings links to Setup, and has the three agent commands, blank for built
   assert.deepEqual(group.querySelectorAll('.setting label').map((l) => l.textContent), ['Review', 'Self-review', 'Kickoff']);
   assert.deepEqual(['reviewCommand', 'selfReviewCommand', 'kickoffCommand'].map((k) => p.$('#set-agent-' + k).getAttribute('value')), ['/team:review', '', '']);
   assert.match(group.querySelectorAll('.setting .hint')[0].textContent, /^Your own: \/team:review\./);
-  assert.match(group.querySelectorAll('.setting .hint')[1].textContent, /^The built-in prompt\./);
+  assert.match(group.querySelectorAll('.setting .hint')[1].textContent, /^The Underlings skill \/underlings:pre-mr-review\./);
   const kickoff = p.$('#set-agent-kickoffCommand');
   kickoff.value = '/start';
   p.fire(kickoff, 'input');
   p.fire(kickoff, 'keydown', { key: 'Enter' });
   await p.settle();
-  group.querySelectorAll('button').find((b) => b.textContent === 'Use built in').click();
+  group.querySelectorAll('button').find((b) => b.textContent === 'Use the skill').click();
   await p.settle();
   assert.deepEqual(p.posts, [['/api/matrix/agent-commands', { agents: { kickoffCommand: '/start' } }], ['/api/matrix/agent-commands', { agents: { reviewCommand: '' } }]]);
 });

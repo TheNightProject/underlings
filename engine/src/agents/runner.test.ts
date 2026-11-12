@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { STATE_DIR } from '../config.js';
+import { pluginDir } from '../plugin.js';
 import type { AgentFile } from './claudefiles.js';
 import { claudeArgs, sessionEnv } from './runner.js';
 
+const PLUGIN = ['--plugin-dir', pluginDir()];
 const file = { id: 'a1', name: 'review-Engine-7', title: 'review !7', cwd: '/work', createdAt: '2026-11-10T09:00:00Z' };
 
 test('an agent runs in auto mode unless it was started with permissions set to ask, on a resume too', () => {
   assert.deepEqual(claudeArgs(file, false).slice(8, 10), ['--permission-mode', 'auto']);
-  assert.deepEqual(claudeArgs(file, true).slice(8), ['--permission-mode', 'auto', '--resume', 'a1']);
-  assert.deepEqual(claudeArgs({ ...file, permissions: 'ask' }, true).slice(8), ['--resume', 'a1']);
+  assert.deepEqual(claudeArgs(file, true).slice(8), ['--permission-mode', 'auto', ...PLUGIN, '--resume', 'a1']);
+  assert.deepEqual(claudeArgs({ ...file, permissions: 'ask' }, true).slice(8), [...PLUGIN, '--resume', 'a1']);
 });
 
 test('an agent started with a spend cap passes it to every claude it runs, and one without passes none', () => {
@@ -22,9 +26,20 @@ test('an agent started with a spend cap passes it to every claude it runs, and o
 
 test('the master agent streams its reply and takes its own arguments before the session, and no other kind does either', () => {
   const master = { ...file, kind: 'master' as const, args: ['--settings', '/s.json'] };
-  assert.deepEqual(claudeArgs(master, false).slice(8), ['--permission-mode', 'auto', '--include-partial-messages', '--settings', '/s.json', '--session-id', 'a1', '--name', 'review-Engine-7']);
-  assert.deepEqual(claudeArgs(master, true).slice(8), ['--permission-mode', 'auto', '--include-partial-messages', '--settings', '/s.json', '--resume', 'a1']);
-  assert.deepEqual(claudeArgs({ ...file, kind: 'fix', args: ['--settings', '/s.json'] }, true).slice(8), ['--permission-mode', 'auto', '--resume', 'a1']);
+  assert.deepEqual(claudeArgs(master, false).slice(8), ['--permission-mode', 'auto', '--include-partial-messages', '--settings', '/s.json', ...PLUGIN, '--session-id', 'a1', '--name', 'review-Engine-7']);
+  assert.deepEqual(claudeArgs(master, true).slice(8), ['--permission-mode', 'auto', '--include-partial-messages', '--settings', '/s.json', ...PLUGIN, '--resume', 'a1']);
+  assert.deepEqual(claudeArgs({ ...file, kind: 'fix', args: ['--settings', '/s.json'] }, true).slice(8), ['--permission-mode', 'auto', ...PLUGIN, '--resume', 'a1']);
+});
+
+test('every kind of agent starts with the Underlings plugin loaded from the folder that holds it, on a resume too', () => {
+  assert.ok(existsSync(join(pluginDir(), '.claude-plugin', 'plugin.json')), 'the folder it names is the plugin');
+  for (const kind of ['review', 'fix', 'kickoff', 'ticket', 'master', 'message'] as const) {
+    for (const resume of [false, true]) {
+      const args = claudeArgs({ ...file, kind }, resume);
+      assert.deepEqual(args.slice(args.indexOf('--plugin-dir'), args.indexOf('--plugin-dir') + 2), PLUGIN, `${kind}${resume ? ' resumed' : ''}`);
+      assert.equal(args.filter((a) => a === '--plugin-dir').length, 1);
+    }
+  }
 });
 
 test('a review agent, and only a review agent, gets the queue tools, allowed without asking, on a resume too', () => {
@@ -45,8 +60,8 @@ test('a review agent, and only a review agent, gets the queue tools, allowed wit
 
 test('a message agent takes its own arguments before the session too, but does not stream its reply', () => {
   const message = { ...file, kind: 'message' as const, args: ['--settings', '/m.json'] };
-  assert.deepEqual(claudeArgs(message, false).slice(8), ['--permission-mode', 'auto', '--settings', '/m.json', '--session-id', 'a1', '--name', 'review-Engine-7']);
-  assert.deepEqual(claudeArgs(message, true).slice(8), ['--permission-mode', 'auto', '--settings', '/m.json', '--resume', 'a1']);
+  assert.deepEqual(claudeArgs(message, false).slice(8), ['--permission-mode', 'auto', '--settings', '/m.json', ...PLUGIN, '--session-id', 'a1', '--name', 'review-Engine-7']);
+  assert.deepEqual(claudeArgs(message, true).slice(8), ['--permission-mode', 'auto', '--settings', '/m.json', ...PLUGIN, '--resume', 'a1']);
 });
 
 test('an agent runs every claude on the model and effort it was started with, and one started on Claude Code\'s default passes neither', () => {

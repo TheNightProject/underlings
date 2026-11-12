@@ -67,8 +67,31 @@ Everything is under **Settings** (Cmd+,), which has a filter at the top. It live
 | `~/Library/Logs/Underlings/` | the app's log |
 
 `GITLAB_TOKEN`, `GITHUB_TOKEN` (or `GH_TOKEN`) and `UNDERLINGS_STATE_DIR` are read from your shell
-profile. The built-in agent prompts are written for any team; swap any of them for a slash command
-of your own under Settings, Agents. [docs/manual.md](docs/manual.md) covers every setting.
+profile. The agents run the Underlings skills below; swap any of them for a slash command of your
+own under Settings, Agents. [docs/manual.md](docs/manual.md) covers every setting.
+
+## Skills
+
+Underlings ships a Claude Code plugin, [`underlings`](plugin/underlings), written for any team.
+Every agent the app starts loads it, and **Setup**'s Underlings skills check installs it into your
+own Claude Code with one click, after showing the commands it will run, so the same skills work in
+your terminal. It can be removed from the same place.
+
+| Skill | What it does |
+| --- | --- |
+| `/underlings:review` | Reviews a merge request or pull request and queues what it finds for you to read. It never posts. |
+| `/underlings:pre-mr-review` | Checks a branch before it is pushed: the repo's own checks, the diff read as a stranger would, and proof the new tests fail without the change. |
+| `/underlings:kickoff` | Takes a ticket to Draft merge requests: a plan you approve, waves of builders, cold reviewers, verify rounds, and a second gate before anything ships. |
+| `/underlings:mr-message` | Writes the chat post asking the team to review your merge requests. |
+| `/underlings:standup` | Writes standup notes from your progress log, finished tickets, reviews, open work and calendar. |
+| `/underlings:log-progress` | Logs the day's commits, merge requests, tickets and notes, and is safe to run on a loop. |
+| `/underlings:ticket-create` | Creates a Jira ticket from your template, or a problem, change and acceptance criteria one. |
+| `/underlings:ticket-update` | Edits a ticket, comments on it, moves its status or reassigns it. |
+| `/underlings:update-tickets` | Sweeps your open tickets with a progress comment and a status move each. |
+
+They use your own Jira site, default project, ticket template, GitLab host, time zone and writing
+style from Settings. A blank **Review**, **Self-review** or **Kickoff** command under Settings,
+Agents runs the matching skill, and a command of your own still wins.
 
 ## Privacy
 
@@ -113,6 +136,8 @@ rm -rf /Applications/Underlings.app
 rm -rf ~/.config/underlings ~/.local/state/underlings ~/Library/Logs/Underlings "~/Library/Application Support/Underlings"
 ```
 
+If you installed the Underlings skills from Setup, press **Remove them** there first, or run
+`claude plugin uninstall underlings@underlings` and `claude plugin marketplace remove underlings`.
 If you installed the artifact hook from Setup, remove its `record-artifact.mjs` entry from
 `~/.claude/settings.json`. If you linked the command line, remove `~/.local/bin/underlings`. Then
 delete the folder you cloned.

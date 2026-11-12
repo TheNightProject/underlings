@@ -107,7 +107,7 @@ export function kickoffPrompt(key: string, checkouts = discoverCheckouts(root())
   ].join('\n');
 }
 
-// A command of your own finds its repos itself; the built-in prompt is handed the ones found here.
+// A command of your own finds its repos itself; the kickoff skill is handed the ones found here.
 function kickoffCheckouts(): Checkout[] {
   const found = discoverCheckouts(root());
   if (!found.length && !agentCommands().kickoffCommand) throw new Error(`No git checkouts under ${root()} to start a ticket in. Set Workspace root in Settings to the folder your clones live in.`);

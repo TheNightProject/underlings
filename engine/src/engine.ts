@@ -24,6 +24,7 @@ export { fetchMyTickets, fetchTickets, isAvailable, transitionTicket } from './d
 export { createTicket, ticketChildren, ticketsMentioning, viewTicket } from './data/jira.js';
 export { removeWorktree } from './agents/index.js';
 export { agentCommands } from './agentprompts.js';
+export { pluginDir, skillsPlugin } from './plugin.js';
 export { discoverCheckouts } from './checkouts.js';
 export { agentConversation, claudeAgents, replyToAgent, resumeCommand, startClaudeAgent, stopAgent, type AgentReply, type ClaudeAgentSummary } from './agents/claude.js';
 export { childEnv, claudeBinary } from './agents/claudefiles.js';

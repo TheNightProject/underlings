@@ -60,7 +60,7 @@ test('a new merge request from someone in full auto starts a review', async () =
   await autoPoll(context(fake.world), fake.ports);
   assert.equal(fake.calls.launched.length, 1);
   const prompt = fake.calls.launched[0]?.prompt ?? '';
-  assert.ok(prompt.startsWith('Review the merge request at https://gitlab.example/'), 'through the built-in review prompt');
+  assert.ok(prompt.startsWith('/underlings:review https://gitlab.example/'), 'through the plugin\'s review skill');
   assert.ok(prompt.includes(`"createdBy":"auto:${passId()}"`), 'and told the tag its items need');
   assert.ok(!prompt.includes('\n'), 'one line, so a typed prompt cannot submit half of itself');
 });

@@ -16,6 +16,9 @@ process.env['FAKE_CLAUDE_RESUME'] = fixture('resume');
 process.env['ORCA_PANE_KEY'] = 'tab-1:leaf-1';
 const { agentConversation, claudeAgents, claudeHost, replyToAgent, resumeCommand, stopAgent } = await import('./claude.js');
 const { modelUsage } = await import('../models.js');
+const { pluginDir } = await import('../plugin.js');
+
+const PLUGIN = ['--plugin-dir', pluginDir()];
 
 const workdir = join(root, 'work');
 mkdirSync(workdir, { recursive: true });
@@ -74,8 +77,8 @@ test('an agent starts as claude run headless with stream-json both ways, on a se
   assert.deepEqual(argv?.filter((_, i) => i !== tools + 1), [
     '-p', '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose', '--permission-prompt-tool', 'stdio',
     '--mcp-config', '--allowedTools', 'mcp__underlings__queue_findings', 'mcp__underlings__finish_review',
-    '--session-id', handle.slice('claude:'.length), '--name', 'review-Engine-7',
-  ], 'a fresh install runs no agent in auto mode, so every unlisted action asks you');
+    ...PLUGIN, '--session-id', handle.slice('claude:'.length), '--name', 'review-Engine-7',
+  ], 'a fresh install runs no agent in auto mode, so every unlisted action asks you, and every one has the plugin\'s skills');
   assert.equal(realpathSync(cwd ?? ''), workdir);
   await until(() => sent(fake, 'user')[0], 'the prompt');
   assert.equal(sent(fake, 'user')[0]?.message?.content, 'Ask me whether to say ready or steady');
@@ -253,7 +256,7 @@ test('reading an agent gives its conversation as lines, and removing its workspa
 
 test('opening an agent in a terminal resumes its session where it ran', async () => {
   const { handle } = await launch('question');
-  assert.deepEqual(resumeCommand(handle), { cwd: workdir, argv: [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', handle.slice('claude:'.length)], env: {} });
+  assert.deepEqual(resumeCommand(handle), { cwd: workdir, argv: [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', handle.slice('claude:'.length), ...PLUGIN], env: {} });
 });
 
 const flagOf = (argv: string[] | undefined, name: string): string | undefined => (argv?.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
@@ -272,7 +275,7 @@ test('an agent starts on the model and effort Models names for its task, its sub
     await claudeHost.send(handle, 'Once more.');
     const resumed = await until(() => fake().find((l) => l.argv?.includes('--resume')), 'the resume');
     assert.deepEqual([flagOf(resumed.argv, '--model'), flagOf(resumed.argv, '--effort'), resumed.subagentModel, resumed.subagentForce], ['opus', 'high', 'haiku', '1'], 'a run already going keeps its model, and its builders forced');
-    assert.deepEqual(resumeCommand(handle), { cwd: workdir, argv: [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', id, '--model', 'opus', '--effort', 'high'], env: { CLAUDE_CODE_SUBAGENT_MODEL: 'haiku', CLAUDE_CODE_SUBAGENT_MODEL_FORCE: '1' } });
+    assert.deepEqual(resumeCommand(handle), { cwd: workdir, argv: [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', id, '--model', 'opus', '--effort', 'high', ...PLUGIN], env: { CLAUDE_CODE_SUBAGENT_MODEL: 'haiku', CLAUDE_CODE_SUBAGENT_MODEL_FORCE: '1' } });
     const listed = claudeAgents().find((a) => a.handle === handle);
     assert.deepEqual([listed?.model, listed?.effort, listed?.subagentModel, listed?.subagentForce, listed?.runningModel], ['opus', 'high', 'haiku', true, 'claude-haiku-5-5'], 'listed with what it was started on, forced or not, and what Claude Code says it runs');
     await until(() => agentConversation(handle).turns.length === 2, 'the resumed turn to end');
@@ -348,12 +351,12 @@ test('the master agent runs with the arguments it was given and streams its repl
   const { handle, fake } = await launch('resume', 'Reply with the word again', { kind: 'master', args: MASTER_ARGS });
   const id = handle.slice('claude:'.length);
   await until(() => fake()[0], 'the fake claude to start');
-  assert.deepEqual(fake()[0]?.argv?.slice(8), ['--include-partial-messages', ...MASTER_ARGS, '--session-id', id, '--name', 'review-Engine-7']);
+  assert.deepEqual(fake()[0]?.argv?.slice(8), ['--include-partial-messages', ...MASTER_ARGS, ...PLUGIN, '--session-id', id, '--name', 'review-Engine-7']);
   await until(() => !claudeAgents().find((a) => a.handle === handle)?.alive && agentConversation(handle).state === 'done', 'the first turn to end');
   await claudeHost.send(handle, 'Once more.');
   const resumed = await until(() => fake().find((l) => l.argv?.includes('--resume')), 'the resume');
-  assert.deepEqual(resumed.argv?.slice(8), ['--include-partial-messages', ...MASTER_ARGS, '--resume', id]);
-  assert.deepEqual(resumeCommand(handle).argv, [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', id, ...MASTER_ARGS]);
+  assert.deepEqual(resumed.argv?.slice(8), ['--include-partial-messages', ...MASTER_ARGS, ...PLUGIN, '--resume', id]);
+  assert.deepEqual(resumeCommand(handle).argv, [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', id, ...MASTER_ARGS, ...PLUGIN]);
 });
 
 test('a message agent runs with the arguments it was given, without the master\'s streaming, on its first start, on every resume and in Terminal', async () => {
@@ -361,13 +364,13 @@ test('a message agent runs with the arguments it was given, without the master\'
   const { handle, fake } = await launch('resume', 'Reply with the word again', { kind: 'message', args });
   const id = handle.slice('claude:'.length);
   await until(() => fake()[0], 'the fake claude to start');
-  assert.deepEqual(fake()[0]?.argv?.slice(8), [...args, '--session-id', id, '--name', 'review-Engine-7']);
+  assert.deepEqual(fake()[0]?.argv?.slice(8), [...args, ...PLUGIN, '--session-id', id, '--name', 'review-Engine-7']);
   await until(() => !claudeAgents().find((a) => a.handle === handle)?.alive && agentConversation(handle).state === 'done', 'the first turn to end');
   assert.equal(claudeAgents().find((a) => a.handle === handle)?.kind, 'message');
   await claudeHost.send(handle, 'Once more.');
   const resumed = await until(() => fake().find((l) => l.argv?.includes('--resume')), 'the resume');
-  assert.deepEqual(resumed.argv?.slice(8), [...args, '--resume', id]);
-  assert.deepEqual(resumeCommand(handle).argv, [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', id, ...args]);
+  assert.deepEqual(resumed.argv?.slice(8), [...args, ...PLUGIN, '--resume', id]);
+  assert.deepEqual(resumeCommand(handle).argv, [process.env['UNDERLINGS_CLAUDE_BIN'], '--resume', id, ...args, ...PLUGIN]);
 });
 
 test('an agent of any other kind is refused more arguments before anything is recorded or started', async () => {

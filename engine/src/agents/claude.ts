@@ -6,6 +6,7 @@ import { STATE_DIR } from '../config.js';
 import { assertWritableState, loadSettings, UNDER_TEST_RUNNER } from '../data/store.js';
 import { budgetOf } from '../settings.js';
 import { agentLaunch } from '../models.js';
+import { pluginArgs } from '../plugin.js';
 import { AGENT_FILE, appendInput, claudeBinary, EVENTS_FILE, extraArgs, inBackground, launchArgs, launchEnv, markStopped, MASTER_KIND, readAgentFile, readPartial, readRecords, runnerCommand, runnerPid, takeLock, takesArgs, unsent, type AgentFile } from './claudefiles.js';
 import { agentState, oneLine, readLog, toolSummary, transcript, type AgentLog, type ClaudeState, type Entry, type Pending } from './claudelog.js';
 import { agentPhase } from './claudephase.js';
@@ -256,7 +257,7 @@ export function agentConversation(handle: string): ClaudeAgentSummary & { entrie
 /** Resumed in a terminal on the model it was started with, as a run already going keeps its model. */
 export function resumeCommand(handle: string): { cwd: string; argv: string[]; env: Record<string, string> } {
   const { file } = agentFor(handle);
-  return { cwd: file.cwd, argv: [claudeBinary(), '--resume', file.id, ...launchArgs(file), ...extraArgs(file)], env: launchEnv(file) };
+  return { cwd: file.cwd, argv: [claudeBinary(), '--resume', file.id, ...launchArgs(file), ...extraArgs(file), ...pluginArgs()], env: launchEnv(file) };
 }
 
 export const startClaudeAgent = (spec: AgentSpec): Promise<StartedAgent> => start(spec);

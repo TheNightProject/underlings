@@ -132,7 +132,7 @@ test('the prompt reads the change since the last review and answers your threads
   watchedAuto();
   const fired = await settledPolls([mr({ sha: 'head-2' })]);
   const prompt = fired.fake.calls.launched[0]?.prompt ?? '';
-  assert.match(prompt, /^Review the merge request at https:/);
+  assert.match(prompt, /^\/underlings:review https:/);
   assert.match(prompt, /The last review saw head-1: read the change since then/);
   assert.match(prompt, new RegExp(`For each unresolved thread opened by ${ME}, queue a reply`));
   assert.match(prompt, /"createdBy":"rereview:head-2"/);

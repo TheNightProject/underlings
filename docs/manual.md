@@ -134,7 +134,8 @@ every check once more.
 | GitHub | optional, and off until you switch it on here: the token in use is known to GitHub, with `repo` and `read:org` | the switch, a link that makes a token, a field to paste one, and `gh auth refresh -s` for a token gh holds |
 | Jira | optional: a site is set, `acli` is on the PATH and `acli jira auth status` says signed in | the site field, a link to install `acli`, or `acli jira auth login --web` to copy |
 | Workspace root | the folder exists and has at least one git checkout in it, counted | the folder field |
-| Agent commands | always: each is the built-in prompt or your own | a field for each, see Agent prompts |
+| Agent commands | always: each is the Underlings skill or your own | a field for each, see Agent skills |
+| Underlings skills | optional: the plugin is installed in your own Claude Code, at the version this app ships | the two commands it will run, shown first, with **Install the skills**, **Update the skills** or **Remove them**, see Agent skills |
 | Artifact hook | a `PostToolUse` hook in `~/.claude/settings.json` runs `record-artifact.mjs` | **Install the hook**, see Recording artifacts |
 
 The app opens and reads your MRs with GitLab alone. The GitLab banner shows the token field on
@@ -408,32 +409,71 @@ colours, by `ui/31-office-*.js` with no library. It stops drawing while the page
 scene is scrolled away, and caps the pixel ratio at 1.5. Without WebGL the office is the list, and
 with reduced motion it stands still, with every state shown by its colours and badges.
 
-## Agent prompts
+## Agent skills
 
-Review, self-review and kickoff agents run prompts the app ships, written for any team. Each can
-be swapped for a slash command or prompt your own Claude Code knows, under Settings, Agents, or
-on Setup; blank is the built-in one. They live in the review engine's settings as
-`agents.reviewCommand`, `agents.selfReviewCommand` and `agents.kickoffCommand`.
+Underlings ships a Claude Code plugin named `underlings`, in `plugin/` of the repo and packed into
+the app. Every agent the app starts loads it with `--plugin-dir`, on a resume too, in the Claude
+panel's window as well, so its skills need nothing installed. Review, self-review and kickoff
+agents run three of them when their setting is blank. Each can be swapped for a slash command or
+prompt your own Claude Code knows, under Settings, Agents, or on Setup. They live in the review
+engine's settings as `agents.reviewCommand`, `agents.selfReviewCommand` and
+`agents.kickoffCommand`, and a command you set wins over the skill, one at a time.
 
-- **Review** reads the MR, its pipeline and every changed file, looks for real problems, and
-  queues each finding with the `queue_findings` tool. It is told never to post, and if the tool is
-  missing to list the findings in chat and stop. Your own command runs as `<command> <MR link>`.
-- **Self-review** is the step a ticket, fix or conflicts agent takes before it pushes: read the
-  whole diff against the target as a stranger would, run the repo's own checks and tests, look for
-  a simpler shape and for untested paths. Your own command runs as `<command> <target branch>`.
-- **Kickoff** reads the ticket with `acli`, picks the repo from the checkouts found under the
-  workspace root, plans, works in a new worktree named `<checkout>-<key>` in lower case, tests,
-  self-reviews and raises a Draft MR. Your own command runs as `<command> <key>` and finds its own
-  repos.
+- **Review** (`/underlings:review <MR or PR link>`) reads the MR, its pipeline and every changed
+  file, looks for real problems, and queues each finding with the `queue_findings` tool. It is told
+  never to post, and if the tool is missing to list the findings in chat and stop. The app adds
+  your writing language and rules after the link. Your own command runs as `<command> <MR link>`.
+- **Self-review** (`/underlings:pre-mr-review [target]`) is the step a ticket, fix or conflicts
+  agent takes before it pushes: run what the repo's CI runs, read the whole diff against the target
+  as a stranger would, look for a simpler shape and for untested paths, and prove the new tests
+  fail without the change. Your own command runs as `<command> <target branch>`.
+- **Kickoff** (`/underlings:kickoff <key>`) reads the ticket with `acli`, picks the repo from the
+  checkouts the app lists, plans, builds in waves of builders in new worktrees, has cold reviewers
+  and verify rounds check the work, and raises Draft MRs. It stops at two gates for you, the plan
+  and shipping. Builders, reviewers and the claim prover run at medium effort and hunters at low,
+  on the model **Builders** names under Models. Your own command runs as `<command> <key>` and
+  finds its own repos.
 
-Every review agent, on either kind of prompt, gets a small MCP server of its own, `underlings`,
+The plugin has six more, for you to type in the Claude panel or your own terminal:
+
+- `/underlings:mr-message` writes the chat post asking for reviews of one or more MRs.
+- `/underlings:standup` writes standup notes from the progress log, finished tickets, the reviews you
+  did, your open work and your calendar.
+- `/underlings:log-progress` adds the day's commits, MRs, tickets and notes to
+  `.underlings/progress/` in the folder you run it from, and is safe on a loop.
+- `/underlings:ticket-create` and `/underlings:ticket-update` make and change a Jira ticket from
+  your **Ticket template** or a plain problem, change and acceptance criteria one.
+- `/underlings:update-tickets` sweeps your open tickets with a comment and a status move each.
+
+They take what they need from the app by name: your **Jira site**, **Default project**, **Ticket
+template**, **GitLab host**, **Workspace** and time zone from Settings, and your **Language** and
+**Writing rules** from your profile, which the app hands the review and kickoff skills itself. Run
+in your own terminal, a skill asks for what it cannot find. Every skill says "merge request or pull
+request", reviews only ever queue, and nothing is posted or moved without your say.
+
+The **Underlings skills** check on Setup installs the same plugin into your own Claude Code, so
+the skills work in a terminal of your own. It shows the commands first and runs nothing until you
+press the button:
+
+```
+claude plugin marketplace add <the plugin folder in this app> --scope user
+claude plugin install underlings@underlings --scope user
+```
+
+**Update the skills** appears when the version in your Claude Code differs from the app's, and
+**Remove them** runs `claude plugin uninstall underlings@underlings --scope user` and
+`claude plugin marketplace remove underlings --scope user`. It never touches another plugin or any
+other file of your Claude Code. Agents run by Orca start their own Claude Code, so they find the
+skills only once they are installed here.
+
+Every review agent, on any of these, gets a small MCP server of its own, `underlings`,
 from the engine build (`dist/reviewserver.js`), allowed without asking. It has two tools and
 nothing that reaches GitLab: `queue_findings`, which takes the same items `underlings queue add
 --json` reads and leaves each waiting in the review queue, and `finish_review`, which a full-auto
 pass calls when it is done. A review command of your own may still call `underlings queue add`: the
 app does not ship the command line, so link `engine/dist/cli.js` onto your PATH as The review
 engine says, or switch the command to `queue_findings`. An agent run in Orca, the fallback host,
-gets no such server, so the built-in review lists what it finds in chat and stops.
+gets no such server, so the review lists what it finds in chat and stops.
 
 ## The game
 
@@ -728,9 +768,9 @@ status, epic, the description as text, its MRs, and on your own tickets two acti
   its status changed since the page looked, or while another move on that ticket is under way;
   Jira's own refusal comes back in its words.
 - **Start with an agent** ("Start ABC-1234 with an agent?") starts Claude Code in the workspace
-  folder, as `kickoff-ABC-1234`, on the built-in kickoff prompt or your kickoff command (see Agent
-  prompts), told to stop and ask you before any push, MR, Jira transition or comment. The built-in
-  prompt lists the checkouts found under the workspace root, so the agent picks the repo and cuts
+  folder, as `kickoff-ABC-1234`, on the `/underlings:kickoff` skill or your kickoff command (see Agent
+  skills), told to stop and ask you before any push, MR, Jira transition or comment. The skill
+  is handed the checkouts found under the workspace root, so the agent picks the repo and cuts
   its worktree there as `<checkout>-abc-1234`; with none found it starts nothing and says to set
   the workspace root. It is recorded as the run `ticket:ABC-1234`, so it
   shows under Review runs and in the drawer's Agent tab, where you answer it. A second start waits
@@ -1083,7 +1123,7 @@ agent** on one thread, cut a checkout of the MR's branch beside the repos under 
 and start Claude Code in the workspace folder, told to work in that checkout. Its brief is built from the live
 threads; threads a bot started are left out unless you fix one on its own. The agent changes the
 code, raises tickets for what it leaves for later, reviews its own change against the MR's target
-branch (the built-in self-review, or your self-review command, see Agent prompts), then stops to ask
+branch (`/underlings:pre-mr-review`, or your self-review command, see Agent skills), then stops to ask
 whether to push and reply. It then shows as asking you, under Needs you
 and in the drawer's Agent tab, where you answer it: nothing reaches GitLab until you say yes. The
 MR's repo must be cloned under the workspace root, found by its origin remote or its name, and a
@@ -1281,7 +1321,7 @@ corner that blocks nothing. It is asked once: Settings, **You** changes it after
 rules**, all three under **You** in Settings. The Slack and email reads, the message agents, reply
 drafts, ticket drafts and the Claude panel's tool descriptions call you by the name, or say "you"
 while it is blank; they ask for the language when one is set, and carry the rules word for word.
-The built-in review, kickoff and fix prompts take the language and rules too, for findings, commits,
+The review and kickoff skills are handed the language and rules too, and the fix prompts carry them, for findings, commits,
 replies and the merge request, but no name, as they speak for you already. A
 rule against em dashes also has them taken out of the replies and tickets Claude writes. What a
 review posts as you, the hold note and the two comment footers, are under **What reviews post as
