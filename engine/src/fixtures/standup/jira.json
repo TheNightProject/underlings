@@ -1,0 +1,122 @@
+{
+ "QA": [
+  {
+   "key": "ABC-1234",
+   "id": "1234",
+   "fields": {
+    "summary": "Gate invoice writes on billing:write",
+    "status": {
+     "name": "QA",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  },
+  {
+   "key": "ABC-4290",
+   "id": "4290",
+   "fields": {
+    "summary": "Login loop on refresh",
+    "status": {
+     "name": "Done",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  }
+ ],
+ "Done": [
+  {
+   "key": "ABC-4290",
+   "id": "4290",
+   "fields": {
+    "summary": "Login loop on refresh",
+    "status": {
+     "name": "Done",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  },
+  {
+   "key": "ABC-4225",
+   "id": "4225",
+   "fields": {
+    "summary": "atlas: show the Jobs pane",
+    "status": {
+     "name": "Done",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  }
+ ],
+ "Resolved": "Error: The value 'Resolved' does not exist for the field 'status'.",
+ "Closed": "Error: The value 'Closed' does not exist for the field 'status'.",
+ "inProgress": [
+  {
+   "key": "ABC-4262",
+   "id": "4262",
+   "fields": {
+    "summary": "atlas: job logs in the Jobs pane",
+    "status": {
+     "name": "In Progress",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  },
+  {
+   "key": "ABC-4300",
+   "id": "4300",
+   "fields": {
+    "summary": "Plans: appoint a team admin",
+    "status": {
+     "name": "Peer Review",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  },
+  {
+   "key": "ABC-4344",
+   "id": "4344",
+   "fields": {
+    "summary": "Engineering mail relay allowlist",
+    "status": {
+     "name": "In Progress",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  },
+  {
+   "key": "ABC-4380",
+   "id": "4380",
+   "fields": {
+    "summary": "Digest view in the dashboard",
+    "status": {
+     "name": "In Progress",
+     "statusCategory": {
+      "name": "In Progress"
+     }
+    },
+    "labels": []
+   }
+  }
+ ]
+}

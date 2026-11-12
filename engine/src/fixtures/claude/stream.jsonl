@@ -1,0 +1,8 @@
+{"type":"system","subtype":"init","cwd":"/scratch/smoke-repo","session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90","tools":["Bash"],"model":"claude-haiku-5-5","permissionMode":"auto"}
+{"type":"stream_event","event":{"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","content":[]}},"parent_tool_use_id":null,"session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90"}
+{"type":"stream_event","event":{"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}},"parent_tool_use_id":null,"session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90"}
+{"type":"stream_event","event":{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Ready when"}},"parent_tool_use_id":null,"session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90"}
+{"type":"stream_event","event":{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" you are."}},"parent_tool_use_id":null,"session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90"}
+{"type":"stream_event","event":{"type":"content_block_stop","index":0},"parent_tool_use_id":null,"session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90"}
+{"type":"assistant","message":{"id":"msg_1","type":"message","role":"assistant","content":[{"type":"text","text":"Ready when you are."}]},"parent_tool_use_id":null,"session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90"}
+{"type":"result","subtype":"success","is_error":false,"result":"Ready when you are.","num_turns":1,"session_id":"0b1f7a52-2c38-4d7e-9a51-6f0d2c1e8a90"}

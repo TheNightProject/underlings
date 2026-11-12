@@ -1,0 +1,13 @@
+.merge-why { display: inline-flex; align-items: center; }
+.reviewers { display: grid; gap: 8px; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); }
+.reviewers .row-head > .meta:first-child { font-family: var(--font); font-weight: 600; }
+.pill.reviewer { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 600; padding: 1px 2px 1px 9px; }
+.pill.reviewer button.icon-only { padding: 1px; border: 0; background: transparent; color: inherit; border-radius: 999px; }
+.pill.reviewer button.icon-only:hover { background: var(--cb); }
+.pill.reviewer svg.i { width: 13px; height: 13px; }
+.foot.fix { justify-content: flex-start; }
+.foot.fix button { white-space: normal; text-align: left; }
+.thread-group { margin: 6px 0 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 650; display: flex; gap: 8px; align-items: center; }
+.list.bots > .row { background: var(--panel); }
+.fix-run { display: grid; gap: 8px; min-width: 0; }
+.fix-run + .agent, .fix-run + .row-head { margin-top: 8px; }

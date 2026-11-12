@@ -1,0 +1,204 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:frank.foster@example.com
+X-WR-TIMEZONE:Europe/London
+BEGIN:VTIMEZONE
+TZID:Europe/London
+X-LIC-LOCATION:Europe/London
+BEGIN:DAYLIGHT
+TZOFFSETFROM:+0000
+TZOFFSETTO:+0100
+TZNAME:BST
+DTSTART:19700329T010000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0000
+TZNAME:GMT
+DTSTART:19701025T020000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261102T093000
+DTEND;TZID=Europe/London:20261102T094500
+RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR
+EXDATE;TZID=Europe/London:20261118T093000
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Judy Jones:mailto:judy.jones@example.com
+UID:standup-01@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Judy J
+ ones;X-NUM-GUESTS=0:mailto:judy.jones@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=frank.
+ foster@example.com;X-NUM-GUESTS=0:mailto:frank.foster@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Niaj N
+ air;X-NUM-GUESTS=0:mailto:niaj.nair@example.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/abc-defg-hij
+DESCRIPTION:Daily check-in.\n\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-\nJoin with Go
+ ogle Meet: https://meet.google.com/abc-defg-hij\n\nLearn more about Meet at:
+  https://support.google.com/a/users/answer/9282720\n\nPlease do not edit thi
+ s section.\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+CREATED:20261020T090000Z
+LAST-MODIFIED:20261112T090000Z
+SEQUENCE:1
+STATUS:CONFIRMED
+SUMMARY:Daily standup
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261119T100000
+DTEND;TZID=Europe/London:20261119T103000
+RECURRENCE-ID;TZID=Europe/London:20261119T093000
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Judy Jones:mailto:judy.jones@example.com
+UID:standup-01@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Judy J
+ ones;X-NUM-GUESTS=0:mailto:judy.jones@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=frank.
+ foster@example.com;X-NUM-GUESTS=0:mailto:frank.foster@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Niaj N
+ air;X-NUM-GUESTS=0:mailto:niaj.nair@example.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/abc-defg-hij
+SEQUENCE:2
+STATUS:CONFIRMED
+SUMMARY:Daily standup (later\, longer)
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261120T093000
+DTEND;TZID=Europe/London:20261120T094500
+RECURRENCE-ID;TZID=Europe/London:20261120T093000
+DTSTAMP:20261115T070000Z
+UID:standup-01@google.com
+SUMMARY:Daily standup
+STATUS:CANCELLED
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20261113
+DTEND;VALUE=DATE:20261117
+DTSTAMP:20261115T070000Z
+UID:leave-02@google.com
+SUMMARY:Abe on leave
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:20261119
+DTEND;VALUE=DATE:20261122
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Uma Underwood:mailto:uma.underwood@example.com
+UID:offsite-03@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED;CN=Uma Underwood:mailto:uma.un
+ derwood@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED:mailto:frank.foster@example.co
+ m
+LOCATION:Brighton
+SUMMARY:Team offsite
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261117T140000
+DTEND;TZID=Europe/London:20261117T150000
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=niaj.nair@example.com:mailto:niaj.nair@example.com
+UID:arch-04@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED:mailto:fr
+ ank.foster@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=niaj.n
+ air@example.com:mailto:niaj.nair@example.com
+ATTENDEE;CUTYPE=RESOURCE;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=London-3-
+ Boardroom (8):mailto:c_188abc@resource.calendar.google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=DECLINED;CN=Olivia
+  Owens:mailto:olivia.owens@example.com
+LOCATION:https://us02web.zoom.us/j/81234567890?pwd=abcDEF123
+SUMMARY:Architecture review ABC-4389
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20261117T143000Z
+DTEND:20261117T153000Z
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Ivan Mills:mailto:ivan@vendor.example
+UID:vendor-05@vendor.example
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED;CN=Ivan Mills:mailto:ivan@vend
+ or.example
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=TENTATIVE:mailto:frank.foster@example.c
+ om
+DESCRIPTION:<p>Agenda:</p><ul><li>Findings</li><li>Next steps</li></ul><p>J
+ oin on <a href="https://teams.microsoft.com/l/meetup-join/19%3ameeting_NjA2
+ %40thread.v2/0?context=%7b%22Tid%22%3a%22t1%22%7d&amp\;btype=a">Microsoft T
+ eams</a> &amp\; bring notes.</p>
+SUMMARY:Vendor findings walkthrough
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261118T110000
+DTEND;TZID=Europe/London:20261118T120000
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Uma Underwood:mailto:uma.underwood@example.com
+UID:planning-06@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED;CN=Uma Underwood:mailto:uma.un
+ derwood@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=NEEDS-ACTION;CN=Frank Foster:mailto:fra
+ nk.foster@example.com
+DESCRIPTION:Roadmap for the first quarter.\nDial in at https://meet.google.c
+ om/xyz-abcd-efg.
+SUMMARY:Planning: Q1 roadmap
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261118T160000
+DTEND;TZID=Europe/London:20261118T170000
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Uma Underwood:mailto:uma.underwood@example.com
+UID:all-hands-07@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED;CN=Uma Underwood:mailto:uma.un
+ derwood@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=DECLINED;CN=Frank Foster:mailto:frank.f
+ oster@example.com
+SUMMARY:All hands
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20261119T150000
+DTEND:20261119T160000
+DTSTAMP:20261115T070000Z
+UID:dentist-08@google.com
+LOCATION:12 High Street\, Lewes
+SUMMARY:Dentist
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261120T233000
+DTEND;TZID=Europe/London:20261121T003000
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Olivia Owens:mailto:olivia.owens@example.com
+UID:release-09@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Olivia
+  Owens:mailto:olivia.owens@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED:mailto:fr
+ ank.foster@example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=OPT-PARTICIPANT;PARTSTAT=NEEDS-ACTION;CN=Hu
+ go Hale:mailto:hugo.hale@example.com
+SUMMARY:Release window
+END:VEVENT
+BEGIN:VEVENT
+DTSTART;TZID=Europe/London:20261120T170000
+DTEND;TZID=Europe/London:20261120T180000
+DTSTAMP:20261115T070000Z
+ORGANIZER;CN=Hugo Hale:mailto:hugo.hale@example.com
+UID:social-10@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED;CN=Hugo Hale:mailto:hugo.hale@
+ example.com
+ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=ACCEPTED;CN=Judy Jones:mailto:judy.jone
+ s@example.com
+SUMMARY:Team social
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260701T180000
+DTEND:20260701T193000
+DTSTAMP:20261115T070000Z
+UID:barbecue-11@google.com
+SUMMARY:Summer barbecue
+END:VEVENT
+END:VCALENDAR

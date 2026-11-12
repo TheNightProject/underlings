@@ -1,0 +1,146 @@
+[
+  {
+    "iid": "1720",
+    "title": "🐛 (ABC-4142) Hold buttons while a save is in flight",
+    "webUrl": "https://gitlab.com/acme/platform/frontend/-/merge_requests/1720",
+    "sourceBranch": "fix/hold-buttons",
+    "mergedAt": "2026-11-10T08:30:00Z",
+    "author": {
+      "username": "ivan.irving",
+      "name": "Ivan Irving"
+    },
+    "project": {
+      "fullPath": "acme/platform/frontend"
+    },
+    "diffStatsSummary": {
+      "additions": 120,
+      "deletions": 30
+    }
+  },
+  {
+    "iid": "1201",
+    "title": "Wait for the save before acting",
+    "webUrl": "https://gitlab.com/acme/platform/relay/-/merge_requests/1201",
+    "sourceBranch": "fix/ABC-4142-stale-save",
+    "mergedAt": "2026-11-09T16:00:00Z",
+    "author": {
+      "username": "trent.tyler",
+      "name": "Trent Tyler"
+    },
+    "project": {
+      "fullPath": "acme/platform/relay"
+    },
+    "diffStatsSummary": {
+      "additions": 40,
+      "deletions": 5
+    }
+  },
+  {
+    "iid": "88",
+    "title": "chore(deps): update dependency vite to v6.4.1",
+    "webUrl": "https://gitlab.com/acme/platform/renovate-config/-/merge_requests/88",
+    "sourceBranch": "renovate/vite-6.x",
+    "mergedAt": "2026-11-08T03:00:00Z",
+    "author": {
+      "username": "renovate-bot",
+      "name": "Renovate Bot"
+    },
+    "project": {
+      "fullPath": "acme/platform/renovate-config"
+    },
+    "diffStatsSummary": {
+      "additions": 2,
+      "deletions": 2
+    }
+  },
+  {
+    "iid": "1702",
+    "title": "Keep the team menu open on refresh",
+    "webUrl": "https://gitlab.com/acme/platform/frontend/-/merge_requests/1702",
+    "sourceBranch": "feat/abc-4101-team-menu",
+    "mergedAt": "2026-11-07T11:00:00Z",
+    "author": {
+      "username": "sybil.shaw",
+      "name": "Sybil Shaw"
+    },
+    "project": {
+      "fullPath": "acme/platform/frontend"
+    },
+    "diffStatsSummary": {
+      "additions": 12,
+      "deletions": 3
+    }
+  },
+  {
+    "iid": "2",
+    "title": "ABC-4402 Use shared CI components",
+    "webUrl": "https://gitlab.com/acme/internal/desk-booking/-/merge_requests/2",
+    "sourceBranch": "ci/shared-components",
+    "mergedAt": "2026-11-05T14:20:00Z",
+    "author": {
+      "username": "trent.tyler",
+      "name": "Trent Tyler"
+    },
+    "project": {
+      "fullPath": "acme/internal/desk-booking"
+    },
+    "diffStatsSummary": {
+      "additions": 64,
+      "deletions": 90
+    }
+  },
+  {
+    "iid": "1188",
+    "title": "ABC-3801: stream the audit export in pages",
+    "webUrl": "https://gitlab.com/acme/platform/relay/-/merge_requests/1188",
+    "sourceBranch": "feat/ABC-3801-audit-stream",
+    "mergedAt": "2026-10-14T09:00:00Z",
+    "author": {
+      "username": "ivan.irving",
+      "name": "Ivan Irving"
+    },
+    "project": {
+      "fullPath": "acme/platform/relay"
+    },
+    "diffStatsSummary": {
+      "additions": 300,
+      "deletions": 80
+    }
+  },
+  {
+    "iid": "212",
+    "title": "✨ (ABC-3801) Page the audit export",
+    "webUrl": "https://gitlab.com/acme/platform/gateway/-/merge_requests/212",
+    "sourceBranch": "feat/ABC-3801-audit-api",
+    "mergedAt": "2026-10-13T10:00:00Z",
+    "author": {
+      "username": "ivan.irving",
+      "name": "Ivan Irving"
+    },
+    "project": {
+      "fullPath": "acme/platform/gateway"
+    },
+    "diffStatsSummary": {
+      "additions": 75,
+      "deletions": 10
+    }
+  },
+  {
+    "iid": "3",
+    "title": "ABC-3500 First cut of the backups pane",
+    "webUrl": "https://gitlab.com/acme/tooling/atlas/-/merge_requests/3",
+    "sourceBranch": "feat/ABC-3500-backups",
+    "mergedAt": "2026-09-01T09:00:00Z",
+    "author": {
+      "username": "sybil.shaw",
+      "name": "Sybil Shaw"
+    },
+    "project": {
+      "fullPath": "acme/tooling/atlas"
+    },
+    "diffStatsSummary": {
+      "additions": 400,
+      "deletions": 0
+    }
+  }
+]

@@ -1,0 +1,10 @@
+.email-about { margin: 0; color: var(--muted); font-size: 12.5px; max-width: 90ch; }
+.email-threads { margin-top: 4px; }
+.email-thread .title { font-size: 14.5px; }
+.email-reason { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.email-snippet { margin: 0; padding-left: 10px; border-left: 2px solid var(--line-strong); color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.email-thread.handled .email-reason, .email-thread.handled .title { color: var(--muted); }
+.email-thread.handled .pill { --c: var(--quiet); --cb: var(--quiet-bg); }
+@media (max-width: 640px) {
+  .email-thread .actions > button { flex: 1 1 auto; justify-content: center; }
+}

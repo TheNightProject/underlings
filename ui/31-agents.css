@@ -1,0 +1,43 @@
+.agent > .screen { grid-column: 1 / -1; display: grid; gap: 8px; min-width: 0; }
+.disclose.quiet { justify-self: start; background: var(--quiet-bg); color: var(--muted); }
+.disclose.quiet:hover { color: var(--fg); }
+.screen pre.console { margin: 0; white-space: pre; font-size: 11.5px; line-height: 1.45; }
+.screen .reply textarea { min-height: 64px; }
+.screen .actions button { max-width: 100%; text-align: left; }
+.agent .tool { display: inline-flex; align-items: flex-start; gap: 5px; min-width: 0; overflow-wrap: anywhere; }
+.agent .tool svg.i { width: 14px; height: 14px; margin-top: 1px; }
+.screen > .disclose[aria-expanded="true"] svg.i + svg.i { transform: none; }
+.screen .chat { display: flex; flex-direction: column-reverse; max-height: 50vh; overflow: auto; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--console-bg); color: var(--console-fg); font-size: 12.5px; line-height: 1.45; }
+.chat .log { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0; }
+.chat .log > * { min-width: 0; overflow-wrap: anywhere; }
+.chat .log > div { white-space: pre-wrap; }
+.chat .md pre { white-space: pre-wrap; }
+.chat .md pre code, .chat .md table { overflow-wrap: anywhere; }
+.chat .md th { overflow-wrap: normal; }
+.chat .md td { color: inherit; }
+.chat .md :not(pre) > code { background: color-mix(in srgb, currentColor 14%, transparent); }
+.chat .you { color: var(--accent); }
+.chat .you .who { font-weight: 600; margin-right: 6px; }
+.chat .call, .chat .note { color: var(--muted); font-family: var(--mono); font-size: 11.5px; white-space: normal; }
+.chat .asked { color: var(--need); }
+.chat .said .md { font-size: inherit; }
+.chat .said.streaming .md > :last-child::after { content: "▍"; margin-left: 2px; color: var(--muted); animation: cp-caret 1s steps(2) infinite; }
+@keyframes cp-caret { 50% { opacity: 0; } }
+.chat .calls { color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
+.chat .calls > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 5px; min-width: 0; }
+.chat .calls > summary > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat .calls > summary::-webkit-details-marker { display: none; }
+.chat .calls > summary svg.i { width: 13px; height: 13px; }
+.chat .calls[open] > summary { margin-bottom: 4px; }
+.chat .calls > .call { padding-left: 18px; }
+.ask-input > summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+.ask-input pre { margin: 6px 0 0; max-height: 160px; overflow: auto; padding: 8px 10px; border-radius: 6px; background: var(--console-bg); color: var(--console-fg); font: 11.5px/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat .call svg.i, .chat .asked svg.i { width: 13px; height: 13px; margin-right: 5px; vertical-align: -2px; }
+.agent > .ask, .agent > .actions, .agent > .agent-background { grid-column: 2; min-width: 0; }
+.ask { display: grid; gap: 6px; padding: 8px 10px; border-radius: 8px; background: var(--need-bg); min-width: 0; }
+.ask .asked { margin: 0; color: var(--fg); overflow-wrap: anywhere; }
+.ask .asked svg.i { width: 13px; height: 13px; margin-right: 5px; vertical-align: -2px; color: var(--need); }
+.ask .actions button { max-width: 100%; text-align: left; }
+.need-card > .ask { margin-top: 6px; }
+.agent-phase { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+@media (max-width: 600px) { .agent > .ask, .agent > .actions { grid-column: 1 / -1; } }

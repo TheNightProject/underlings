@@ -1,0 +1,22 @@
+.agent-mood { --mood: var(--quiet); display: flex; align-items: center; gap: 6px; }
+.agent-mood .mood-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--mood); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mood) 22%, transparent); }
+.agent-mood[data-mood="happy"], .agent-mood[data-mood="cheer"] { --mood: var(--done); }
+.agent-mood[data-mood="fresh"] { --mood: var(--viz-4); }
+.agent-mood[data-mood="impatient"] { --mood: var(--viz-4); color: var(--fg); }
+.agent-mood[data-mood="grumpy"] { --mood: var(--viz-2); color: var(--fg); }
+.agent-mood[data-mood="angry"] { --mood: var(--need); color: var(--need); font-weight: 600; }
+.agent-mood[data-mood="sad"] { --mood: var(--viz-1); }
+
+.office-waiting .chip[data-mood="grumpy"] { border-color: color-mix(in srgb, var(--viz-2) 65%, var(--line)); background: color-mix(in srgb, var(--viz-2) 14%, var(--panel)); }
+.office-waiting .chip[data-mood="angry"] { border-color: var(--need); background: color-mix(in srgb, var(--need) 16%, var(--panel)); font-weight: 600; }
+
+.office-tag.is-impatient .office-bang { animation-duration: 0.7s; }
+.office-tag.is-grumpy .office-bang { --bang: var(--viz-2); background: var(--bang); color: #fff; box-shadow: 0 0 0 4px color-mix(in srgb, var(--bang) 30%, transparent), 0 3px 10px rgba(0, 0, 0, 0.25); }
+.office-tag.is-angry .office-bang { --bang: var(--need); background: var(--bang); color: #fff; box-shadow: 0 0 0 4px color-mix(in srgb, var(--bang) 35%, transparent), 0 3px 10px rgba(0, 0, 0, 0.3); animation: office-shake 0.5s ease-in-out infinite; }
+.office-tag:is(.is-grumpy, .is-angry) .office-bang::after { border-top-color: var(--bang); }
+.office-tag.is-angry .office-chip { border-color: var(--need); box-shadow: 0 0 0 3px color-mix(in srgb, var(--need) 28%, transparent), 0 2px 8px rgba(0, 0, 0, 0.2); }
+.office-tag.is-angry .office-dot { background: var(--need); }
+.office-tag.is-grumpy .office-dot { background: var(--viz-2); }
+@keyframes office-shake { 0%, 100% { translate: -50% 0; rotate: 0deg; } 25% { translate: -50% -3px; rotate: -12deg; } 75% { translate: -50% -3px; rotate: 12deg; } }
+.office[data-motion="still"] .office-tag .office-bang { animation: none; }
+@media (prefers-reduced-motion: reduce) { .office-tag .office-bang { animation: none; } }

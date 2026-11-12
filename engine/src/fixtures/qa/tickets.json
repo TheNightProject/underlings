@@ -1,0 +1,212 @@
+[
+  {
+    "changelog": null,
+    "editmeta": null,
+    "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+    "fields": {
+      "assignee": {
+        "accountId": "712020:0b1c2d3e-0000-4000-8000-00000000d4a1",
+        "accountType": "atlassian",
+        "active": true,
+        "avatarUrls": {
+          "16x16": "https://avatars.example.com/712020:0b1c2d3e-0000-4000-8000-00000000d4a1/16"
+        },
+        "displayName": "Ivan Irving",
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=712020%3A0b1c2d3e-0000-4000-8000-00000000d4a1",
+        "timeZone": "Europe/London"
+      },
+      "status": {
+        "description": "QA",
+        "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+        "id": "10010",
+        "name": "QA",
+        "self": "https://acme.atlassian.net/rest/api/3/status/10010",
+        "statusCategory": {
+          "colorName": "yellow",
+          "id": 4,
+          "key": "indeterminate",
+          "name": "In Progress",
+          "self": "https://acme.atlassian.net/rest/api/3/statuscategory/4"
+        }
+      },
+      "summary": "[Renderer] A button can act on stale state while a save is in flight"
+    },
+    "fieldsToInclude": null,
+    "id": "10104",
+    "key": "ABC-4142",
+    "names": null,
+    "operations": null,
+    "properties": null,
+    "renderedFields": null,
+    "schema": null,
+    "self": "https://acme.atlassian.net/rest/api/3/issue/10104",
+    "transitions": null,
+    "versionedRepresentations": null
+  },
+  {
+    "changelog": null,
+    "editmeta": null,
+    "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+    "fields": {
+      "assignee": {
+        "accountId": "712020:0b1c2d3e-0000-4000-8000-00000000a5a2",
+        "accountType": "atlassian",
+        "active": true,
+        "avatarUrls": {
+          "16x16": "https://avatars.example.com/712020:0b1c2d3e-0000-4000-8000-00000000a5a2/16"
+        },
+        "displayName": "Sybil Shaw",
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=712020%3A0b1c2d3e-0000-4000-8000-00000000a5a2",
+        "timeZone": "Europe/London"
+      },
+      "status": {
+        "description": "QA",
+        "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+        "id": "10010",
+        "name": "QA",
+        "self": "https://acme.atlassian.net/rest/api/3/status/10010",
+        "statusCategory": {
+          "colorName": "yellow",
+          "id": 4,
+          "key": "indeterminate",
+          "name": "In Progress",
+          "self": "https://acme.atlassian.net/rest/api/3/statuscategory/4"
+        }
+      },
+      "summary": "Team menu forgets the team on refresh"
+    },
+    "fieldsToInclude": null,
+    "id": "10103",
+    "key": "ABC-4101",
+    "names": null,
+    "operations": null,
+    "properties": null,
+    "renderedFields": null,
+    "schema": null,
+    "self": "https://acme.atlassian.net/rest/api/3/issue/10103",
+    "transitions": null,
+    "versionedRepresentations": null
+  },
+  {
+    "changelog": null,
+    "editmeta": null,
+    "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+    "fields": {
+      "assignee": null,
+      "status": {
+        "description": "QA",
+        "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+        "id": "10010",
+        "name": "QA",
+        "self": "https://acme.atlassian.net/rest/api/3/status/10010",
+        "statusCategory": {
+          "colorName": "yellow",
+          "id": 4,
+          "key": "indeterminate",
+          "name": "In Progress",
+          "self": "https://acme.atlassian.net/rest/api/3/statuscategory/4"
+        }
+      },
+      "summary": "Invite emails show the code placeholder"
+    },
+    "fieldsToInclude": null,
+    "id": "10102",
+    "key": "ABC-3990",
+    "names": null,
+    "operations": null,
+    "properties": null,
+    "renderedFields": null,
+    "schema": null,
+    "self": "https://acme.atlassian.net/rest/api/3/issue/10102",
+    "transitions": null,
+    "versionedRepresentations": null
+  },
+  {
+    "changelog": null,
+    "editmeta": null,
+    "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+    "fields": {
+      "assignee": {
+        "accountId": "712020:0b1c2d3e-0000-4000-8000-00000000d4a1",
+        "accountType": "atlassian",
+        "active": true,
+        "avatarUrls": {
+          "16x16": "https://avatars.example.com/712020:0b1c2d3e-0000-4000-8000-00000000d4a1/16"
+        },
+        "displayName": "Ivan Irving",
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=712020%3A0b1c2d3e-0000-4000-8000-00000000d4a1",
+        "timeZone": "Europe/London"
+      },
+      "status": {
+        "description": "QA",
+        "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+        "id": "10010",
+        "name": "QA",
+        "self": "https://acme.atlassian.net/rest/api/3/status/10010",
+        "statusCategory": {
+          "colorName": "yellow",
+          "id": 4,
+          "key": "indeterminate",
+          "name": "In Progress",
+          "self": "https://acme.atlassian.net/rest/api/3/statuscategory/4"
+        }
+      },
+      "summary": "Audit log export times out on large teams"
+    },
+    "fieldsToInclude": null,
+    "id": "10101",
+    "key": "ABC-3801",
+    "names": null,
+    "operations": null,
+    "properties": null,
+    "renderedFields": null,
+    "schema": null,
+    "self": "https://acme.atlassian.net/rest/api/3/issue/10101",
+    "transitions": null,
+    "versionedRepresentations": null
+  },
+  {
+    "changelog": null,
+    "editmeta": null,
+    "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+    "fields": {
+      "assignee": {
+        "accountId": "712020:0b1c2d3e-0000-4000-8000-00000000a5a2",
+        "accountType": "atlassian",
+        "active": true,
+        "avatarUrls": {
+          "16x16": "https://avatars.example.com/712020:0b1c2d3e-0000-4000-8000-00000000a5a2/16"
+        },
+        "displayName": "Sybil Shaw",
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=712020%3A0b1c2d3e-0000-4000-8000-00000000a5a2",
+        "timeZone": "Europe/London"
+      },
+      "status": {
+        "description": "QA",
+        "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+        "id": "10010",
+        "name": "QA",
+        "self": "https://acme.atlassian.net/rest/api/3/status/10010",
+        "statusCategory": {
+          "colorName": "yellow",
+          "id": 4,
+          "key": "indeterminate",
+          "name": "In Progress",
+          "self": "https://acme.atlassian.net/rest/api/3/statuscategory/4"
+        }
+      },
+      "summary": "Backups list the wrong size"
+    },
+    "fieldsToInclude": null,
+    "id": "10100",
+    "key": "ABC-3500",
+    "names": null,
+    "operations": null,
+    "properties": null,
+    "renderedFields": null,
+    "schema": null,
+    "self": "https://acme.atlassian.net/rest/api/3/issue/10100",
+    "transitions": null,
+    "versionedRepresentations": null
+  }
+]

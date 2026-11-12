@@ -1,0 +1,720 @@
+{
+  "engine/state.json": {
+    "watches": {
+      "acme/web!30": {
+        "key": "acme/web!30",
+        "projectPath": "acme/web",
+        "iid": 30,
+        "webUrl": "https://gitlab.com/acme/web/-/merge_requests/30",
+        "auto": true,
+        "seen": {
+          "sha": "w30aw30a",
+          "pipeline": "SUCCESS",
+          "notes": 1,
+          "approvals": 0,
+          "unresolved": 1
+        },
+        "addedAt": "2026-11-10T10:01:20.000Z",
+        "reviewedAt": "2026-11-10T10:01:20.000Z",
+        "projectId": 1002,
+        "seenAt": 1794304880000,
+        "terminal": "claude:<uuid-1>",
+        "own": [
+          {
+            "at": 1794304880000,
+            "notes": 1,
+            "unresolved": 0,
+            "approvals": 0
+          },
+          {
+            "at": 1794304885000,
+            "notes": 1,
+            "unresolved": 0,
+            "approvals": 0
+          },
+          {
+            "at": 1794304890000,
+            "notes": 0,
+            "unresolved": 0,
+            "approvals": 1
+          },
+          {
+            "at": 1794304890000,
+            "notes": 1,
+            "unresolved": 0,
+            "approvals": 0
+          }
+        ]
+      }
+    },
+    "seen": {},
+    "verdicts": {
+      "acme/engine!7": {
+        "verdict": "changes",
+        "at": "2026-11-10T10:01:00.000Z",
+        "sha": "e7a1e7a1"
+      },
+      "acme/web!30": {
+        "verdict": "approved",
+        "at": "2026-11-10T10:01:30.000Z",
+        "sha": "w30aw30a"
+      }
+    },
+    "prefs": {},
+    "reviewHolds": {}
+  },
+  "engine/queue.json": [
+    {
+      "projectPath": "acme/engine",
+      "projectId": 1001,
+      "iid": 7,
+      "webUrl": "https://gitlab.com/acme/engine/-/merge_requests/7",
+      "createdAt": "2026-11-10T09:00:00.000Z",
+      "createdBy": "review",
+      "status": "posted",
+      "id": "golden-anchored",
+      "severity": "MAJOR",
+      "body": "The cache never expires, so a revoked token keeps working.",
+      "diffHunk": "@@ -10,4 +10,8 @@ export function lookup(id) {\n export function lookup(id) {\n   const key = keyOf(id);",
+      "position": {
+        "base_sha": "base7000",
+        "start_sha": "base7000",
+        "head_sha": "e7a1e7a1",
+        "new_path": "src/token.ts",
+        "new_line": 14
+      },
+      "postedAt": "2026-11-10T10:00:45.000Z",
+      "discussionId": "new1"
+    },
+    {
+      "projectPath": "acme/engine",
+      "projectId": 1001,
+      "iid": 7,
+      "webUrl": "https://gitlab.com/acme/engine/-/merge_requests/7",
+      "createdAt": "2026-11-10T09:00:00.000Z",
+      "createdBy": "review",
+      "status": "posted",
+      "id": "golden-reanchored",
+      "severity": "MINOR",
+      "body": "keyOf runs twice on every lookup.",
+      "diffHunk": "@@ -10,4 +10,8 @@ export function lookup(id) {\n export function lookup(id) {\n   const key = keyOf(id);",
+      "position": {
+        "base_sha": "base7000",
+        "start_sha": "base7000",
+        "head_sha": "e7a1e7a1",
+        "new_path": "src/token.ts",
+        "new_line": 11
+      },
+      "postedAt": "2026-11-10T10:00:55.000Z",
+      "discussionId": "new3"
+    },
+    {
+      "projectPath": "acme/engine",
+      "projectId": 1001,
+      "iid": 7,
+      "webUrl": "https://gitlab.com/acme/engine/-/merge_requests/7",
+      "createdAt": "2026-11-10T09:00:00.000Z",
+      "createdBy": "review",
+      "status": "posted",
+      "id": "golden-unanchored",
+      "severity": "NIT",
+      "body": "Name this lookupToken.",
+      "position": {
+        "base_sha": "base7000",
+        "start_sha": "base7000",
+        "head_sha": "e7a1e7a1",
+        "new_path": "src/token.ts",
+        "new_line": 40
+      },
+      "postedAt": "2026-11-10T10:00:55.000Z",
+      "discussionId": "new5"
+    },
+    {
+      "projectPath": "acme/engine",
+      "projectId": 1001,
+      "iid": 7,
+      "webUrl": "https://gitlab.com/acme/engine/-/merge_requests/7",
+      "createdAt": "2026-11-10T09:00:00.000Z",
+      "createdBy": "review",
+      "status": "posted",
+      "id": "golden-reply",
+      "severity": "MINOR",
+      "kind": "reply",
+      "replyTo": "d701",
+      "outcome": "fixed",
+      "body": "Thanks, the prefix case is covered now.",
+      "postedAt": "2026-11-10T10:00:55.000Z"
+    },
+    {
+      "projectPath": "acme/engine",
+      "projectId": 1001,
+      "iid": 7,
+      "webUrl": "https://gitlab.com/acme/engine/-/merge_requests/7",
+      "createdAt": "2026-11-10T09:00:00.000Z",
+      "createdBy": "review",
+      "status": "posted",
+      "id": "golden-verdict",
+      "severity": "MINOR",
+      "kind": "verdict",
+      "verdict": "approve",
+      "body": "Approve",
+      "postedAt": "2026-11-10T10:00:50.000Z"
+    },
+    {
+      "projectPath": "acme/web",
+      "projectId": 1002,
+      "iid": 30,
+      "webUrl": "https://gitlab.com/acme/web/-/merge_requests/30",
+      "createdAt": "2026-11-10T09:00:00.000Z",
+      "createdBy": "review",
+      "status": "pending",
+      "id": "golden-left",
+      "severity": "MINOR",
+      "body": "Pin the linter to an exact version.",
+      "diffHunk": "@@ -12,3 +12,3 @@\n   \"devDependencies\": {\n-    \"eslint\": \"^9.38.0\",\n+    \"eslint\": \"^9.39.1\",",
+      "position": {
+        "base_sha": "base3000",
+        "start_sha": "base3000",
+        "head_sha": "w30aw30a",
+        "new_path": "package.json",
+        "new_line": 13
+      }
+    },
+    {
+      "projectPath": "acme/web",
+      "projectId": 1002,
+      "iid": 30,
+      "webUrl": "https://gitlab.com/acme/web/-/merge_requests/30",
+      "severity": "QUESTION",
+      "body": "Does the new linter run on the generated files?",
+      "createdBy": "claude-panel",
+      "id": "<uuid-2>",
+      "createdAt": "2026-11-10T10:00:40.000Z",
+      "status": "posted",
+      "postedAt": "2026-11-10T10:01:05.000Z",
+      "discussionId": "new9"
+    }
+  ],
+  "engine/runs.json": {
+    "acme/web!30": {
+      "key": "acme/web!30",
+      "webUrl": "https://gitlab.com/acme/web/-/merge_requests/30",
+      "startedAt": "2026-11-10T10:01:20.000Z",
+      "status": "working",
+      "tail": [],
+      "terminal": "claude:<uuid-1>",
+      "worktreePath": "<root>/ws"
+    },
+    "fix:acme/engine!12": {
+      "key": "fix:acme/engine!12",
+      "webUrl": "https://gitlab.com/acme/engine/-/merge_requests/12",
+      "startedAt": "2026-11-10T10:02:05.000Z",
+      "status": "running",
+      "tail": [],
+      "sha": "e12ae12a",
+      "worktreePath": "<root>/ws/fix-engine-12",
+      "terminal": "claude:<uuid-3>"
+    },
+    "fix:acme/web!22": {
+      "key": "fix:acme/web!22",
+      "webUrl": "https://gitlab.com/acme/web/-/merge_requests/22",
+      "startedAt": "2026-11-10T10:02:10.000Z",
+      "status": "running",
+      "tail": [],
+      "sha": "w22aw22a",
+      "worktreePath": "<root>/ws/fix-web-22",
+      "terminal": "claude:<uuid-4>"
+    }
+  },
+  "engine/repos.json": {
+    "at": "2026-11-10T10:00:00.000Z",
+    "repos": [
+      {
+        "path": "acme/web",
+        "label": "Web",
+        "openCount": 3
+      },
+      {
+        "path": "acme/engine",
+        "label": "Engine",
+        "openCount": 2
+      },
+      {
+        "path": "acme/tools/cli",
+        "label": "Cli",
+        "openCount": 1
+      }
+    ]
+  },
+  "engine/auto.json": null,
+  "attention.json": {
+    "v": 1,
+    "items": {
+      "acme/web!30:findings:1591b3f358": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/web!30",
+        "kind": "findings",
+        "notifiedAt": 1794304800000,
+        "via": "seed"
+      },
+      "acme/web!21:mergeable:w21aw21a": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/web!21",
+        "kind": "mergeable",
+        "notifiedAt": 1794304800000,
+        "via": "seed",
+        "goneAt": 1794304935000
+      },
+      "acme/web!22:conflict:w22aw22a": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/web!22",
+        "kind": "conflict",
+        "notifiedAt": 1794304800000,
+        "via": "seed"
+      },
+      "acme/engine!7:findings:2abd8d5c30": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/engine!7",
+        "kind": "findings",
+        "notifiedAt": 1794304800000,
+        "via": "seed",
+        "goneAt": 1794304845000
+      },
+      "acme/engine!7:replied:d701@7012": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/engine!7",
+        "kind": "replied",
+        "notifiedAt": 1794304800000,
+        "via": "seed",
+        "goneAt": 1794304855000
+      },
+      "todo:9002": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/engine!7",
+        "kind": "todo",
+        "notifiedAt": 1794304800000,
+        "via": "seed"
+      },
+      "acme/engine!12:comments:d1201@12011": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/engine!12",
+        "kind": "comments",
+        "notifiedAt": 1794304800000,
+        "via": "seed",
+        "goneAt": 1794304925000
+      },
+      "acme/engine!12:red:e12ae12a:7012:1": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/engine!12",
+        "kind": "red",
+        "notifiedAt": 1794304800000,
+        "via": "seed"
+      },
+      "acme/tools/cli!3:changes:ivan:c3a0c3a0": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/tools/cli!3",
+        "kind": "changes",
+        "notifiedAt": 1794304800000,
+        "via": "seed",
+        "goneAt": 1794304940000
+      },
+      "acme/tools/cli!3:green:0": {
+        "firstSeenAt": 1794304800000,
+        "key": "acme/tools/cli!3",
+        "kind": "approvals",
+        "notifiedAt": 1794304800000,
+        "via": "seed",
+        "goneAt": 1794304965000
+      },
+      "acme/web!30:findings:a649562909": {
+        "firstSeenAt": 1794304840000,
+        "key": "acme/web!30",
+        "kind": "findings",
+        "notifiedAt": 1794304840000,
+        "via": "desktop",
+        "goneAt": 1794304865000
+      },
+      "acme/engine!7:findings:22f279000b": {
+        "firstSeenAt": 1794304845000,
+        "key": "acme/engine!7",
+        "kind": "findings",
+        "notifiedAt": 1794304845000,
+        "via": "repeat",
+        "goneAt": 1794304855000
+      },
+      "acme/web!30:rerequest:w30aw30a": {
+        "firstSeenAt": 1794304890000,
+        "key": "acme/web!30",
+        "kind": "rerequest",
+        "notifiedAt": 1794304890000,
+        "via": "desktop",
+        "goneAt": 1794304895000
+      },
+      "acme/engine!12:green:0": {
+        "firstSeenAt": 1794304910000,
+        "key": "acme/engine!12",
+        "kind": "approvals"
+      },
+      "acme/tools/cli!3:changes:ivan:c3a0beef": {
+        "firstSeenAt": 1794304940000,
+        "key": "acme/tools/cli!3",
+        "kind": "changes",
+        "goneAt": 1794304970000
+      },
+      "acme/tools/cli!3:merged": {
+        "firstSeenAt": 1794304970000,
+        "key": "acme/tools/cli!3",
+        "kind": "merged",
+        "notifiedAt": 1794304970000,
+        "via": "desktop"
+      }
+    },
+    "prints": {
+      "acme/web!30": [
+        "package.json|pin the linter to an exact version.",
+        "|does the new linter run on the generated files?"
+      ],
+      "acme/engine!7": [
+        "src/token.ts|the cache never expires, so a revoked token keeps working.",
+        "src/token.ts|keyof runs twice on every lookup.",
+        "src/token.ts|name this lookuptoken.",
+        "|thanks, the prefix case is covered now."
+      ]
+    },
+    "sent": [
+      1794304840000,
+      1794304890000,
+      1794304970000
+    ],
+    "lastByKind": {
+      "acme/web!30:findings": 1794304840000,
+      "acme/web!30:rerequest": 1794304890000,
+      "acme/tools/cli!3:merged": 1794304970000
+    },
+    "later": {},
+    "muted": {},
+    "last": {
+      "acme/web!30": {
+        "reviewState": "UNREVIEWED",
+        "autoMerge": false,
+        "sha": "w30bw30b",
+        "title": "Bump the linter",
+        "pipeline": "RUNNING",
+        "reds": 0
+      },
+      "acme/web!22": {
+        "reviewState": null,
+        "autoMerge": false,
+        "sha": "w22aw22a",
+        "title": "ABC-104 Move the settings page",
+        "pipeline": "SUCCESS",
+        "reds": 0
+      },
+      "acme/engine!7": {
+        "reviewState": "REQUESTED_CHANGES",
+        "autoMerge": false,
+        "sha": "e7a1e7a1",
+        "title": "ABC-101 Cache the token lookup",
+        "pipeline": "FAILED",
+        "reds": 1
+      },
+      "acme/engine!12": {
+        "reviewState": null,
+        "autoMerge": false,
+        "sha": "e12ae12a",
+        "title": "ABC-102 Retry the upload",
+        "pipeline": "FAILED",
+        "reds": 1
+      }
+    },
+    "gone": {
+      "acme/web!21": {
+        "at": 1794304935000,
+        "facts": {
+          "reviewState": null,
+          "autoMerge": false,
+          "sha": "w21aw21a",
+          "title": "ABC-103 Show the empty state",
+          "pipeline": "SUCCESS",
+          "reds": 0
+        }
+      },
+      "acme/tools/cli!3": {
+        "at": 1794304970000,
+        "facts": {
+          "reviewState": null,
+          "autoMerge": true,
+          "sha": "c3a0beef",
+          "title": "ABC-105 Add a dry run flag",
+          "pipeline": "RUNNING",
+          "reds": 0
+        },
+        "askedAt": 1794304970000,
+        "end": {
+          "state": "merged",
+          "mergedBy": "frank"
+        }
+      }
+    },
+    "prefs": {
+      "enabled": true,
+      "quiet": false,
+      "quietFrom": "22:00",
+      "quietTo": "07:00",
+      "weekends": false,
+      "clickable": false
+    },
+    "latest": {
+      "target": "needs-you",
+      "at": 1794304970000
+    },
+    "ranAt": 1794304970000,
+    "quietHeld": false,
+    "notReaching": null,
+    "overflow": false
+  },
+  "standup.json": {
+    "v": 1,
+    "days": {
+      "2026-11-09": {
+        "standup": {
+          "day": "2026-11-09",
+          "today": "2026-11-10",
+          "generatedAt": "2026-11-10T10:02:55.000Z",
+          "sections": [
+            {
+              "id": "yesterday",
+              "title": "Yesterday",
+              "day": "2026-11-09",
+              "groups": [
+                {
+                  "id": "merged",
+                  "title": "Merged",
+                  "lines": [
+                    {
+                      "id": "merged:acme/web!18",
+                      "tag": "ABC-106",
+                      "text": "Merged web !18: fix the login redirect",
+                      "ticked": true
+                    }
+                  ],
+                  "error": null,
+                  "note": null
+                },
+                {
+                  "id": "opened",
+                  "title": "Opened",
+                  "lines": [
+                    {
+                      "id": "opened:acme/engine!12",
+                      "tag": "ABC-102",
+                      "text": "Opened engine !12: retry the upload",
+                      "ticked": true
+                    }
+                  ],
+                  "error": null,
+                  "note": null
+                },
+                {
+                  "id": "moved",
+                  "title": "Tickets moved",
+                  "lines": [
+                    {
+                      "id": "moved:ABC-106",
+                      "tag": "ABC-106",
+                      "text": "Moved to QA: Fix the login redirect",
+                      "ticked": true
+                    }
+                  ],
+                  "error": null,
+                  "note": null
+                },
+                {
+                  "id": "meetings",
+                  "title": "Meetings",
+                  "lines": [],
+                  "error": null,
+                  "note": "Add your calendar's secret iCal address in Settings, under Standup, to list your meetings."
+                },
+                {
+                  "id": "reviews",
+                  "title": "Reviews",
+                  "lines": [
+                    {
+                      "id": "review:acme/engine!7",
+                      "tag": "Review - ABC-101",
+                      "text": "engine !7, 1 comment: cache the token lookup",
+                      "ticked": true
+                    },
+                    {
+                      "id": "review:acme/web!30",
+                      "tag": "Review - NoTicket",
+                      "text": "web !30, approved: bump the linter",
+                      "ticked": true
+                    }
+                  ],
+                  "error": null,
+                  "note": null
+                }
+              ]
+            },
+            {
+              "id": "today",
+              "title": "Today",
+              "day": "2026-11-10",
+              "groups": [
+                {
+                  "id": "open",
+                  "title": "Open MRs",
+                  "lines": [
+                    {
+                      "id": "open:acme/engine!12",
+                      "tag": "ABC-102",
+                      "text": "Chase review on engine !12 (awaiting review)",
+                      "ticked": true
+                    },
+                    {
+                      "id": "open:acme/web!22",
+                      "tag": "ABC-104",
+                      "text": "Fix conflicts on web !22 (conflict)",
+                      "ticked": true
+                    }
+                  ],
+                  "error": null,
+                  "note": null
+                },
+                {
+                  "id": "progress",
+                  "title": "Tickets in progress",
+                  "lines": [],
+                  "error": null,
+                  "note": null
+                },
+                {
+                  "id": "today-meetings",
+                  "title": "Meetings",
+                  "lines": [],
+                  "error": null,
+                  "note": "Add your calendar's secret iCal address in Settings, under Standup, to list your meetings."
+                }
+              ]
+            }
+          ]
+        },
+        "ticks": {},
+        "tags": {}
+      }
+    }
+  },
+  "qa.json": {
+    "v": 1,
+    "board": {
+      "generatedAt": "2026-11-10T10:00:00.000Z",
+      "jql": "project = ABC AND status = QA",
+      "status": "QA",
+      "group": "acme",
+      "windowDays": 60,
+      "buckets": [
+        {
+          "id": "today",
+          "label": "Today",
+          "upTo": 1
+        },
+        {
+          "id": "days-2-3",
+          "label": "2 to 3 days",
+          "upTo": 3
+        },
+        {
+          "id": "days-4-7",
+          "label": "4 to 7 days",
+          "upTo": 7
+        },
+        {
+          "id": "weeks-1-2",
+          "label": "1 to 2 weeks",
+          "upTo": 14
+        },
+        {
+          "id": "weeks-2-plus",
+          "label": "Over 2 weeks",
+          "upTo": null
+        }
+      ],
+      "tickets": [
+        {
+          "key": "ABC-111",
+          "summary": "Rotate the signing key",
+          "assignee": null,
+          "url": "https://acme.atlassian.net/browse/ABC-111",
+          "days": {
+            "from": 8,
+            "to": 8
+          },
+          "bucket": "weeks-1-2",
+          "mrs": []
+        },
+        {
+          "key": "ABC-110",
+          "summary": "Export the audit log",
+          "assignee": "Ivan",
+          "url": "https://acme.atlassian.net/browse/ABC-110",
+          "days": {
+            "from": 3,
+            "to": 3
+          },
+          "bucket": "days-2-3",
+          "mrs": [
+            {
+              "project": "acme/engine",
+              "iid": 5,
+              "url": "https://gitlab.com/acme/engine/-/merge_requests/5",
+              "title": "ABC-110 Export the audit log",
+              "mergedAt": "2026-11-06T10:00:00Z",
+              "author": "Ivan",
+              "additions": 12,
+              "deletions": 3,
+              "keys": [
+                "ABC-110"
+              ]
+            }
+          ]
+        }
+      ],
+      "merged": {
+        "group": "acme",
+        "windowDays": 60,
+        "fullAt": "2026-11-10T10:00:00.000Z",
+        "through": "2026-11-10T10:00:00.000Z",
+        "mrs": [
+          {
+            "project": "acme/web",
+            "iid": 18,
+            "url": "https://gitlab.com/acme/web/-/merge_requests/18",
+            "title": "ABC-106 Fix the login redirect",
+            "mergedAt": "2026-11-09T14:00:00Z",
+            "author": "Frank",
+            "additions": 12,
+            "deletions": 3,
+            "keys": [
+              "ABC-106"
+            ]
+          },
+          {
+            "project": "acme/engine",
+            "iid": 5,
+            "url": "https://gitlab.com/acme/engine/-/merge_requests/5",
+            "title": "ABC-110 Export the audit log",
+            "mergedAt": "2026-11-06T10:00:00Z",
+            "author": "Ivan",
+            "additions": 12,
+            "deletions": 3,
+            "keys": [
+              "ABC-110"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+button.ticket-ref { display: inline-flex; align-items: center; gap: 6px; padding: 1px 8px; border-radius: 999px; font: 600 12px/1.5 var(--mono); color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+button.ticket-ref:hover { border-color: var(--accent); background: var(--accent-soft); }
+.ticket-status { font: 600 11px/1.5 var(--font); color: var(--muted); }
+.ticket-group h2 { flex-wrap: wrap; }
+.ticket-group h2 .meta { font-weight: 500; text-transform: none; letter-spacing: 0; white-space: nowrap; }
+.ticket-row .ref { font-weight: 600; }
+.ticket-mrs { margin-top: 6px; }
+.ticket-mrs .ref { font-size: 12.5px; }
+.ticket-actions { display: grid; gap: 10px; }
+.ticket-actions select { max-width: min(260px, 100%); }
+.ticket-desc { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }

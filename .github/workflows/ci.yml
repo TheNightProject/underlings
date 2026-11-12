@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            engine/package-lock.json
+            desktop/package-lock.json
+
+      - name: Install
+        run: npm run setup
+
+      - name: Build
+        run: npm run build
+
+      - name: Type check the engine
+        run: npm --prefix engine run typecheck
+
+      # A skipped test, full auto's included, fails the job, so nothing passes by not running.
+      - name: Test
+        shell: bash
+        run: |
+          npm test 2>&1 | tee test.log
+          if grep -E '^# skipped [1-9]' test.log; then
+            echo "::error::a test was skipped, and CI skips none"
+            exit 1
+          fi
+
+      - name: Golden baselines
+        run: npm run test:golden

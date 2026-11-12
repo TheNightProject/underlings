@@ -1,0 +1,31 @@
+.standup-day { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.standup-day input[type=date] { font: inherit; font-size: 13px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--fg); color-scheme: inherit; }
+.standup-section { gap: 14px; }
+.standup-section > h2 .meta { font-family: var(--font); font-weight: 500; text-transform: none; letter-spacing: 0; }
+.standup-group { display: grid; gap: 6px; min-width: 0; }
+.standup-group + .standup-group { padding-top: 12px; border-top: 1px solid var(--line); }
+.standup-group-head { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+.standup-group-head input[type=checkbox] { margin: 0; }
+.standup-group-title { font-weight: 650; }
+.standup-group .hint { margin: 0 0 0 25px; font-size: 12.5px; color: var(--muted); }
+.standup-group .hint.bad { color: var(--need); }
+.standup-group .hint .fix-link { display: inline-flex; align-items: center; gap: 4px; }
+.standup-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.standup-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 5px 8px; margin-left: 17px; border-radius: 8px; border: 1px solid transparent; min-width: 0; }
+.standup-line:hover { background: var(--raised); }
+.standup-line > label { flex: 1 1 320px; display: flex; align-items: flex-start; gap: 9px; cursor: pointer; min-width: 0; font-size: 13.5px; }
+.standup-line input[type=checkbox] { flex: none; margin: 3px 0 0; }
+.standup-body { min-width: 0; overflow-wrap: anywhere; }
+.standup-tag { font-weight: 650; color: var(--accent); }
+.standup-line.off .standup-tag, .standup-line.off .standup-text { color: var(--faint); }
+.standup-line.unknown { background: var(--working-bg); border-color: var(--working); }
+.standup-line.unknown .standup-tag { color: var(--working); }
+.standup-fix { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.standup-fix input { font: 12.5px/1.4 var(--mono); width: 11ch; padding: 4px 8px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--fg); text-transform: uppercase; }
+.standup-preview summary { font-weight: 600; }
+.standup-preview pre { max-height: none; }
+@media (max-width: 780px) {
+  .standup-line { margin-left: 0; padding-left: 4px; padding-right: 4px; }
+  .standup-group .hint { margin-left: 0; }
+  .standup-line > label { flex-basis: 100%; }
+}

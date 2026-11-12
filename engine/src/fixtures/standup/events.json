@@ -1,0 +1,1102 @@
+[
+ {
+  "id": 4012300031,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900031,
+  "target_iid": 7700031,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-08T23:30:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700031,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-08T23:30:00.000Z",
+   "updated_at": "2026-11-08T23:30:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300030,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900030,
+  "target_iid": 7700030,
+  "target_type": "DiffNote",
+  "author_id": 2199,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T14:00:00.000Z",
+  "author": {
+   "id": 2199,
+   "username": "project_101_bot_3f1c",
+   "name": "review-bot",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "project_101_bot_3f1c",
+  "note": {
+   "id": 7700030,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2199,
+    "username": "project_101_bot_3f1c",
+    "name": "review-bot",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T14:00:00.000Z",
+   "updated_at": "2026-11-09T14:00:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300029,
+  "project_id": 105,
+  "action_name": "commented on",
+  "target_id": 900029,
+  "target_iid": 7700029,
+  "target_type": "Issue",
+  "author_id": 2101,
+  "target_title": "Team menu closes on refresh",
+  "created_at": "2026-11-09T12:00:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700029,
+   "type": null,
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T12:00:00.000Z",
+   "updated_at": "2026-11-09T12:00:00.000Z",
+   "system": false,
+   "noteable_id": 10500077,
+   "noteable_type": "Issue",
+   "noteable_iid": 77,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300028,
+  "project_id": 108,
+  "action_name": "commented on",
+  "target_id": 900028,
+  "target_iid": 7700028,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "🐛 Keep the lease when a job is slow",
+  "created_at": "2026-11-09T18:13:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700028,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T18:13:00.000Z",
+   "updated_at": "2026-11-09T18:13:00.000Z",
+   "system": false,
+   "noteable_id": 10800088,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 88,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300027,
+  "project_id": 108,
+  "action_name": "commented on",
+  "target_id": 900027,
+  "target_iid": 7700027,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "🐛 Keep the lease when a job is slow",
+  "created_at": "2026-11-09T18:12:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700027,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T18:12:00.000Z",
+   "updated_at": "2026-11-09T18:12:00.000Z",
+   "system": false,
+   "noteable_id": 10800088,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 88,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300026,
+  "project_id": 108,
+  "action_name": "commented on",
+  "target_id": 900026,
+  "target_iid": 7700026,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "🐛 Keep the lease when a job is slow",
+  "created_at": "2026-11-09T18:11:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700026,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T18:11:00.000Z",
+   "updated_at": "2026-11-09T18:11:00.000Z",
+   "system": false,
+   "noteable_id": 10800088,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 88,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300025,
+  "project_id": 108,
+  "action_name": "commented on",
+  "target_id": 900025,
+  "target_iid": 7700025,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "🐛 Keep the lease when a job is slow",
+  "created_at": "2026-11-09T18:10:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700025,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T18:10:00.000Z",
+   "updated_at": "2026-11-09T18:10:00.000Z",
+   "system": false,
+   "noteable_id": 10800088,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 88,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300024,
+  "project_id": 101,
+  "action_name": "commented on",
+  "target_id": 900024,
+  "target_iid": 7700024,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "🔒 (ABC-1234) Require the billing:write scope on the invoice routes",
+  "created_at": "2026-11-09T09:12:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700024,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T09:12:00.000Z",
+   "updated_at": "2026-11-09T09:12:00.000Z",
+   "system": false,
+   "noteable_id": 10100895,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 895,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300023,
+  "project_id": 101,
+  "action_name": "commented on",
+  "target_id": 900023,
+  "target_iid": 7700023,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "🔒 (ABC-1234) Require the billing:write scope on the invoice routes",
+  "created_at": "2026-11-09T09:11:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700023,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T09:11:00.000Z",
+   "updated_at": "2026-11-09T09:11:00.000Z",
+   "system": false,
+   "noteable_id": 10100895,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 895,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300022,
+  "project_id": 101,
+  "action_name": "commented on",
+  "target_id": 900022,
+  "target_iid": 7700022,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "🔒 (ABC-1234) Require the billing:write scope on the invoice routes",
+  "created_at": "2026-11-09T09:10:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700022,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T09:10:00.000Z",
+   "updated_at": "2026-11-09T09:10:00.000Z",
+   "system": false,
+   "noteable_id": 10100895,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 895,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300021,
+  "project_id": 106,
+  "action_name": "approved",
+  "target_id": 900021,
+  "target_iid": 212,
+  "target_type": "MergeRequest",
+  "author_id": 2101,
+  "target_title": "⬆️ (ABC-4410) Bump http-kit to 0.11.7",
+  "created_at": "2026-11-09T17:20:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster"
+ },
+ {
+  "id": 4012300020,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900020,
+  "target_iid": 7700020,
+  "target_type": "DiscussionNote",
+  "author_id": 2101,
+  "target_title": "📈 (ABC-4389) Count deliveries per subscriber",
+  "created_at": "2026-11-09T17:05:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700020,
+   "type": null,
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T17:05:00.000Z",
+   "updated_at": "2026-11-09T17:05:00.000Z",
+   "system": false,
+   "noteable_id": 10301180,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1180,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300019,
+  "project_id": 105,
+  "action_name": "commented on",
+  "target_id": 900019,
+  "target_iid": 7700019,
+  "target_type": "Note",
+  "author_id": 2101,
+  "target_title": "🐛 (ABC-4401) Keep the team menu open on refresh",
+  "created_at": "2026-11-09T16:31:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700019,
+   "type": null,
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T16:31:00.000Z",
+   "updated_at": "2026-11-09T16:31:00.000Z",
+   "system": false,
+   "noteable_id": 10501702,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1702,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300018,
+  "project_id": 105,
+  "action_name": "commented on",
+  "target_id": 900018,
+  "target_iid": 7700018,
+  "target_type": "Note",
+  "author_id": 2101,
+  "target_title": "🐛 (ABC-4401) Keep the team menu open on refresh",
+  "created_at": "2026-11-09T16:30:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700018,
+   "type": null,
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T16:30:00.000Z",
+   "updated_at": "2026-11-09T16:30:00.000Z",
+   "system": false,
+   "noteable_id": 10501702,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1702,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300017,
+  "project_id": 104,
+  "action_name": "approved",
+  "target_id": 900017,
+  "target_iid": 2,
+  "target_type": "MergeRequest",
+  "author_id": 2101,
+  "target_title": "👷 Use shared CI components",
+  "created_at": "2026-11-09T15:31:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster"
+ },
+ {
+  "id": 4012300016,
+  "project_id": 104,
+  "action_name": "commented on",
+  "target_id": 900016,
+  "target_iid": 7700016,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "👷 Use shared CI components",
+  "created_at": "2026-11-09T15:24:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700016,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T15:24:00.000Z",
+   "updated_at": "2026-11-09T15:24:00.000Z",
+   "system": false,
+   "noteable_id": 10400002,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 2,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300015,
+  "project_id": 104,
+  "action_name": "commented on",
+  "target_id": 900015,
+  "target_iid": 7700015,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "👷 Use shared CI components",
+  "created_at": "2026-11-09T15:23:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700015,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T15:23:00.000Z",
+   "updated_at": "2026-11-09T15:23:00.000Z",
+   "system": false,
+   "noteable_id": 10400002,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 2,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300014,
+  "project_id": 104,
+  "action_name": "commented on",
+  "target_id": 900014,
+  "target_iid": 7700014,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "👷 Use shared CI components",
+  "created_at": "2026-11-09T15:22:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700014,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T15:22:00.000Z",
+   "updated_at": "2026-11-09T15:22:00.000Z",
+   "system": false,
+   "noteable_id": 10400002,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 2,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300013,
+  "project_id": 104,
+  "action_name": "commented on",
+  "target_id": 900013,
+  "target_iid": 7700013,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "👷 Use shared CI components",
+  "created_at": "2026-11-09T15:21:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700013,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T15:21:00.000Z",
+   "updated_at": "2026-11-09T15:21:00.000Z",
+   "system": false,
+   "noteable_id": 10400002,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 2,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300012,
+  "project_id": 104,
+  "action_name": "commented on",
+  "target_id": 900012,
+  "target_iid": 7700012,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "👷 Use shared CI components",
+  "created_at": "2026-11-09T15:20:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700012,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T15:20:00.000Z",
+   "updated_at": "2026-11-09T15:20:00.000Z",
+   "system": false,
+   "noteable_id": 10400002,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 2,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300011,
+  "project_id": 103,
+  "action_name": "approved",
+  "target_id": 900011,
+  "target_iid": 1177,
+  "target_type": "MergeRequest",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T13:40:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster"
+ },
+ {
+  "id": 4012300010,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900010,
+  "target_iid": 7700010,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T13:15:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700010,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T13:15:00.000Z",
+   "updated_at": "2026-11-09T13:15:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300009,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900009,
+  "target_iid": 7700009,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T13:14:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700009,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T13:14:00.000Z",
+   "updated_at": "2026-11-09T13:14:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300008,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900008,
+  "target_iid": 7700008,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T13:13:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700008,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T13:13:00.000Z",
+   "updated_at": "2026-11-09T13:13:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300007,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900007,
+  "target_iid": 7700007,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T13:12:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700007,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T13:12:00.000Z",
+   "updated_at": "2026-11-09T13:12:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300006,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900006,
+  "target_iid": 7700006,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T13:11:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700006,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T13:11:00.000Z",
+   "updated_at": "2026-11-09T13:11:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300005,
+  "project_id": 103,
+  "action_name": "commented on",
+  "target_id": 900005,
+  "target_iid": 7700005,
+  "target_type": "DiffNote",
+  "author_id": 2101,
+  "target_title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "created_at": "2026-11-09T13:10:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster",
+  "note": {
+   "id": 7700005,
+   "type": "DiffNote",
+   "body": "A reply.",
+   "attachment": null,
+   "author": {
+    "id": 2101,
+    "username": "frank.foster",
+    "name": "Frank Foster",
+    "state": "active"
+   },
+   "created_at": "2026-11-09T13:10:00.000Z",
+   "updated_at": "2026-11-09T13:10:00.000Z",
+   "system": false,
+   "noteable_id": 10301177,
+   "noteable_type": "MergeRequest",
+   "noteable_iid": 1177,
+   "resolvable": true,
+   "confidential": false
+  }
+ },
+ {
+  "id": 4012300004,
+  "project_id": 107,
+  "action_name": "opened",
+  "target_id": 900004,
+  "target_iid": 30,
+  "target_type": "MergeRequest",
+  "author_id": 2101,
+  "target_title": "✨ Add the digest page",
+  "created_at": "2026-11-09T16:02:00.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster"
+ },
+ {
+  "id": 4012300003,
+  "project_id": 102,
+  "action_name": "opened",
+  "target_id": 900003,
+  "target_iid": 45,
+  "target_type": "MergeRequest",
+  "author_id": 2101,
+  "target_title": "✨ (ABC-4262) Show job logs in the Jobs pane",
+  "created_at": "2026-11-09T11:05:10.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster"
+ },
+ {
+  "id": 4012300002,
+  "project_id": 101,
+  "action_name": "pushed to",
+  "target_id": 900002,
+  "target_iid": 7700002,
+  "target_type": null,
+  "author_id": 2101,
+  "target_title": null,
+  "created_at": "2026-11-09T09:50:02.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster"
+ },
+ {
+  "id": 4012300001,
+  "project_id": 101,
+  "action_name": "accepted",
+  "target_id": 900001,
+  "target_iid": 895,
+  "target_type": "MergeRequest",
+  "author_id": 2101,
+  "target_title": "🔒 (ABC-1234) Require the billing:write scope on the invoice routes",
+  "created_at": "2026-11-09T10:12:31.000Z",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "imported": false,
+  "imported_from": "none",
+  "author_username": "frank.foster"
+ }
+]

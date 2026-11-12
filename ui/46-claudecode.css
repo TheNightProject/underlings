@@ -1,0 +1,30 @@
+:root {
+  --term-link: #f2c14e;
+  --term-bg: var(--panel); --term-fg: var(--fg); --term-cursor: var(--accent); --term-selection: rgba(122, 156, 255, 0.3);
+  --term-black: #1a202b; --term-red: var(--need); --term-green: var(--done); --term-yellow: var(--working); --term-blue: var(--accent); --term-magenta: var(--moved); --term-cyan: var(--info); --term-white: #c9d1dc;
+  --term-bright-black: var(--faint); --term-bright-red: #ff9a8a; --term-bright-green: #7fe0aa; --term-bright-yellow: #f6c877; --term-bright-blue: #a9c0ff; --term-bright-magenta: #d7adff; --term-bright-cyan: #7fe0e2; --term-bright-white: #ffffff;
+}
+@media (prefers-color-scheme: light) {
+  :root { --term-link: #8a5a00; --term-selection: rgba(59, 99, 224, 0.22); --term-black: #121722; --term-white: #6b7383; --term-bright-black: #5a6476; --term-bright-red: #a8301e; --term-bright-green: #186a3c;
+    --term-bright-yellow: #8a5306; --term-bright-blue: #2f55d0; --term-bright-magenta: #6a32b0; --term-bright-cyan: #0a6a6d; --term-bright-white: #121722; }
+}
+
+body.terminal-window .app { display: none; }
+.tw { position: fixed; inset: 0; display: grid; grid-template: auto minmax(0, 1fr) / minmax(0, 1fr); background: var(--term-bg); }
+.tw-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 8px 6px 12px; border-bottom: 1px solid var(--line); background: var(--raised); }
+.tw-title { display: flex; align-items: center; gap: 8px; min-width: 0; font: 650 14px/1.2 var(--display); }
+.tw-tools { display: flex; align-items: center; gap: 4px; flex: none; }
+.tw-screen { min-height: 0; min-width: 0; overflow: hidden; padding: 8px 4px 4px 12px; }
+.tw-screen .xterm { height: 100%; }
+.tw-note { margin: 4px 0; color: var(--muted); }
+
+.cp-term { display: none; min-height: 0; padding: 6px 4px 4px 10px; background: var(--term-bg); }
+.cpanel.terminal { grid-template-rows: auto minmax(0, 1fr); }
+.cpanel.terminal .cp-history, .cpanel.terminal .cp-body, .cpanel.terminal .cp-foot { display: none; }
+.cpanel.terminal .cp-term { display: block; grid-row: 2; overflow: hidden; }
+.cp-term .xterm { height: 100%; }
+
+.term-tip { position: absolute; z-index: 20; pointer-events: none; max-width: min(380px, calc(100% - 8px)); padding: 5px 9px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--raised); color: var(--fg); font: 12px/1.4 var(--font); box-shadow: var(--shadow); }
+.term-tip-hint { display: block; color: var(--muted); font-size: 11px; }
+.term-ref { pointer-events: none; box-shadow: inset 0 -1px 0 var(--term-link); }
+.term-ref-asks::after { content: ''; position: absolute; top: 0; right: -3px; width: 5px; height: 5px; border-radius: 50%; background: var(--need); }

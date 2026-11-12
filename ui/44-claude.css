@@ -1,0 +1,57 @@
+.ask-claude { margin-top: -14px; }
+.ask-claude[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); background: var(--accent-soft); }
+.cp-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.cp-dot.busy { background: var(--working); box-shadow: 0 0 0 3px var(--working-bg); }
+.cp-dot.hot { background: var(--need); box-shadow: 0 0 0 3px var(--need-bg); }
+.cp-dot[hidden] { display: none; }
+
+.cpanel { container-type: size; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; min-width: 0; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 14px; box-shadow: var(--menu-shadow); overflow: hidden; outline: none; }
+.cp-head { grid-row: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--line); background: var(--raised); cursor: grab; touch-action: none; }
+.cpanel.moving .cp-head { cursor: grabbing; }
+.cp-title { display: flex; align-items: center; gap: 8px; min-width: 0; font: 650 14px/1.2 var(--display); }
+.cp-title .pill { font: 600 11px/1.4 var(--font); }
+.cp-badge { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; flex: none; background: var(--accent-soft); color: var(--accent); }
+.cp-badge svg.i { width: 15px; height: 15px; }
+.cp-tools { display: flex; align-items: center; gap: 4px; flex: none; }
+.cp-tools button.icon-only { padding: 5px; }
+
+.cp-history { grid-row: 2; max-height: 40cqh; overflow: auto; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.cp-history[hidden] { display: none; }
+.cp-history h3 { margin: 0 0 6px; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); font-weight: 650; }
+.cp-history ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.cp-old { width: 100%; display: grid; gap: 1px; justify-items: start; text-align: left; border-color: transparent; background: transparent; }
+.cp-old:hover { background: var(--hover); border-color: transparent; }
+.cp-old-title { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--fg); }
+
+.cp-body { grid-row: 3; display: flex; flex-direction: column-reverse; min-height: 0; overflow: auto; padding: 14px; background: var(--panel); color: var(--fg); font-size: 13px; line-height: 1.5; outline: none; }
+.cp-body .log { display: grid; gap: 10px; min-width: 0; }
+.cp-body .log > * { min-width: 0; overflow-wrap: anywhere; }
+.cp-body .you { justify-self: end; max-width: 86%; padding: 8px 11px; border-radius: 12px 12px 4px 12px; background: var(--accent-soft); color: var(--fg); white-space: pre-wrap; }
+.cp-body .you .who { display: none; }
+.cp-body .you.sending { opacity: 0.6; }
+.cp-body .said .md { font-size: 13px; }
+.cp-body .call, .cp-body .note, .cp-body .calls { color: var(--muted); }
+.cp-empty { display: grid; gap: 8px; color: var(--muted); }
+.cp-empty p { margin: 0; }
+.cp-empty b { color: var(--fg); }
+
+.cp-foot { grid-row: 4; display: grid; gap: 8px; padding: 10px 12px 12px; border-top: 1px solid var(--line); background: var(--raised); min-width: 0; }
+.cp-ask:empty { display: none; }
+.cp-ask { max-height: 55cqh; overflow: auto; border-radius: 8px; }
+.cp-ask .ask-input pre { max-height: 18cqh; }
+.cp-error { color: var(--need); font-size: 12.5px; overflow-wrap: anywhere; }
+.cp-error[hidden] { display: none; }
+.cp-compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.cp-compose textarea { width: 100%; min-height: 40px; max-height: 180px; resize: none; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--fg); font: 13.5px/1.45 var(--font); }
+.cp-compose textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.cp-compose textarea:disabled { opacity: 0.6; }
+.cp-send { display: flex; gap: 6px; }
+.cp-send button { height: 40px; }
+
+
+@media (max-width: 640px) {
+  .cpanel { height: min(80vh, 680px) !important; border-radius: 14px 14px 0 0; border-width: 1px 0 0; }
+  .cp-head { cursor: default; }
+  .ask-claude { margin-top: 0; flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .chat .said.streaming .md > :last-child::after { animation: none; } }

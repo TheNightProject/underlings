@@ -1,0 +1,60 @@
+{
+  "name": "underlings-desktop",
+  "productName": "Underlings",
+  "version": "1.2.0",
+  "private": true,
+  "license": "MIT",
+  "author": "TheNightProject",
+  "repository": { "type": "git", "url": "https://github.com/TheNightProject/underlings", "directory": "desktop" },
+  "description": "Underlings as a macOS app of its own.",
+  "main": "main.mjs",
+  "scripts": {
+    "postinstall": "electron-builder install-app-deps",
+    "start": "electron .",
+    "dist": "npm --prefix .. run build && npm run pack",
+    "pack": "electron-builder --mac dir --arm64 && node ../scripts/legacy-bundle.mjs",
+    "install-app": "npm run dist && ditto dist.noindex/mac-arm64/Underlings.app /Applications/Underlings.app"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/addon-serialize": "0.14.0",
+    "@xterm/addon-web-links": "0.12.0",
+    "@xterm/headless": "6.0.0",
+    "@xterm/xterm": "6.0.0",
+    "node-pty": "1.1.0"
+  },
+  "devDependencies": {
+    "electron": "44.9.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "com.thenightproject.underlings",
+    "productName": "Underlings",
+    "directories": { "output": "dist.noindex" },
+    "asar": false,
+    "buildDependenciesFromSource": true,
+    "files": [
+      "main.mjs", "host.mjs", "relocate.mjs", "bounds.mjs", "overlay.mjs", "terminal.mjs", "terminal-preload.cjs", "viewer.mjs", "viewer.html", "viewer.js", "viewer-preload.cjs", "assets/**",
+      "!node_modules/node-addon-api${/*}", "!node_modules/node-pty/{binding.gyp,bin,deps,node-addon-api,src,scripts,third_party,typings,prebuilds}${/*}",
+      "!node_modules/node-pty/build/{Makefile,config.gypi,gyp-mac-tool,*.mk,Release/.deps,Release/obj.target,Release/node-addon-api,Release/.forge-meta}${/*}",
+      "!node_modules/node-pty/lib/**/*.{map,test.js}", "!node_modules/@xterm/*/{src,typings}${/*}", "!node_modules/@xterm/*/lib/*.{map,mjs}", "!node_modules/@xterm/headless/lib-headless/*.{map,mjs}"
+    ],
+    "extraResources": [
+      {
+        "from": "..",
+        "to": "worker",
+        "filter": ["worker.mjs", "dashboard.html", "build.json", "CHANGELOG.md", "lib/*.mjs", "ui/*.js", "ui/*.css", "!**/*.test.mjs", "!lib/testkit.mjs", "!lib/workerproc.mjs"]
+      },
+      { "from": "../engine/dist", "to": "worker/engine/dist", "filter": ["*.js", "!cli.js"] },
+      { "from": "../lib", "to": "lib", "filter": ["product.mjs", "home.mjs", "apphelper.mjs"] },
+      { "from": "engine.package.json", "to": "worker/engine/package.json" },
+      { "from": "../THIRD_PARTY_NOTICES", "to": "THIRD_PARTY_NOTICES" }
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "icon": "assets/icon.icns"
+    }
+  }
+}

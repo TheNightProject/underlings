@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{APP_NAME}}</title>
+<meta name="application-name" content="{{APP_NAME}}">
+<meta name="app-folder" content="{{FOLDER}}">
+<link rel="icon" id="favicon" data-state="plain" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='4' width='26' height='24' rx='6' fill='%234f6bed'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="app">
+  <nav class="rail" aria-label="{{APP_NAME}}">
+    <div class="brand"><span class="logo"><svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="logo-ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8aa8ff"/><stop offset="1" stop-color="#5f86ff"/></linearGradient></defs><circle cx="50" cy="50" r="32.5" fill="none" stroke="#fff" stroke-opacity="0.1" stroke-width="7"/><path d="M27.02 72.98A32.5 32.5 0 1 1 72.98 72.98" fill="none" stroke="url(#logo-ring)" stroke-width="7" stroke-linecap="round"/><path d="M40.3 35.4V64.6M40.3 35.4Q40.3 50 59.7 50" fill="none" stroke="#ecf0f7" stroke-width="4.2" stroke-linecap="round"/><g fill="#1a202b" stroke="#ecf0f7" stroke-width="4.2"><circle cx="40.3" cy="35.4" r="5"/><circle cx="40.3" cy="64.6" r="5"/><circle cx="59.7" cy="50" r="5"/></g></svg></span><span><b>{{APP_NAME}}</b><small>{{TAGLINE}}</small></span></div>
+    <div class="navgroup">
+      <h2>You</h2>
+      <a class="navlink game-link" href="#game"><span data-icon="gamepad"></span><span class="label">Game</span><span class="game-pill" id="game-pill" hidden></span><span class="game-rail-xp" hidden></span></a>
+    </div>
+    <div class="navgroup">
+      <h2>Now</h2>
+      <a class="navlink" href="#overview"><span data-icon="dashboard"></span><span class="label">Overview</span></a>
+      <a class="navlink" href="#needs-you"><span data-icon="bell"></span><span class="label">Needs you</span><span class="count" data-count="needs"></span></a>
+    </div>
+    <div class="navgroup">
+      <h2>Work</h2>
+      <a class="navlink" href="#tickets"><span data-icon="ticket"></span><span class="label">Tickets</span></a>
+      <a class="navlink" href="#standup"><span data-icon="clipboard"></span><span class="label">Standup</span></a>
+      <a class="navlink" href="#calendar"><span data-icon="calendar"></span><span class="label">Calendar</span><span class="count" data-count="calendar"></span></a>
+      <a class="navlink" href="#email"><span data-icon="mail"></span><span class="label">Email</span><span class="count" data-count="email"></span></a>
+      <a class="navlink" href="#slack"><span data-icon="hash"></span><span class="label">Slack</span><span class="count" data-count="slack"></span></a>
+    </div>
+    <div class="navgroup">
+      <h2>Team</h2>
+      <a class="navlink" href="#qa"><span data-icon="flask"></span><span class="label">QA</span></a>
+    </div>
+    <div class="navgroup">
+      <h2>Agents</h2>
+      <a class="navlink" href="#agents"><span data-icon="bot"></span><span class="label">Agents</span><span class="count" data-count="working"></span></a>
+      <a class="navlink" href="#artifacts"><span data-icon="sparkles"></span><span class="label">Artifacts</span><span class="count" data-count="artifacts"></span></a>
+    </div>
+    <div class="navgroup">
+      <h2>Reviews</h2>
+      <a class="navlink" href="#merge-requests"><span data-icon="merge"></span><span class="label">Merge requests</span><span class="count" data-count="reviewing"></span></a>
+      <a class="navlink" href="#review-queue"><span data-icon="inbox"></span><span class="label">Review queue</span><span class="count" data-count="pending"></span></a>
+      <a class="navlink" href="#full-auto"><span data-icon="zap"></span><span class="label">Full auto</span><span class="count" data-count="fullauto"></span></a>
+      <a class="navlink" href="#review-runs"><span data-icon="activity"></span><span class="label">Review runs</span><span class="count" data-count="runs"></span></a>
+      <a class="navlink" href="#watching"><span data-icon="eye"></span><span class="label">Watching</span></a>
+      <a class="navlink" href="#leaderboard"><span data-icon="trophy"></span><span class="label">Leaderboard</span></a>
+      <a class="navlink" href="#settings"><span data-icon="settings"></span><span class="label">Settings</span></a>
+    </div>
+    <div class="health" id="health"></div>
+  </nav>
+  <main id="main" tabindex="-1"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="drawer-backdrop" id="drawer" hidden></div>
+<div class="sheet-backdrop" id="sheet" hidden></div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+.ticket-panel { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--panel); min-width: 0; }
+.ticket-panel.warn { border-color: var(--need); background: var(--need-bg); }
+.ticket-head { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ticket-head svg.i { width: 14px; height: 14px; color: var(--accent); }
+.ticket-field { display: grid; gap: 4px; min-width: 0; }
+.ticket-field > label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.ticket-field input { font: inherit; font-size: 13px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--bg); color: var(--fg); min-width: 0; width: 100%; }
+.ticket-field textarea { min-height: 220px; font-family: var(--font); font-size: 13px; }
+.ticket-field input[readonly], .ticket-field textarea[readonly] { opacity: 0.7; }
+.ticket-epic { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; min-width: 0; }
+.ticket-epic input { width: 14ch; font-family: var(--mono); text-transform: uppercase; }
+.ticket-epic input::placeholder { text-transform: none; }
+.ticket-found { display: grid; gap: 8px; }
+.ticket-match { display: grid; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); min-width: 0; }
+.ticket-chip { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+.ticket-chip svg.i { width: 13px; height: 13px; }

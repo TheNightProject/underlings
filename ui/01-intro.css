@@ -1,0 +1,18 @@
+.intro { position: fixed; inset: 0; z-index: 20; background: var(--bg); cursor: default; touch-action: none; }
+.intro.intro-leaving { background: transparent; }
+.intro canvas { display: block; width: 100%; height: 100%; }
+.intro-steps { position: absolute; left: 16px; right: 16px; bottom: max(28px, 6vh); margin: 0; text-align: center; font: 500 12.5px/1.4 var(--font); letter-spacing: 0.02em; color: var(--muted); font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 0.4s; pointer-events: none; }
+.intro.intro-listing .intro-steps { opacity: 1; }
+.intro.intro-leaving .intro-steps { opacity: 0; transition-duration: 0.2s; }
+.intro-branch { position: absolute; left: 0; top: 0; margin: -30px 0 0 12px; padding: 4px 9px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent); background: color-mix(in srgb, var(--bg) 78%, transparent); font: 600 12px/1 var(--font); letter-spacing: 0.02em; white-space: nowrap; color: var(--tone); opacity: 0; transition: opacity 0.35s; pointer-events: none; }
+.intro-branch[data-step="engine"] { --tone: var(--viz-3); }
+.intro-branch[data-step="gitlab"] { --tone: var(--viz-2); }
+.intro-branch[data-step="jira"] { --tone: var(--viz-4); }
+.intro-branch[data-step="needs"] { --tone: var(--viz-5); }
+.intro-branch.is-failed { --tone: var(--need); }
+.intro-branch.is-left { margin-left: -12px; translate: -100% 0; }
+.intro-branch.is-placed { transition: opacity 0.35s, transform 0.25s linear; }
+.intro-branch.is-on { opacity: 1; }
+.intro-branch.is-hidden, .intro.intro-gathering .intro-branch { opacity: 0; }
+html.intro-on .logo { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { .intro-steps, .intro-branch { transition: none; } }

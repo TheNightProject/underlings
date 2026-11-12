@@ -1,0 +1,311 @@
+{
+ "101!895": {
+  "id": 10100895,
+  "iid": 895,
+  "project_id": 101,
+  "title": "🔒 (ABC-1234) Require the billing:write scope on the invoice routes",
+  "description": "",
+  "state": "merged",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": "2026-11-09T10:12:31.000Z",
+  "target_branch": "main",
+  "source_branch": "feat/ABC-1234-invoice-scopes",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2105,
+    "username": "niaj.nair",
+    "name": "Niaj Nair",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_open",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!895",
+   "relative": "!895",
+   "full": "acme/platform/order-book!895"
+  },
+  "web_url": "https://gitlab.com/acme/platform/order-book/-/merge_requests/895"
+ },
+ "102!45": {
+  "id": 10200045,
+  "iid": 45,
+  "project_id": 102,
+  "title": "✨ (ABC-4262) Show job logs in the Jobs pane",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "feat/ABC-4262-job-logs",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2102,
+    "username": "judy.jones",
+    "name": "Judy Jones",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "requested_changes",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!45",
+   "relative": "!45",
+   "full": "acme/tooling/atlas!45"
+  },
+  "web_url": "https://gitlab.com/acme/tooling/atlas/-/merge_requests/45"
+ },
+ "107!30": {
+  "id": 10700030,
+  "iid": 30,
+  "project_id": 107,
+  "title": "✨ Add the digest page",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "feat/digest",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!30",
+   "relative": "!30",
+   "full": "acme/tooling/dashboard!30"
+  },
+  "web_url": "https://gitlab.com/acme/tooling/dashboard/-/merge_requests/30"
+ },
+ "103!1177": {
+  "id": 10301177,
+  "iid": 1177,
+  "project_id": 103,
+  "title": "♻️ (ABC-4389) Narrow relay subscriptions",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "refactor/ABC-4389-relay-subscriptions",
+  "author": {
+   "id": 2102,
+   "username": "judy.jones",
+   "name": "Judy Jones",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2103,
+    "username": "peggy.price",
+    "name": "Peggy Price",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!1177",
+   "relative": "!1177",
+   "full": "acme/platform/relay!1177"
+  },
+  "web_url": "https://gitlab.com/acme/platform/relay/-/merge_requests/1177"
+ },
+ "103!1180": {
+  "id": 10301180,
+  "iid": 1180,
+  "project_id": 103,
+  "title": "📈 (ABC-4389) Count deliveries per subscriber",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "feat/ABC-4389-relay-metrics",
+  "author": {
+   "id": 2102,
+   "username": "judy.jones",
+   "name": "Judy Jones",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!1180",
+   "relative": "!1180",
+   "full": "acme/platform/relay!1180"
+  },
+  "web_url": "https://gitlab.com/acme/platform/relay/-/merge_requests/1180"
+ },
+ "104!2": {
+  "id": 10400002,
+  "iid": 2,
+  "project_id": 104,
+  "title": "👷 Use shared CI components",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "ci/shared-components",
+  "author": {
+   "id": 2103,
+   "username": "peggy.price",
+   "name": "Peggy Price",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!2",
+   "relative": "!2",
+   "full": "acme/internal/desk-booking!2"
+  },
+  "web_url": "https://gitlab.com/acme/internal/desk-booking/-/merge_requests/2"
+ },
+ "105!1702": {
+  "id": 10501702,
+  "iid": 1702,
+  "project_id": 105,
+  "title": "🐛 (ABC-4401) Keep the team menu open on refresh",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "fix/ABC-4401-team-menu",
+  "author": {
+   "id": 2104,
+   "username": "olivia.owens",
+   "name": "Olivia Owens",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!1702",
+   "relative": "!1702",
+   "full": "acme/platform/frontend!1702"
+  },
+  "web_url": "https://gitlab.com/acme/platform/frontend/-/merge_requests/1702"
+ },
+ "106!212": {
+  "id": 10600212,
+  "iid": 212,
+  "project_id": 106,
+  "title": "⬆️ (ABC-4410) Bump http-kit to 0.11.7",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "chore/ABC-4410-http-kit",
+  "author": {
+   "id": 2105,
+   "username": "niaj.nair",
+   "name": "Niaj Nair",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!212",
+   "relative": "!212",
+   "full": "acme/platform/gateway!212"
+  },
+  "web_url": "https://gitlab.com/acme/platform/gateway/-/merge_requests/212"
+ },
+ "108!88": {
+  "id": 10800088,
+  "iid": 88,
+  "project_id": 108,
+  "title": "🐛 Keep the lease when a job is slow",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "fix/lease",
+  "author": {
+   "id": 2103,
+   "username": "peggy.price",
+   "name": "Peggy Price",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!88",
+   "relative": "!88",
+   "full": "acme/tooling/sandbox!88"
+  },
+  "web_url": "https://gitlab.com/acme/tooling/sandbox/-/merge_requests/88"
+ }
+}
