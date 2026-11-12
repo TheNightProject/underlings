@@ -1,0 +1,13 @@
+.ticket-card { cursor: grab; }
+.ticket-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ticket-card .card-head .ticket-ref { justify-self: start; }
+.ticket-card .card-summary { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.ticket-card select { justify-self: start; max-width: 100%; }
+.ticket-card > button, .ticket-card .actions button { max-width: 100%; text-align: left; }
+.epic-label { justify-self: start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); }
+.ticket-board .lane[data-drop="yes"] { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.ticket-board .lane[data-drop="no"] { opacity: 0.5; }
+.ticket-sync h2 { flex-wrap: wrap; }
+.ticket-sync h2 .meta { font-weight: 500; text-transform: none; letter-spacing: 0; }
+.ticket-sync .ticket-sync-line { padding: 4px 0; }
+.ticket-sync .sync-move { overflow-wrap: anywhere; }

@@ -1,0 +1,24 @@
+.health a.health-link { color: inherit; border-radius: 6px; }
+.health a.health-link:hover { color: var(--fg); text-decoration: none; }
+.health span.warn::before { background: var(--working); box-shadow: 0 0 0 3px var(--working-bg); }
+.activity { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 340px; overflow-y: auto; }
+.activity li { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 13px; overflow-wrap: anywhere; }
+.activity li.bad > span:last-child { color: var(--need); }
+.pass-ref { display: inline-flex; align-items: center; gap: 4px; }
+.pass-ref .disclose { padding: 3px; }
+tr.pass-detail > td { background: var(--bg); padding: 10px 12px; }
+tr.pass-detail .list { margin-bottom: 8px; }
+.fix-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; }
+.row.run > .screen { display: grid; gap: 8px; min-width: 0; }
+.clamp.two-lines { -webkit-line-clamp: 2; }
+.narrow-only { display: none; }
+@media (max-width: 780px) {
+  .narrow-only { display: inline; }
+  .health a.health-link:not(:has(.off, .warn)) { display: none; }
+  table.sent-log thead, table.passes thead { display: none; }
+  table.sent-log tr, table.passes tr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  table.sent-log tr:last-child, table.passes tr:last-child { border-bottom: 0; }
+  table.sent-log td, table.passes td { padding: 0; border: 0; }
+  table.sent-log td.text, table.passes td:first-child, tr.pass-detail > td { flex-basis: 100%; }
+  tr.pass-detail > td { padding: 10px; }
+}

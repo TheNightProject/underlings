@@ -1,0 +1,22 @@
+.mr-doc { display: grid; gap: 8px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 11px; background: var(--raised); min-width: 0; }
+.mr-doc h3 { margin: 0; font: 650 15px/1.35 var(--display); overflow-wrap: anywhere; }
+.mr-desc { overflow-wrap: anywhere; font-size: 13px; line-height: 1.55; }
+.mr-doc .ref, .mr-doc .ticket-ref { font-weight: 600; }
+.chip-btn.tone { color: var(--c); background: var(--cb); border-color: transparent; font-weight: 600; }
+.chip-btn.tone:hover { border-color: var(--c); }
+.kv .actions { align-items: center; gap: 4px 12px; }
+.files { display: grid; gap: 4px; min-width: 0; }
+.file-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; width: 100%; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--raised); color: var(--fg); text-align: left; font-size: 13px; }
+button.file-row:hover { border-color: var(--accent); background: var(--hover); }
+.file-row.commented { box-shadow: inset 3px 0 0 var(--moved); }
+.file-row > svg.i { color: var(--faint); }
+.file-row .path { font: 12.5px/1.4 var(--mono); overflow-wrap: break-word; min-width: 0; }
+.file-row .dir { color: var(--muted); }
+.file-row .delta { font: 12px var(--mono); white-space: nowrap; }
+.file-row .marks { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.plus { color: var(--add); }
+.minus { color: var(--del); }
+.forge-ref { display: inline-flex; align-items: center; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.forge-mark { display: inline-flex; color: var(--fg); }
+.forge-mark svg.i { width: 13px; height: 13px; }
+.read-only { cursor: help; }

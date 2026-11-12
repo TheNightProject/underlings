@@ -1,0 +1,6 @@
+.item > .row-head:first-child { order: -2; }
+.item > .answers { order: -1; }
+.answers { display: grid; gap: 4px; }
+.answers > .meta { display: flex; align-items: center; gap: 6px; }
+.place { font-family: var(--mono); overflow-wrap: anywhere; text-align: left; }
+.fthread .reply, .fthread > .actions { margin-top: 4px; }

@@ -1,0 +1,35 @@
+{
+  "name": "underlings-engine",
+  "version": "0.1.0",
+  "description": "The review engine behind the app: merge requests, tickets, the review queue and the agents that fill it",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "TheNightProject",
+  "repository": { "type": "git", "url": "https://github.com/TheNightProject/underlings", "directory": "engine" },
+  "bin": {
+    "underlings": "./dist/cli.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup src/cli.ts src/engine.ts src/agentrun.ts src/reviewserver.ts --format esm --clean --target node20",
+    "start": "node dist/cli.js",
+    "typecheck": "tsc --noEmit",
+    "test": "TZ=Europe/London LC_ALL=en_US.UTF-8 tsx --test --test-concurrency=4 \"src/**/*.test.ts\"",
+    "pretest": "npm run build"
+  },
+  "tsup": {
+    "noExternal": ["ical.js"]
+  },
+  "dependencies": {
+    "ical.js": "2.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "tsup": "8.5.1",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,530 @@
+{
+  "steps": [
+    {
+      "step": "start: discover the repos and read the MR list",
+      "said": "6 open MRs in 3 repos",
+      "requests": [
+        {"call":"GET /api/v4/groups/acme/merge_requests?state=opened&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/groups?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-09-11T10:00:00.000Z","before":"2026-09-18T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-09-18T10:00:00.000Z","before":"2026-09-25T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-09-25T10:00:00.000Z","before":"2026-10-02T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-10-02T10:00:00.000Z","before":"2026-10-09T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-10-09T10:00:00.000Z","before":"2026-10-16T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-10-16T10:00:00.000Z","before":"2026-10-23T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-10-23T10:00:00.000Z","before":"2026-10-30T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-10-30T10:00:00.000Z","before":"2026-11-06T10:00:00.000Z","cursor":null}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query merged #868d9985","variables":{"group":"acme","after":"2026-11-06T10:00:00.000Z","before":null,"cursor":null}}}
+      ]
+    },
+    {
+      "step": "drawer: read acme/engine!7",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7001/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e7a1e7a1&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"7"}}}
+      ]
+    },
+    {
+      "step": "drawer: read src/token.ts on acme/engine!7",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/repository/files/src%2Ftoken.ts/raw?ref=e7a1e7a1","headers":{"private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "drawer: read the commented lines of acme/engine!7",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "drawer: read acme/engine!12",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/12","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}}
+      ]
+    },
+    {
+      "step": "pipeline: read the jobs of acme/engine!12",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}}
+      ]
+    },
+    {
+      "step": "pipeline: read the test log of acme/engine!12",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/jobs/120012/trace","headers":{"private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}}
+      ]
+    },
+    {
+      "step": "pipeline: count the failed jobs",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/pipelines/7001/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e7a1e7a1&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "queue: queue a finding on acme/web!30",
+      "said": "Queued a QUESTION finding on acme/web!30, waiting for you to post it",
+      "requests": [
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}}
+      ]
+    },
+    {
+      "step": "queue: post the anchored finding on acme/engine!7",
+      "said": "Posted",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/diffs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/v4/projects/1001/merge_requests/7/discussions","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"**MAJOR** The cache never expires, so a revoked token keeps working.\n\n_Found with Claude's assistance, read and verified by me before posting._","position":{"position_type":"text","base_sha":"base7000","start_sha":"base7000","head_sha":"e7a1e7a1","new_path":"src/token.ts","old_path":"src/token.ts","new_line":14}}}
+      ]
+    },
+    {
+      "step": "queue: post the verdict on acme/engine!7",
+      "said": "Posted",
+      "requests": [
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/v4/projects/1001/merge_requests/7/approve","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "queue: post all on acme/engine!7",
+      "said": "Posted 3 of 3",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/diffs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/diffs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"7"}}},
+        {"call":"POST /api/v4/projects/1001/merge_requests/7/discussions","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"**MINOR** keyOf runs twice on every lookup.\n\n_Found with Claude's assistance, read and verified by me before posting._","position":{"position_type":"text","base_sha":"base7000","start_sha":"base7000","head_sha":"e7a1e7a1","new_path":"src/token.ts","old_path":"src/token.ts","new_line":11,"old_line":11}}},
+        {"call":"POST /api/v4/projects/1001/merge_requests/7/discussions","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"`src/token.ts:40`\n\n**NIT** Name this lookupToken.\n\n_Found with Claude's assistance, read and verified by me before posting._"}},
+        {"call":"POST /api/v4/projects/1001/merge_requests/7/discussions/d701/notes","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"Thanks, the prefix case is covered now.\n\n_Found with Claude's assistance, read and verified by me before posting._"}},
+        {"call":"PUT /api/v4/projects/1001/merge_requests/7/discussions/d701?resolved=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "queue: request changes on acme/engine!7 from its verdict card",
+      "said": "Changes requested on acme/engine!7",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"mutation Hold #9a412185","variables":{"path":"acme/engine","iid":"7"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"7"}}},
+        {"call":"POST /api/v4/projects/1001/merge_requests/7/notes","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"My comments are up and need addressing, so I've requested changes until they are."}}
+      ]
+    },
+    {
+      "step": "queue: post the finding queued on acme/web!30",
+      "said": "Posted",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/v4/projects/1002/merge_requests/30/discussions","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"**QUESTION** Does the new linter run on the generated files?\n\n_Found with Claude's assistance, read and verified by me before posting._"}}
+      ]
+    },
+    {
+      "step": "threads: reply on acme/engine!7",
+      "said": "Replied on acme/engine!7",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/v4/projects/1001/merge_requests/7/discussions/d702/notes","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"Agreed, the expiry can come later."}}
+      ]
+    },
+    {
+      "step": "threads: resolve on acme/engine!7",
+      "said": "Resolved the thread on acme/engine!7",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"PUT /api/v4/projects/1001/merge_requests/7/discussions/d702?resolved=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "review: start a review of acme/web!30",
+      "said": "Reviewing acme/web!30, now watching for changes",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"mutation Hold #9a412185","variables":{"path":"acme/web","iid":"30"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"30"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"30"}}},
+        {"call":"POST /api/v4/projects/1002/merge_requests/30/notes","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"I'm reviewing this now, so I've put a hold on merging until I've finished. It comes off as soon as my comments are up."}}
+      ]
+    },
+    {
+      "step": "review: hold acme/web!30",
+      "said": "Merge held on acme/web!30",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"mutation Hold #9a412185","variables":{"path":"acme/web","iid":"30"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/v4/projects/1002/merge_requests/30/notes","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"I'm reviewing this now, so I've put a hold on merging until I've finished. It comes off as soon as my comments are up."}}
+      ]
+    },
+    {
+      "step": "review: approve acme/web!30, which lifts the hold",
+      "said": "Approved acme/web!30, hold lifted",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"mutation Hold #4023d1fe","variables":{"path":"acme/web","iid":"30"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"30"}}},
+        {"call":"POST /api/v4/projects/1002/merge_requests/30/approve","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/v4/projects/1002/merge_requests/30/notes","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"body":"Hold lifted, nothing further from me."}}
+      ]
+    },
+    {
+      "step": "push: rupert pushes to acme/web!30, and the list is read again",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}}
+      ]
+    },
+    {
+      "step": "drawer: read acme/web!30 since your review",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/30","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/pipelines?sha=w30bw30b&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/repository/compare?from=w30aw30a&to=w30bw30b&straight=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"30"}}}
+      ]
+    },
+    {
+      "step": "own: read your MRs",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/12?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/21?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/22?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1003/merge_requests/3?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "own: mark acme/engine!12 ready",
+      "said": "Marked acme/engine!12 ready",
+      "requests": [
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"mutation Draft #92bb1573","variables":{"path":"acme/engine","iid":"12","draft":false}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}}
+      ]
+    },
+    {
+      "step": "own: retry the test job on acme/engine!12",
+      "said": "Retrying test on acme/engine!12",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}},
+        {"call":"POST /api/v4/projects/1001/jobs/120012/retry","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "own: retry the pipeline of acme/engine!12",
+      "said": "Retrying 1 job on acme/engine!12",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}},
+        {"call":"POST /api/v4/projects/1001/pipelines/7012/retry","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "own: fix the threads on acme/engine!12",
+      "said": "An agent is fixing 1 comment on acme/engine!12 in fix-engine-12. It asks you before it pushes or replies.",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/12/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}}
+      ]
+    },
+    {
+      "step": "own: fix the conflicts on acme/web!22",
+      "said": "An agent is fixing the conflicts on acme/web!22 in fix-web-22. It asks you before it pushes.",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/22?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"22"}}}
+      ]
+    },
+    {
+      "step": "own: merge acme/web!21 now",
+      "said": "Merged acme/web!21",
+      "requests": [
+        {"call":"GET /api/v4/projects/1002/merge_requests/21?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"21"}}},
+        {"call":"PUT /api/v4/projects/1002/merge_requests/21/merge","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"sha":"w21aw21a"}}
+      ]
+    },
+    {
+      "step": "own: rebase acme/tools/cli!3",
+      "said": "GitLab is rebasing acme/tools/cli!3",
+      "requests": [
+        {"call":"GET /api/v4/projects/1003/merge_requests/3?include_rebase_in_progress=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/tools/cli","iid":"3"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/tools/cli","iid":"3"}}},
+        {"call":"PUT /api/v4/projects/1003/merge_requests/3/rebase","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "own: set the reviewers of acme/tools/cli!3",
+      "said": "Reviewers on acme/tools/cli!3: ivan, trent",
+      "requests": [
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/users?username=ivan","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/users?username=trent","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/tools/cli","iid":"3"}}},
+        {"call":"PUT /api/v4/projects/1003/merge_requests/3","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"reviewer_ids":[102,104]}}
+      ]
+    },
+    {
+      "step": "own: ask ivan again on acme/tools/cli!3",
+      "said": "Asked ivan to review acme/tools/cli!3 again",
+      "requests": [
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/users?username=ivan","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"mutation Rereview #cfe8bd8e","variables":{"path":"acme/tools/cli","iid":"3","user":"gid://gitlab/User/102"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/tools/cli","iid":"3"}}}
+      ]
+    },
+    {
+      "step": "own: merge acme/tools/cli!3 when green",
+      "said": "acme/tools/cli!3 merges once its pipeline passes",
+      "requests": [
+        {"call":"GET /api/v4/projects/1003/merge_requests/3?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/tools/cli","iid":"3"}}},
+        {"call":"PUT /api/v4/projects/1003/merge_requests/3/merge","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"sha":"c3a0beef","auto_merge":true,"merge_when_pipeline_succeeds":true}}
+      ]
+    },
+    {
+      "step": "own: cancel the merge of acme/tools/cli!3",
+      "said": "acme/tools/cli!3 no longer merges when green",
+      "requests": [
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/tools/cli","iid":"3"}}},
+        {"call":"POST /api/v4/projects/1003/merge_requests/3/cancel_merge_when_pipeline_succeeds","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "own: merge acme/tools/cli!3 when green again",
+      "said": "acme/tools/cli!3 merges once its pipeline passes",
+      "requests": [
+        {"call":"GET /api/v4/projects/1003/merge_requests/3?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/tools/cli","iid":"3"}}},
+        {"call":"PUT /api/v4/projects/1003/merge_requests/3/merge","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"sha":"c3a0beef","auto_merge":true,"merge_when_pipeline_succeeds":true}}
+      ]
+    },
+    {
+      "step": "end: GitLab merges acme/tools/cli!3, and the list is read again",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/todos?state=pending&type=MergeRequest&per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query End #18cff935","variables":{"f":"acme/tools/cli","iid":"3"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query Mrs #1bc63234","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}}
+      ]
+    },
+    {
+      "step": "activity: standup",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/events?after=2026-11-08&before=2026-11-10&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/merge_requests?scope=created_by_me&state=merged&updated_after=2026-11-09T00%3A00%3A00.000Z&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/merge_requests?scope=created_by_me&state=opened&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12/approvals","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/18","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/22/approvals","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "activity: turn the game on, which reads your work",
+      "said": "The game is on",
+      "requests": [
+        {"call":"GET /api/v4/events?after=2026-10-10&before=2026-11-11&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/merge_requests?scope=created_by_me&state=merged&updated_after=2026-10-11T23%3A00%3A00.000Z&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/user","headers":{"content-type":"application/json","private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "stats: read",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/merge_requests?scope=all&per_page=100&page=1&reviewer_username=frank&updated_after=2026-10-27T10%3A03%3A05.000Z","headers":{"private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/merge_requests?scope=all&per_page=100&page=1&state=merged&author_username=frank&updated_after=2026-10-11T10%3A03%3A05.000Z","headers":{"private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "QA board: read",
+      "said": "read",
+      "requests": []
+    },
+    {
+      "step": "tickets: read",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/groups/acme/merge_requests?state=merged&search=ABC-105&in=title&per_page=100","headers":{"private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/groups/acme/merge_requests?state=merged&search=ABC-106&in=title&per_page=100","headers":{"private-token":"<token>"},"body":null}
+      ]
+    },
+    {
+      "step": "team board: build",
+      "said": "the board scores 3 people over 3 repos",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/events?action=commented&after=2026-10-11&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/events?action=commented&after=2026-10-11&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1003/events?action=commented&after=2026-10-11&per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query board #59908652","variables":{"f0":"acme/web","f1":"acme/engine","f2":"acme/tools/cli"}}}
+      ]
+    },
+    {
+      "step": "page: what the views read",
+      "said": "read",
+      "requests": [
+        {"call":"GET /api/v4/projects/1001/merge_requests/12","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/12?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/merge_requests/7/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7001/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7001/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines/7012/jobs?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e12ae12a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e7a1e7a1&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1001/pipelines?sha=e7a1e7a1&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/22","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/22/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/22/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/22?include_diverged_commits_count=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/diffs?per_page=100&page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/merge_requests/30/discussions?per_page=100","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/pipelines?sha=w22aw22a&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/pipelines?sha=w30bw30b&per_page=1","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"GET /api/v4/projects/1002/repository/compare?from=w30aw30a&to=w30bw30b&straight=true","headers":{"content-type":"application/json","private-token":"<token>"},"body":null},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"12"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"7"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/engine","iid":"7"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"22"}}},
+        {"call":"POST /api/graphql","headers":{"content-type":"application/json","private-token":"<token>"},"body":{"query":"query One #dfcf46a9","variables":{"f":"acme/web","iid":"30"}}}
+      ]
+    }
+  ],
+  "graphql": {
+    "mutation Draft #92bb1573": "mutation Draft($path: ID!, $iid: String!, $draft: Boolean!) { mergeRequestSetDraft(input: { projectPath: $path, iid: $iid, draft: $draft }) { errors mergeRequest { draft } } }",
+    "mutation Hold #4023d1fe": "mutation Hold($path: ID!, $iid: String!) { mergeRequestDestroyRequestedChanges(input: { projectPath: $path, iid: $iid }) { errors mergeRequest { detailedMergeStatus } } }",
+    "mutation Hold #9a412185": "mutation Hold($path: ID!, $iid: String!) { mergeRequestRequestChanges(input: { projectPath: $path, iid: $iid }) { errors mergeRequest { detailedMergeStatus } } }",
+    "mutation Rereview #cfe8bd8e": "mutation Rereview($path: ID!, $iid: String!, $user: UserID!) { mergeRequestReviewerRereview(input: { projectPath: $path, iid: $iid, userId: $user }) { errors } }",
+    "query board #59908652": "query board($f0: ID!, $f1: ID!, $f2: ID!) { p0: project(fullPath: $f0) { id fullPath mergeRequests(createdAfter: \"2026-10-11T10:03:20.000Z\", first: 100, sort: CREATED_DESC) { count pageInfo { hasNextPage endCursor } nodes { iid createdAt mergedAt author { username } approvedBy { nodes { username } } } } } p1: project(fullPath: $f1) { id fullPath mergeRequests(createdAfter: \"2026-10-11T10:03:20.000Z\", first: 100, sort: CREATED_DESC) { count pageInfo { hasNextPage endCursor } nodes { iid createdAt mergedAt author { username } approvedBy { nodes { username } } } } } p2: project(fullPath: $f2) { id fullPath mergeRequests(createdAfter: \"2026-10-11T10:03:20.000Z\", first: 100, sort: CREATED_DESC) { count pageInfo { hasNextPage endCursor } nodes { iid createdAt mergedAt author { username } approvedBy { nodes { username } } } } } }",
+    "query End #18cff935": "query End($f: ID!, $iid: String!) { project(fullPath: $f) { mergeRequest(iid: $iid) { state mergeUser { username } } } }",
+    "query merged #868d9985": "query merged($group: ID!, $after: Time!, $before: Time, $cursor: String) { group(fullPath: $group) { mergeRequests(state: merged, mergedAfter: $after, mergedBefore: $before, includeSubgroups: true, sort: MERGED_AT_DESC, first: 100, after: $cursor) { pageInfo { hasNextPage endCursor } nodes { iid title webUrl sourceBranch mergedAt author { username name } project { fullPath } diffStatsSummary { additions deletions } } } } }",
+    "query Mrs #1bc63234": "query Mrs($f0: ID!, $f1: ID!, $f2: ID!) { p0: project(fullPath: $f0) { id fullPath name mergeRequests(state: opened, first: 10, sort: UPDATED_DESC) { count nodes { iid title webUrl draft conflicts userNotesCount resolvableDiscussionsCount resolvedDiscussionsCount createdAt updatedAt diffHeadSha sourceBranch detailedMergeStatus autoMergeEnabled author { username } reviewers { nodes { username mergeRequestInteraction { reviewState } } } approvedBy { nodes { username } } headPipeline { id status } } } } p1: project(fullPath: $f1) { id fullPath name mergeRequests(state: opened, first: 10, sort: UPDATED_DESC) { count nodes { iid title webUrl draft conflicts userNotesCount resolvableDiscussionsCount resolvedDiscussionsCount createdAt updatedAt diffHeadSha sourceBranch detailedMergeStatus autoMergeEnabled author { username } reviewers { nodes { username mergeRequestInteraction { reviewState } } } approvedBy { nodes { username } } headPipeline { id status } } } } p2: project(fullPath: $f2) { id fullPath name mergeRequests(state: opened, first: 10, sort: UPDATED_DESC) { count nodes { iid title webUrl draft conflicts userNotesCount resolvableDiscussionsCount resolvedDiscussionsCount createdAt updatedAt diffHeadSha sourceBranch detailedMergeStatus autoMergeEnabled author { username } reviewers { nodes { username mergeRequestInteraction { reviewState } } } approvedBy { nodes { username } } headPipeline { id status } } } } }",
+    "query One #dfcf46a9": "query One($f: ID!, $iid: String!) { p0: project(fullPath: $f) { id fullPath name mergeRequests(iids: [$iid], first: 1) { count nodes { iid title webUrl draft conflicts userNotesCount state resolvableDiscussionsCount resolvedDiscussionsCount createdAt updatedAt diffHeadSha sourceBranch detailedMergeStatus autoMergeEnabled author { username } reviewers { nodes { username mergeRequestInteraction { reviewState } } } approvedBy { nodes { username } } headPipeline { id status } } } } }"
+  }
+}

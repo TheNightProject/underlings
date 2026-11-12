@@ -1,0 +1,3 @@
+.mr-card .card-head .ref { font-weight: 600; }
+.mr-card .menu-wrap { display: contents; }
+.mr-card .menu { position: static; grid-column: 1 / -1; min-width: 0; box-shadow: none; }

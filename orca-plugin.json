@@ -1,0 +1,19 @@
+{
+  "manifestVersion": 1,
+  "id": "underlings",
+  "publisher": "thenightproject",
+  "name": "Underlings",
+  "version": "0.1.0",
+  "description": "Your review agents, merge requests, tickets and published artifacts on one page.",
+  "engines": { "orca": ">=1.4.243" },
+  "pluginApi": 1,
+  "main": "worker.mjs",
+  "contributes": {
+    "panels": [{ "id": "home", "title": "Underlings", "icon": "gauge", "entry": "panel.html" }],
+    "commands": [
+      { "id": "open", "title": "Open Underlings" },
+      { "id": "latest", "title": "Underlings: Open what needs me" }
+    ]
+  },
+  "capabilities": [{ "kind": "storage" }, { "kind": "notifications:show" }]
+}

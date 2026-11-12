@@ -1,0 +1,137 @@
+[
+ {
+  "id": 10100895,
+  "iid": 895,
+  "project_id": 101,
+  "title": "🔒 (ABC-1234) Require the billing:write scope on the invoice routes",
+  "description": "",
+  "state": "merged",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": "2026-11-09T10:12:31.000Z",
+  "target_branch": "main",
+  "source_branch": "feat/ABC-1234-invoice-scopes",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2105,
+    "username": "niaj.nair",
+    "name": "Niaj Nair",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_open",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!895",
+   "relative": "!895",
+   "full": "acme/platform/order-book!895"
+  },
+  "web_url": "https://gitlab.com/acme/platform/order-book/-/merge_requests/895"
+ },
+ {
+  "id": 10501699,
+  "iid": 1699,
+  "project_id": 105,
+  "title": "🐛 (ABC-4290) Stop the login loop on refresh",
+  "description": "",
+  "state": "merged",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": "2026-11-09T15:40:00.000Z",
+  "target_branch": "main",
+  "source_branch": "fix/ABC-4290-login-loop",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_open",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!1699",
+   "relative": "!1699",
+   "full": "acme/platform/frontend!1699"
+  },
+  "web_url": "https://gitlab.com/acme/platform/frontend/-/merge_requests/1699"
+ },
+ {
+  "id": 10501690,
+  "iid": 1690,
+  "project_id": 105,
+  "title": "🐛 (ABC-4288) Show the right team on load",
+  "description": "",
+  "state": "merged",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": "2026-11-06T12:00:00.000Z",
+  "target_branch": "main",
+  "source_branch": "fix/ABC-4288",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_open",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!1690",
+   "relative": "!1690",
+   "full": "acme/platform/frontend!1690"
+  },
+  "web_url": "https://gitlab.com/acme/platform/frontend/-/merge_requests/1690"
+ },
+ {
+  "id": 10800080,
+  "iid": 80,
+  "project_id": 108,
+  "title": "♻️ Read the queue once a poll",
+  "description": "",
+  "state": "merged",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": "2026-11-09T12:00:00.000Z",
+  "target_branch": "main",
+  "source_branch": "refactor/queue",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_open",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!80",
+   "relative": "!80",
+   "full": "acme/tooling/sandbox!80"
+  },
+  "web_url": "https://gitlab.com/acme/tooling/sandbox/-/merge_requests/80"
+ }
+]

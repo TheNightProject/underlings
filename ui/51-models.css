@@ -1,0 +1,17 @@
+.model-presets { display: grid; gap: 6px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.model-presets .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.model-presets .hint { margin: 0; color: var(--muted); font-size: 12.5px; max-width: 70ch; }
+.model-row .control { row-gap: 6px; }
+.setting input.model-id { width: min(280px, 100%); font-family: var(--mono); font-size: 12.5px; }
+.model-effort { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; }
+.model-effort select { max-width: 190px; }
+.model-force { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; flex-basis: 100%; }
+.model-force label { font-weight: 600; }
+.model-force-hint { color: var(--muted); font-size: 12.5px; max-width: 70ch; }
+.model-effective { color: var(--muted); font-size: 12.5px; }
+.model-suggested { color: var(--faint); font-size: 12px; white-space: nowrap; }
+.model-suggested.differs::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--working); vertical-align: 1px; }
+.model-usage { color: var(--faint); }
+/* The divider that would start a wrapped line sits outside the box and is clipped. */
+.model-launch { display: inline-flex; flex-wrap: wrap; row-gap: 2px; min-width: 0; margin-left: -9px; overflow: hidden; }
+.model-launch > span { margin-left: -1px; padding: 0 9px; border-left: 1px solid var(--line-strong); white-space: nowrap; }

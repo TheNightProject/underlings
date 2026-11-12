@@ -1,0 +1,261 @@
+[
+ {
+  "id": 10200045,
+  "iid": 45,
+  "project_id": 102,
+  "title": "✨ (ABC-4262) Show job logs in the Jobs pane",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "feat/ABC-4262-job-logs",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2102,
+    "username": "judy.jones",
+    "name": "Judy Jones",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "requested_changes",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!45",
+   "relative": "!45",
+   "full": "acme/tooling/atlas!45"
+  },
+  "web_url": "https://gitlab.com/acme/tooling/atlas/-/merge_requests/45"
+ },
+ {
+  "id": 10100901,
+  "iid": 901,
+  "project_id": 101,
+  "title": "✨ (ABC-4300) Add the team_admin scope",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "feat/ABC-4300-team-admin",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2105,
+    "username": "niaj.nair",
+    "name": "Niaj Nair",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!901",
+   "relative": "!901",
+   "full": "acme/platform/order-book!901"
+  },
+  "web_url": "https://gitlab.com/acme/platform/order-book/-/merge_requests/901"
+ },
+ {
+  "id": 10501710,
+  "iid": 1710,
+  "project_id": 105,
+  "title": "🐛 (ABC-4318) Retire the legacy device flow",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "fix/ABC-4318-legacy-flow",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2104,
+    "username": "olivia.owens",
+    "name": "Olivia Owens",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "mergeable",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!1710",
+   "relative": "!1710",
+   "full": "acme/platform/frontend!1710"
+  },
+  "web_url": "https://gitlab.com/acme/platform/frontend/-/merge_requests/1710"
+ },
+ {
+  "id": 10600215,
+  "iid": 215,
+  "project_id": 106,
+  "title": "Draft: 🧪 (ABC-4330) Spike the plan claim",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "spike/ABC-4330-plan-claim",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": true,
+  "work_in_progress": true,
+  "has_conflicts": false,
+  "detailed_merge_status": "draft_status",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!215",
+   "relative": "!215",
+   "full": "acme/platform/gateway!215"
+  },
+  "web_url": "https://gitlab.com/acme/platform/gateway/-/merge_requests/215"
+ },
+ {
+  "id": 10301190,
+  "iid": 1190,
+  "project_id": 103,
+  "title": "🐛 Retry relay deliveries",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "fix/ABC-4335-relay-retries",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2102,
+    "username": "judy.jones",
+    "name": "Judy Jones",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": true,
+  "detailed_merge_status": "conflict",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!1190",
+   "relative": "!1190",
+   "full": "acme/platform/relay!1190"
+  },
+  "web_url": "https://gitlab.com/acme/platform/relay/-/merge_requests/1190"
+ },
+ {
+  "id": 10400003,
+  "iid": 3,
+  "project_id": 104,
+  "title": "♻️ Book desks by floor",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "feat/floors",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [
+   {
+    "id": 2103,
+    "username": "peggy.price",
+    "name": "Peggy Price",
+    "state": "active"
+   }
+  ],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!3",
+   "relative": "!3",
+   "full": "acme/internal/desk-booking!3"
+  },
+  "web_url": "https://gitlab.com/acme/internal/desk-booking/-/merge_requests/3"
+ },
+ {
+  "id": 10700030,
+  "iid": 30,
+  "project_id": 107,
+  "title": "✨ Add the digest page",
+  "description": "",
+  "state": "opened",
+  "created_at": "2026-11-02T09:00:00.000Z",
+  "updated_at": "2026-11-09T16:00:00.000Z",
+  "merged_at": null,
+  "target_branch": "main",
+  "source_branch": "feat/digest",
+  "author": {
+   "id": 2101,
+   "username": "frank.foster",
+   "name": "Frank Foster",
+   "state": "active"
+  },
+  "reviewers": [],
+  "draft": false,
+  "work_in_progress": false,
+  "has_conflicts": false,
+  "detailed_merge_status": "not_approved",
+  "merge_status": "can_be_merged",
+  "user_notes_count": 4,
+  "references": {
+   "short": "!30",
+   "relative": "!30",
+   "full": "acme/tooling/dashboard!30"
+  },
+  "web_url": "https://gitlab.com/acme/tooling/dashboard/-/merge_requests/30"
+ }
+]

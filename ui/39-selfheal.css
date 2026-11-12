@@ -1,0 +1,8 @@
+#stale { position: sticky; top: 0; z-index: 3; }
+.healable > div { min-width: 0; overflow-wrap: anywhere; }
+.heal { margin-top: 8px; align-items: center; }
+.token-field { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+.token-field input { font: 12.5px var(--mono); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--fg); min-width: 0; width: min(300px, 100%); }
+.token-field .meta { flex-basis: 100%; }
+#health span { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 780px) { .health { flex-wrap: wrap; } }

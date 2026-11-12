@@ -1,0 +1,10 @@
+.slack-about { margin: 0; color: var(--muted); font-size: 12.5px; max-width: 90ch; }
+.slack-messages { margin-top: 4px; }
+.slack-message .title { font-size: 14.5px; }
+.slack-reason { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.slack-snippet { margin: 0; padding-left: 10px; border-left: 2px solid var(--line-strong); color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.slack-message.handled .slack-reason, .slack-message.handled .title { color: var(--muted); }
+.slack-message.handled .pill { --c: var(--quiet); --cb: var(--quiet-bg); }
+@media (max-width: 640px) {
+  .slack-message .actions > button { flex: 1 1 auto; justify-content: center; }
+}

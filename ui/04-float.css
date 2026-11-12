@@ -1,0 +1,10 @@
+.float { position: fixed; z-index: 6; }
+.float[hidden] { display: none; }
+.float.float-back { z-index: 5; }
+.float.moving { user-select: none; }
+.float-grip { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 0 55%, var(--line-strong) 55% 62%, transparent 62% 72%, var(--line-strong) 72% 79%, transparent 79%); }
+
+@media (max-width: 640px) {
+  .float { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important; width: auto !important; }
+  .float-grip { display: none; }
+}

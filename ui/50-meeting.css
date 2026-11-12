@@ -1,0 +1,58 @@
+:root { --mo-veil: color-mix(in srgb, var(--bg) 62%, transparent); --mo-glow: color-mix(in srgb, var(--accent) 16%, transparent); --mo-card: color-mix(in srgb, var(--panel) 82%, transparent); --mo-edge: color-mix(in srgb, var(--fg) 12%, transparent); --mo-lift: 0 30px 90px rgba(0, 0, 0, 0.45); }
+@media (prefers-color-scheme: light) {
+  :root { --mo-veil: color-mix(in srgb, var(--bg) 70%, transparent); --mo-glow: color-mix(in srgb, var(--accent) 12%, transparent); --mo-card: color-mix(in srgb, var(--panel) 86%, transparent); --mo-edge: color-mix(in srgb, var(--fg) 10%, transparent); --mo-lift: 0 30px 90px rgba(16, 24, 40, 0.18); }
+}
+
+html:has(body.meeting-window), body.meeting-window { background: transparent; overflow: hidden; }
+body.meeting-window > :not(.mo) { display: none !important; }
+
+.mo { --u: clamp(7px, 1.1vmin, 24px); position: fixed; inset: 0; display: grid; overflow: auto; overscroll-behavior: contain; padding: calc(var(--u) * 4); color: var(--fg); font-family: var(--font); }
+.mo-veil { position: fixed; inset: 0; background: radial-gradient(70vmax 48vmax at 50% 42%, var(--mo-glow), transparent 70%), var(--mo-veil); animation: mo-fade 0.45s ease-out both; }
+.mo-stage { position: relative; display: grid; justify-items: center; gap: calc(var(--u) * 3); width: 100%; margin: auto; animation: mo-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.08s both; }
+.mo.leaving .mo-stage, .mo.leaving .mo-veil { opacity: 0; transition: opacity 0.18s ease-in; }
+
+.mo-cards { display: grid; gap: calc(var(--u) * 2.4); width: min(100%, calc(var(--u) * 84)); }
+.mo-cards.several { --u: clamp(6px, 0.8vmin, 15px); width: min(100%, calc(var(--u) * 190)); grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--u) * 52)), 1fr)); }
+.mo-card { display: grid; justify-items: center; align-content: center; gap: calc(var(--u) * 2); min-width: 0; padding: calc(var(--u) * 5) calc(var(--u) * 5.5) calc(var(--u) * 4.5); text-align: center; background: var(--mo-card); border: 1px solid var(--mo-edge); border-radius: calc(var(--u) * 3.2); box-shadow: var(--mo-lift), inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent); }
+
+.mo-when { display: grid; justify-items: center; gap: calc(var(--u) * 0.4); margin: 0; }
+.mo-when span { font: 600 calc(var(--u) * 1.6)/1.2 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.mo-when b { font: 700 calc(var(--u) * 10)/0.95 var(--display); letter-spacing: -0.035em; font-variant-numeric: tabular-nums; color: var(--accent); }
+.mo-when.started b { font-size: calc(var(--u) * 7.5); color: var(--working); }
+.mo-stage > .mo-when { margin-bottom: calc(var(--u) * -0.5); }
+.mo-title { margin: 0; max-width: 24ch; font: 700 calc(var(--u) * 4.6)/1.08 var(--display); letter-spacing: -0.028em; text-wrap: balance; overflow-wrap: anywhere; }
+.mo-facts { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--u) * 0.6) calc(var(--u) * 2.2); margin: 0; font: 500 calc(var(--u) * 1.9)/1.3 var(--font); color: var(--muted); }
+.mo-fact { display: inline-flex; align-items: center; gap: calc(var(--u) * 0.8); min-width: 0; }
+.mo-fact svg.i { width: calc(var(--u) * 2); height: calc(var(--u) * 2); color: var(--faint); }
+.mo-where { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mo-answer { font-size: calc(var(--u) * 1.15); padding: calc(var(--u) * 0.35) calc(var(--u) * 1); }
+
+.mo-people { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: calc(var(--u) * 0.6) calc(var(--u) * 1.4); }
+.mo-faces { display: inline-flex; padding-left: calc(var(--u) * 0.7); }
+.mo-face { display: inline-grid; place-items: center; width: calc(var(--u) * 4.2); height: calc(var(--u) * 4.2); margin-left: calc(var(--u) * -0.7); border-radius: 50%; font: 650 calc(var(--u) * 1.5)/1 var(--display); letter-spacing: 0.02em; color: var(--c); background: color-mix(in srgb, var(--c) 18%, var(--panel)); box-shadow: 0 0 0 calc(var(--u) * 0.3) var(--panel); }
+.mo-face.more { color: var(--muted); background: var(--raised); }
+.mo-names { font: 500 calc(var(--u) * 1.7)/1.3 var(--font); color: var(--muted); }
+
+.mo kbd { font: 600 calc(var(--u) * 1.05)/1 var(--font); letter-spacing: 0.06em; text-transform: uppercase; padding: calc(var(--u) * 0.45) calc(var(--u) * 0.7); border-radius: calc(var(--u) * 0.6); border: 1px solid currentColor; opacity: 0.55; }
+.mo button { font-family: var(--display); cursor: pointer; }
+.mo-join { margin-top: calc(var(--u) * 1); gap: calc(var(--u) * 1.1); max-width: 100%; white-space: nowrap; padding: calc(var(--u) * 1.5) calc(var(--u) * 2.4) calc(var(--u) * 1.5) calc(var(--u) * 2.6); border-radius: 999px; font-size: calc(var(--u) * 2.1); font-weight: 650; color: #fff; background: var(--accent-strong); border: 0; box-shadow: 0 calc(var(--u) * 1) calc(var(--u) * 3) color-mix(in srgb, var(--accent-strong) 38%, transparent); }
+.mo-join:hover { background: var(--accent); border: 0; }
+.mo-join svg.i { width: calc(var(--u) * 2.3); height: calc(var(--u) * 2.3); }
+.mo-join kbd { visibility: hidden; }
+.mo-join:focus kbd { visibility: visible; }
+.mo-join:focus-visible { outline: calc(var(--u) * 0.25) solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: calc(var(--u) * 0.45); }
+
+.mo-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--u) * 1.2); }
+.mo-quiet { gap: calc(var(--u) * 0.9); padding: calc(var(--u) * 1.05) calc(var(--u) * 2); border-radius: 999px; font-size: calc(var(--u) * 1.65); font-weight: 600; color: var(--fg); background: var(--mo-card); border: 1px solid var(--mo-edge); box-shadow: 0 calc(var(--u) * 0.6) calc(var(--u) * 2) rgba(0, 0, 0, 0.12); }
+.mo-quiet:hover { background: var(--panel); border-color: var(--line-strong); }
+.mo-quiet svg.i { width: calc(var(--u) * 1.8); height: calc(var(--u) * 1.8); color: var(--muted); }
+.mo-error { margin: 0; padding: calc(var(--u) * 0.8) calc(var(--u) * 1.6); border-radius: calc(var(--u) * 1); font-size: calc(var(--u) * 1.6); color: var(--need); background: var(--need-bg); }
+
+@media (max-width: 560px) { .mo kbd { display: none; } }
+
+@keyframes mo-fade { from { opacity: 0; } }
+@keyframes mo-rise { from { opacity: 0; transform: translateY(calc(var(--u) * 2)) scale(0.985); } }
+@media (prefers-reduced-motion: reduce) {
+  .mo-veil, .mo-stage { animation: none; }
+  .mo.leaving .mo-stage, .mo.leaving .mo-veil { transition: none; }
+}

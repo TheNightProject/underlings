@@ -1,0 +1,57 @@
+:root {
+  --viz-1: #3987e5; --viz-2: #d95926; --viz-3: #199e70; --viz-4: #c98500; --viz-5: #d55181;
+  --viz-o1: #184f95; --viz-o2: #256abf; --viz-o3: #3987e5; --viz-o4: #6da7ec; --viz-o5: #9ec5f4;
+  --viz-wash: rgba(154, 163, 179, 0.1);
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --viz-1: #2a78d6; --viz-2: #eb6834; --viz-3: #1baf7a; --viz-4: #eda100; --viz-5: #e87ba4;
+    --viz-o1: #86b6ef; --viz-o2: #5598e7; --viz-o3: #2a78d6; --viz-o4: #1c5cab; --viz-o5: #104281;
+    --viz-wash: rgba(18, 23, 34, 0.05);
+  }
+}
+.viz-c1 { fill: var(--viz-1); background-color: var(--viz-1); }
+.viz-c2 { fill: var(--viz-2); background-color: var(--viz-2); }
+.viz-c3 { fill: var(--viz-3); background-color: var(--viz-3); }
+.viz-c4 { fill: var(--viz-4); background-color: var(--viz-4); }
+.viz-c5 { fill: var(--viz-5); background-color: var(--viz-5); }
+.viz-o1 { fill: var(--viz-o1); background-color: var(--viz-o1); }
+.viz-o2 { fill: var(--viz-o2); background-color: var(--viz-o2); }
+.viz-o3 { fill: var(--viz-o3); background-color: var(--viz-o3); }
+.viz-o4 { fill: var(--viz-o4); background-color: var(--viz-o4); }
+.viz-o5 { fill: var(--viz-o5); background-color: var(--viz-o5); }
+
+.viz { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: start; min-width: 0; box-shadow: var(--shadow); }
+.viz.wide { grid-column: 1 / -1; }
+.viz figcaption { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; justify-content: space-between; }
+.viz h3 { margin: 0; font-size: 13.5px; font-weight: 650; color: var(--fg); }
+.viz-plot { min-width: 0; overflow: hidden; }
+.viz-svg { display: block; overflow: visible; font: 11.5px/1 var(--font); }
+.viz-grid { stroke: var(--line); stroke-width: 1; shape-rendering: crispEdges; }
+.viz-axis { stroke: var(--line-strong); stroke-width: 1; shape-rendering: crispEdges; }
+.viz-median { stroke: var(--muted); stroke-width: 2; }
+.viz-tick { fill: var(--faint); font-variant-numeric: tabular-nums; }
+.viz-label { fill: var(--muted); }
+.viz-value { fill: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.viz-dot { stroke: var(--panel); stroke-width: 4; paint-order: stroke; }
+.viz-dot.hot, .viz-dot:focus-visible { stroke: var(--fg); stroke-width: 2; outline: none; }
+.viz-hit { fill: transparent; cursor: default; outline: none; }
+.viz-hit:hover, .viz-hit:focus-visible { fill: var(--viz-wash); }
+.viz-hit:focus-visible { stroke: var(--accent); stroke-width: 2; }
+.viz-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.viz-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.viz-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.viz-empty { display: flex; gap: 8px; align-items: center; margin: 6px 0; color: var(--muted); font-size: 13px; }
+.viz-empty svg.i { color: var(--faint); }
+.viz-table summary { font-size: 12px; }
+.viz-table table { margin-top: 6px; font-size: 12.5px; }
+.viz-table th, .viz-table td { padding: 5px 8px; }
+.viz-table tbody th { text-align: left; font-size: 12.5px; letter-spacing: 0; text-transform: none; color: var(--fg); font-weight: 500; border-bottom: 1px solid var(--line); }
+.viz-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.viz-tip { position: fixed; z-index: 9; pointer-events: none; display: grid; gap: 3px; padding: 8px 10px; border-radius: 9px; background: var(--raised); border: 1px solid var(--line-strong); box-shadow: var(--menu-shadow); font-size: 12px; color: var(--muted); max-width: min(320px, calc(100vw - 16px)); }
+.viz-tip[hidden] { display: none; }
+.viz-tip-title { color: var(--muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.viz-tip-row { display: flex; align-items: center; gap: 7px; }
+.viz-tip-row b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.viz-tip-note { line-height: 1.35; overflow-wrap: break-word; }
+.viz-key { width: 12px; height: 2px; border-radius: 1px; flex: none; }

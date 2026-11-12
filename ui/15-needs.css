@@ -1,0 +1,16 @@
+.needs-group h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.need-card .row-head { flex-wrap: wrap; }
+.need-card.hot { border-left: 3px solid var(--need); }
+.need-card .need-why { overflow-wrap: anywhere; }
+.need-card .actions { flex-wrap: wrap; }
+.need-behind { margin-top: 8px; display: grid; gap: 8px; min-width: 0; }
+.need-behind .list { min-width: 0; }
+.banner.setup ol { margin: 6px 0 8px; padding-left: 20px; }
+.banner.setup li { margin: 2px 0; }
+.default-row td { background: var(--raised); }
+.count.pulse { animation: needs-pulse 1s ease-in-out 3; }
+@keyframes needs-pulse { 50% { transform: scale(1.25); } }
+@media (prefers-reduced-motion: reduce) { .count.pulse { animation: none; } }
+@media (max-width: 600px) {
+  .need-card .actions button { flex: 1 1 auto; }
+}

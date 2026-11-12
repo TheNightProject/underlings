@@ -1,0 +1,48 @@
+.release-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 12px; }
+.release-foot a { color: var(--muted); }
+.release-foot a:hover { color: var(--fg); }
+.release-foot .release-waiting { padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+.release-banner { align-items: flex-start; }
+.release-banner svg.i { color: var(--accent); }
+.release-banner.warn svg.i { color: var(--need); }
+.release-body { flex: 1 1 240px; display: grid; gap: 8px; min-width: 0; color: var(--fg); }
+.release-banner .actions { align-items: center; flex-wrap: nowrap; }
+.release-banner .actions button.icon-only svg.i { color: var(--muted); margin: 0; }
+.release-link { font-size: 12.5px; white-space: nowrap; }
+.release-more { margin: 0; color: var(--muted); font-size: 12.5px; }
+
+.release-group { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 4px 12px; align-items: start; }
+.release-group ul { margin: 0; padding: 0; display: grid; gap: 3px; }
+.release-group ul, .release .md ul { list-style: none; padding-left: 0; }
+.release-group li, .release .md li { position: relative; padding-left: 16px; }
+.release-group li::before, .release .md li::before { content: ""; position: absolute; left: 4px; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--faint); }
+.release-group .md { display: block; font-size: 13px; }
+.release-tag { justify-self: start; margin-top: 2px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; color: var(--quiet); background: var(--quiet-bg); white-space: nowrap; }
+.release-tag[data-group="New"] { color: var(--done); background: var(--done-bg); }
+.release-tag[data-group="Fixed"] { color: var(--info); background: var(--info-bg); }
+.release-tag[data-group="Look and feel"] { color: var(--moved); background: var(--moved-bg); }
+
+.updates-channel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.updates-label { color: var(--muted); font-size: 12.5px; }
+.updates-incoming { display: grid; gap: 10px; }
+.updates-what { margin: 0; }
+.updates-offer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.updates-offer .meta { font-family: var(--font); font-size: 12.5px; max-width: 80ch; }
+.updates-step { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--muted); }
+.updates-log { margin: 0; max-height: 40vh; }
+.updates details summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+
+.release > h2 { font: 650 17px/1.3 var(--display); letter-spacing: -0.01em; text-transform: none; color: var(--fg); flex-wrap: wrap; gap: 6px 12px; }
+.release > h2 .meta { font-family: var(--font); font-weight: 500; font-size: 12.5px; }
+.release-here { --c: var(--done); --cb: var(--done-bg); }
+.release .md { gap: 8px; }
+.release-intro .md { color: var(--muted); }
+.release .md > p > strong:only-child { display: block; margin-top: 6px; font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.release .md > p:first-child > strong:only-child { margin-top: 0; }
+
+@media (max-width: 780px) {
+  .release-group { grid-template-columns: 1fr; }
+  .release-banner { flex-wrap: wrap; }
+  .release-banner .actions { margin-left: auto; }
+}

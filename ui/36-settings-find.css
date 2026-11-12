@@ -1,0 +1,10 @@
+.settings-body { display: grid; gap: 20px; min-width: 0; }
+.settings-body [hidden] { display: none !important; }
+.settings-find { gap: 8px 14px; }
+.settings-find .search { flex: 0 1 420px; min-width: 0; }
+.settings-find input[type=search] { width: 100%; }
+.settings-find-count { color: var(--muted); font-size: 12.5px; }
+.settings-find-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.settings-find-none { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.settings-find-none .empty svg.i { color: var(--faint); }
+mark.find-hit { background: var(--mark-bg); color: inherit; border-radius: 3px; box-shadow: 0 0 0 1px var(--mark-bg); }

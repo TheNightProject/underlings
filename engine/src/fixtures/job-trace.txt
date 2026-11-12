@@ -1,0 +1,37 @@
+[0KRunning with gitlab-runner 17.11.1 (1a2b3c4d)[0;m
+[0K  on shared-runner-7d9c6b5f4-x2k4q xYzAbCdEf, system ID: r_Fixture00001[0;m
+[0K[36;1mResolving secrets[0;m[0;m
+section_start:1793910680:prepare_executor[0K[0K[36;1mPreparing the "kubernetes" executor[0;m[0;m
+[0K"NodeSelector" "cloud.google.com/gke-nodepool" overwritten with "docker-build"[0;m
+[0K"NodeTolerations" "workload=docker-build" overwritten with "NoSchedule"[0;m
+[0K"CPULimit" overwritten with "4"[0;m
+[0KUsing Kubernetes namespace: gitlab-runner[0;m
+[0KUsing Kubernetes executor with image registry.gitlab.com/acme/platform/service-template/ci-python-runner:3.12 ...[0;m
+[0KUsing attach strategy to execute scripts...[0;m
+section_end:1793910680:prepare_executor[0Ksection_start:1793910680:prepare_script[0K[0K[36;1mPreparing environment[0;m[0;m
+[0KUsing FF_USE_POD_ACTIVE_DEADLINE_SECONDS, the Pod activeDeadlineSeconds will be set to the job timeout: 1h0m0s...[0;m
+Waiting for pod gitlab-runner/runner-xyzabcdef-project-4242-concurrent-1-a1b2c3d4 to be running, status is Pending
+Waiting for pod gitlab-runner/runner-xyzabcdef-project-4242-concurrent-1-a1b2c3d4 to be running, status is Pending
+	ContainersNotReady: "containers with unready status: [build helper]"
+	ContainersNotReady: "containers with unready status: [build helper]"
+Running on runner-xyzabcdef-project-4242-concurrent-1-a1b2c3d4 via gitlab-runner-7d9c6b5f4-x2k4q...
+
+section_end:1793910687:prepare_script[0Ksection_start:1793910687:get_sources[0K[0K[36;1mGetting source from Git repository[0;m[0;m
+[32;1mFetching changes with git depth set to 20...[0;m
+Initialized empty Git repository in /builds/acme/platform/relay/.git/
+[32;1mCreated fresh repository.[0;m
+[32;1mChecking out 8f9ad645 as detached HEAD (ref is refs/merge-requests/1135/head)...[0;m
+
+[32;1mSkipping Git submodules setup[0;m
+
+section_end:1793910692:get_sources[0Ksection_start:1793910692:step_script[0K[0K[36;1mExecuting "step_script" stage of the job script[0;m[0;m
+[32;1m$ command -v style-gate >/dev/null || pip install --quiet --extra-index-url "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/api/v4/projects/12345679/packages/pypi/simple" style-gate[0;m
+[32;1m$ style-gate --profile attribution[0;m
+1642 finding(s) in 251 file(s), profile 'attribution' [style-gate 0.9.0.post245]
+These rules guard what ships and cannot be turned off. To accept one finding, add it under 'allow' in .style-gate.yaml with a reason.
+style-gate: 29 path(s) excluded by the ignore list in .style-gate.yaml: /docs/, /adr/, CHANGELOG, /.gitlab/, .gitlab-ci*, .pre-commit*, helmfile*, skaffold*, Makefile, .copier-answers*, renovate.json, cliff.toml, htmlcov/, coverage.xml, .coverage, /deploy/, /.run/, /scripts/, /.archive/, *.min.js, *.min.css, *.js.map, /testing/, migrations/, alembic/, *_pb2.py, *_pb2.pyi, *.generated.*, *.d.ts
+
+section_end:1793910743:step_script[0Ksection_start:1793910743:cleanup_file_variables[0K[0K[36;1mCleaning up project directory and file based variables[0;m[0;m
+
+section_end:1793910743:cleanup_file_variables[0K[31;1mERROR: Job failed: command terminated with exit code 1
+[0;m

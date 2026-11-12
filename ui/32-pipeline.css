@@ -1,0 +1,11 @@
+button.pipe { padding: 1px 8px 1px 6px; gap: 4px; border-color: transparent; border-radius: 999px; background: transparent; color: var(--c); font-size: 12px; }
+button.pipe:hover { background: var(--cb); border-color: transparent; }
+button.pipe svg.i { width: 13px; height: 13px; }
+.stage { display: grid; gap: 6px; min-width: 0; }
+.stage > h3 { margin: 6px 0 0; font-size: 11px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.job-toggle { padding: 2px 4px 2px 0; gap: 4px; border: 0; background: none; color: var(--fg); font-size: 13px; font-weight: 600; text-align: left; overflow-wrap: anywhere; }
+.job-toggle:hover { background: none; color: var(--accent); }
+.job-toggle svg.i { color: var(--muted); transition: transform .15s; }
+.job-toggle[aria-expanded="true"] svg.i { transform: rotate(90deg); }
+.job pre.console { margin: 0; overflow-wrap: anywhere; }
+.job-name { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
