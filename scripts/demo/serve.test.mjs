@@ -35,9 +35,13 @@ before(async () => {
   token = url.searchParams.get('t');
 });
 
-after(() => {
-  server?.kill('SIGTERM');
-  rmSync(root, { recursive: true, force: true });
+after(async () => {
+  if (server && server.exitCode === null) {
+    const exited = new Promise((resolve) => server.once('exit', resolve));
+    server.kill('SIGTERM');
+    await exited;
+  }
+  rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 const get = async (path) => (await fetch(`${origin}${path}${path.includes('?') ? '&' : '?'}t=${token}`)).json();
