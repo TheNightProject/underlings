@@ -12,13 +12,16 @@ const REPO = resolve(HERE, '../..');
 const VIEWPORT = { width: 1200, height: 750 };
 const GPU_FLAGS = ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'];
 const TAIL_S = 0.4;
+const THEMES = ['dark', 'light'];
 
 function options() {
   const argv = process.argv.slice(2);
   const value = (flag, fallback) => (argv.includes(flag) ? argv[argv.indexOf(flag) + 1] : fallback);
   const only = value('--clip', '').split(',').filter(Boolean);
+  const theme = value('--theme', 'dark');
+  if (!THEMES.includes(theme)) throw new Error(`--theme is ${THEMES.join(' or ')}, not ${theme}`);
   return {
-    only, out: resolve(value('--out', join(REPO, 'docs/media'))), work: resolve(value('--work', join(process.env.TMPDIR || tmpdir(), 'underlings-capture'))),
+    only, theme, out: resolve(value('--out', join(REPO, 'docs/media'))), work: resolve(value('--work', join(process.env.TMPDIR || tmpdir(), 'underlings-capture'))),
     encodeOnly: argv.includes('--encode-only'), tour: only.length === 0 || argv.includes('--tour'),
   };
 }
@@ -44,11 +47,16 @@ function startServer(root) {
   });
 }
 
-async function record(chromium, { url, root, only, work }) {
+async function assertScheme(page, theme) {
+  const scheme = await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme);
+  if (scheme !== theme) throw new Error(`the page rendered ${scheme}, not ${theme}`);
+}
+
+async function record(chromium, { url, root, only, work, theme }) {
   const video = join(work, 'video');
   rmSync(video, { recursive: true, force: true });
   const browser = await chromium.launch({ channel: 'chromium', headless: true, args: GPU_FLAGS });
-  const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1, colorScheme: 'light', recordVideo: { dir: video, size: VIEWPORT } });
+  const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: 1, colorScheme: theme, recordVideo: { dir: video, size: VIEWPORT } });
   await context.addInitScript({ path: join(HERE, 'inject.js') });
   const page = await context.newPage();
   const started = Date.now();
@@ -69,6 +77,7 @@ async function record(chromium, { url, root, only, work }) {
       if (!clip.boots) await stage.clearToasts();
       await mark(clip, () => clip.run(stage));
       await clip.teardown?.(stage);
+      await assertScheme(page, theme);
     }
   } catch (err) {
     await page.screenshot({ path: join(work, 'failure.png') }).catch(() => {});
@@ -110,7 +119,7 @@ async function main() {
     const root = mkdtempSync(join(opts.work, 'world-'));
     const { url, child } = await startServer(root);
     try {
-      marks = await record(chromium, { url, root, only: opts.only, work: opts.work });
+      marks = await record(chromium, { url, root, only: opts.only, work: opts.work, theme: opts.theme });
     } finally {
       child.kill('SIGTERM');
     }

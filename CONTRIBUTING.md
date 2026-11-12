@@ -55,8 +55,9 @@ scratch home, a fake GitLab, Jira and Claude Code, and refuses every command and
 them, so nothing real is read or written. `npm run demo:capture` drives a scripted tour of it in
 Chromium and writes the GIFs and `tour.mp4` in `docs/media/` that the README shows. It needs
 `ffmpeg`, `gifsicle` and Chromium (`npm --prefix scripts/demo exec playwright-core install chromium`);
-`--clip hero,agents` records only those clips, and `--out DIR` writes elsewhere. Everything visible
-in it is invented; check each clip's contact sheet in the work folder before committing a new one.
+`--clip hero,agents` records only those clips, `--theme light` records the light theme (dark is the
+default) and `--out DIR` writes elsewhere. Everything visible in it is invented; check each clip's
+contact sheet in the work folder before committing a new one.
 
 ### The golden baseline
 
