@@ -1,0 +1,10 @@
+{
+  "name": "underlings-demo",
+  "private": true,
+  "type": "module",
+  "description": "The demo world and the capture of the README media",
+  "license": "MIT",
+  "dependencies": {
+    "playwright-core": "1.61.1"
+  }
+}

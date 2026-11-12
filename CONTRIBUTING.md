@@ -25,7 +25,7 @@ to `lib/` and `ui/` without a rebuild.
 | `lib/` | the worker's modules, plain ES modules |
 | `ui/` | the page, plain scripts and styles joined in file order |
 | `desktop/` | the Electron shell |
-| `hooks/`, `scripts/` | Claude Code hooks, and the release and build scripts |
+| `hooks/`, `scripts/` | Claude Code hooks, the release and build scripts, and the demo world in `scripts/demo/` |
 | `docs/` | the manual |
 
 ## Test
@@ -46,6 +46,17 @@ code to see it fail before you rely on it.
 Test data is invented. Use `example.com`, `acme/...` repos, `ABC-123` keys and made-up names,
 never real people, employers or tickets. `lib/guard.test.mjs` fails on a list of things that must
 not appear anywhere in the tree.
+
+### The demo world
+
+`npm run demo:serve` runs the real page and worker against an invented world: twelve or more
+agents in every state, merge requests, tickets, Slack, email, a calendar and a game. It uses a
+scratch home, a fake GitLab, Jira and Claude Code, and refuses every command and address outside
+them, so nothing real is read or written. `npm run demo:capture` drives a scripted tour of it in
+Chromium and writes the GIFs and `tour.mp4` in `docs/media/` that the README shows. It needs
+`ffmpeg`, `gifsicle` and Chromium (`npm --prefix scripts/demo exec playwright-core install chromium`);
+`--clip hero,agents` records only those clips, and `--out DIR` writes elsewhere. Everything visible
+in it is invented; check each clip's contact sheet in the work folder before committing a new one.
 
 ### The golden baseline
 
