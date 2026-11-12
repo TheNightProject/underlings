@@ -124,6 +124,16 @@ test('waiting updates are listed as the release notes would be, and Update now t
   assert.deepEqual(p.posts, [['/api/updates/apply', {}]]);
 });
 
+test('a copy installed from a release lists the newer release and says to update it with Homebrew, with no channel and no Update now', async () => {
+  const lines = { New: ['Add the thing'], Fixed: ['Stop the loop'], Changed: [], 'Look and feel': [] };
+  const updates = { channel: 'releases', count: 2, lines, mode: 'release', upgrade: 'brew upgrade --cask underlings', target: { ref: 'v1.2.0', version: '1.2.0', url: 'https://github.com/TheNightProject/underlings/releases/tag/v1.2.0' } };
+  const p = await page({ snap: snapshot({ updates: { count: 2 } }), view: whatsNew(updates), hash: 'whats-new' });
+  const section = p.$('#main .updates');
+  assert.match(section.textContent, /v1\.2\.0 is out: 2 changes since this build, checked .*NewAdd the thingFixedStop the loop/);
+  assert.match(section.textContent, /To update, run brew upgrade --cask underlings in a terminal, then open the app again\./);
+  assert.deepEqual([p.$('#g-update-now'), p.$('#channel-main')], [null, null]);
+});
+
 test('Check for updates and the channel ask the worker, and a channel already picked asks nothing', async () => {
   const p = await page({ hash: 'whats-new' });
   buttonNamed(p, 'Check for updates').click();

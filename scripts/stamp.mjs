@@ -8,11 +8,12 @@ const PLUGIN_MANIFEST = 'plugin/underlings/.claude-plugin/plugin.json';
 const VERSIONED = ['package.json', 'desktop/package.json', PLUGIN_MANIFEST];
 const VERSION_LINE = /^(\s*"version": ")[^"]*(")/m;
 
-export function stamp(root = ROOT, now = new Date()) {
+// A release build is made on CI for Homebrew, so the checkout it names would not be on the Mac that runs it.
+export function stamp(root = ROOT, now = new Date(), release = Boolean(process.env.UNDERLINGS_RELEASE)) {
   const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
   setVersion(root, version);
   const commit = headOf(root);
-  const build = { version, commit, builtAt: now.toISOString(), repo: commit ? root : null };
+  const build = { version, commit, builtAt: now.toISOString(), repo: commit && !release ? root : null, ...(release ? { release: true } : {}) };
   writeFileSync(join(root, 'build.json'), JSON.stringify(build) + '\n');
   return build;
 }

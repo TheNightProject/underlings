@@ -1222,6 +1222,13 @@ The fetch never asks for a password: git runs with `GIT_TERMINAL_PROMPT=0`, and 
 `origin` is private, git signs in with your own credentials, an SSH key or `gh auth setup-git`; one
 it cannot sign in to says so on What's new, as does being offline.
 
+A copy installed with Homebrew was built by the Release workflow, whose `build.json` says
+`"release": true` and names no checkout. It follows releases only and uses no git: the check reads
+the newest releases from GitHub's API, without a token, and lists what the ones above this version
+say in their notes. In place of **Update now**, What's new says to run
+`brew upgrade --cask underlings`. Setting `repoPath` in `config.json` makes it follow that
+checkout instead, as a build from source does.
+
 **Update now** takes two clicks and works in the checkout: `repoPath` from `config.json`, else the
 checkout the plugin runs from, else the one `build.json` says the app was built in, else
 `~/Projects/underlings`:
@@ -1268,6 +1275,15 @@ git push -u origin release/1.0.1
 git switch main && git pull --ff-only
 git tag -a v1.0.1 -m "1.0.1" && git push origin v1.0.1
 ```
+
+Pushing the tag runs the Release workflow on GitHub Actions. It checks the tag matches
+`package.json`, builds the app with `UNDERLINGS_RELEASE=1`, zips it as
+`Underlings-1.0.1-arm64.zip` and publishes a GitHub release with that zip and the version's
+section of `CHANGELOG.md` as its notes. Then it fills in `scripts/homebrew/underlings.rb` with the
+version and checksum and pushes it to `Casks/underlings.rb` in `TheNightProject/homebrew-tap`,
+using the `HOMEBREW_TAP_TOKEN` secret: a fine-grained token with Contents read and write on that
+repo alone. Without the secret the release still goes out, and the workflow warns that the cask
+was left as it was.
 
 ## Overview
 

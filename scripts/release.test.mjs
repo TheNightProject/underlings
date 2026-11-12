@@ -111,3 +111,10 @@ test('the build stamp records the version, commit and checkout for the app and t
   assert.equal(JSON.parse(await read('desktop/package-lock.json')).packages[''].version, '1.2.0');
   assert.equal(JSON.parse(await read(PLUGIN)).version, '1.2.0');
 });
+
+test('a release build names no checkout, as the Mac it runs on has none', async () => {
+  await writeFile(join(repo, 'package.json'), '{\n  "name": "control-centre",\n  "version": "1.2.0"\n}\n');
+  const made = stamp(repo, new Date('2026-11-12T09:00:00Z'), true);
+  assert.deepEqual(made, { version: '1.2.0', commit: git('rev-parse', 'HEAD'), builtAt: '2026-11-12T09:00:00.000Z', repo: null, release: true });
+  assert.deepEqual(JSON.parse(await read('build.json')), made);
+});
