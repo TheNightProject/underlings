@@ -13,6 +13,8 @@
     "release": "node scripts/release.mjs",
     "test": "npm run test:engine && npm run test:cc",
     "test:engine": "npm --prefix engine test",
+    "demo:serve": "node --experimental-test-module-mocks scripts/demo/serve.mjs",
+    "demo:capture": "npm --prefix scripts/demo install --no-audit --no-fund && node scripts/demo/capture.mjs",
     "test:cc": "npm run build && TZ=Europe/London LC_ALL=en_US.UTF-8 node --experimental-test-module-mocks --test --test-concurrency=4 \"**/*.test.mjs\"",
     "test:golden": "npm run build && TZ=Europe/London LC_ALL=en_US.UTF-8 node --experimental-test-module-mocks --test lib/gitlab-golden.test.mjs lib/gitlab-golden-github.test.mjs"
   }
