@@ -78,7 +78,7 @@ function updatesSection(data) {
   const u = data.updates ?? {};
   return el('section', { class: 'section updates' },
     el('h2', {}, icon('download'), 'Updates'),
-    el('div', { class: 'updates-channel' }, el('span', { class: 'updates-label' }, 'Channel'), chips(WN_CHANNELS, u.channel ?? 'main', setUpdateChannel, 'channel-')),
+    u.mode === 'release' ? null : el('div', { class: 'updates-channel' }, el('span', { class: 'updates-label' }, 'Channel'), chips(WN_CHANNELS, u.channel ?? 'main', setUpdateChannel, 'channel-')),
     updateStatus(u),
     u.count && !u.running ? updateOffer(u) : null,
     u.job ? updateJob(u) : null);
@@ -110,7 +110,9 @@ function releaseGroup(name, lines) {
     el('ul', {}, lines.map((line) => el('li', {}, markdown(line)))));
 }
 
+// A copy installed from a release has no checkout to build in, so Homebrew brings the next one.
 function updateOffer(u) {
+  if (u.mode === 'release') return el('div', { class: 'updates-offer' }, el('p', { class: 'meta' }, 'To update, run ', el('code', {}, u.upgrade), ' in a terminal, then open the app again.'));
   const to = u.channel === 'releases' ? u.target?.ref : 'main at ' + (u.target?.sha ?? '').slice(0, 8);
   return el('div', { class: 'updates-offer' },
     guarded('update-now', 'Update now', 'download', 'Update to ' + to + ' now?', applyUpdate, true),

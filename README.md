@@ -85,9 +85,7 @@ It also reads your standup and artifacts. Each part is off or optional; the
 
 ## Requirements
 
-- macOS on Apple Silicon. Underlings is source only, so you build it yourself.
-- Node 22 and the Xcode Command Line Tools (`xcode-select --install`), which build the
-  terminal's `node-pty`.
+- macOS on Apple Silicon.
 - [Claude Code](https://docs.claude.com/en/docs/claude-code), installed and signed in
   (`claude auth login`). Every agent runs as Claude Code on your account.
 - A GitLab token with the `api` scope, or a GitHub token with `repo` and `read:org`, or both.
@@ -97,6 +95,20 @@ It also reads your standup and artifacts. Each part is off or optional; the
   address of your Google Calendar for the calendar and the standup's meetings.
 
 ## Install
+
+```sh
+brew install --cask thenightproject/tap/underlings
+open -a Underlings
+```
+
+Homebrew puts `Underlings.app` in `/Applications`. What's new says when a release is out, and
+`brew upgrade --cask underlings` installs it. The app is not notarised by Apple yet, so the cask
+clears macOS's quarantine flag on it, or macOS would refuse to open it.
+
+### From source
+
+To run `main` between releases, or change Underlings, build it yourself. That needs Node 22 and
+the Xcode Command Line Tools (`xcode-select --install`), which build the terminal's `node-pty`.
 
 ```sh
 git clone https://github.com/TheNightProject/underlings.git
@@ -196,7 +208,9 @@ full auto, email and Slack are off. To keep it that way or tighten it, in Settin
 
 ## Uninstall
 
-Turn off **Launch at login** in the menu bar icon's menu, quit Underlings, then:
+Turn off **Launch at login** in the menu bar icon's menu. If Homebrew installed it,
+`brew uninstall --zap --cask underlings` removes the app and the folders below. Otherwise quit
+Underlings, then:
 
 ```sh
 rm -rf /Applications/Underlings.app
