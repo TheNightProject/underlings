@@ -328,10 +328,12 @@ test('a GitHub error that is not about the token offers a retry and no way to Se
 });
 
 test('the status line names GitHub beside GitLab only when it is on, and says its error in its own words', async () => {
+  // The page reads ages against the real clock, so the days the fixture is old by move with it.
   const on = await open(snapshot([row(GL), row(GH)]));
   const rail = on.$('#health').textContent;
-  assert.match(rail, /GitLab 7 d ago/);
-  assert.match(rail, /GitHub 7 d ago/);
+  const days = Math.round(Math.round((Date.now() - Date.parse(AT)) / 6e4) / 1440);
+  assert.match(rail, new RegExp(`GitLab ${days} d ago`));
+  assert.match(rail, new RegExp(`GitHub ${days} d ago`));
   const limited = await open(snapshot([row(GL)], { providers: { github: { ...provider('GitHub', true, GITHUB_CAPS), limits: { remaining: 4812, resetAt: '2026-11-05T13:00:00Z', lastCost: 1, blockedUntil: null } } } }));
   const span = limited.$$('#health span').find((s) => s.textContent.startsWith('GitHub'));
   assert.match(span.getAttribute('title'), /^4,812 requests left in GitHub's hour, which starts again at \d\d:\d\d$/);

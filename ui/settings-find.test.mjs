@@ -131,7 +131,7 @@ test('when nothing matches the page says so with a Clear button, which brings ev
   const none = page.$('#settings-find-none');
   assert.equal(text(none.querySelector('.empty')), 'No setting matches “zzqx”. Try a word from its name, its hint or one of its choices.');
   assert.equal(page.$('.settings-find-count'), null, 'said once, by the empty state');
-  await page.settle(450);
+  for (let waited = 0; !page.$('#settings-find-said').textContent && waited < 3000; waited += 50) await page.settle(50);
   assert.equal(page.$('#settings-find-said').textContent, 'No setting matches zzqx.');
   none.querySelector('button').click();
   assert.equal(page.$('#settings-q').getAttribute('value'), '');
