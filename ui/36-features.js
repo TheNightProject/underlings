@@ -8,6 +8,7 @@ const FEATURE_HINTS = {
   game: 'XP and coins for the work you do, and an office to spend them on.',
   leaderboard: 'points for opening, reviewing and approving MRs, built when you ask.',
   artifacts: 'the artifacts you publish from Claude Code.',
+  scheduled: 'the routines on your Claude account, read through Claude Code about every half hour while the page is open.',
 };
 
 async function setFeature(name, on) {

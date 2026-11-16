@@ -52,14 +52,14 @@ async function pageWithDrawer(tab = 'overview', snap = snapshot()) {
 const textNodes = (node) => node.childNodes.filter((n) => n.nodeType === 3).map((n) => n.data);
 const drawerButton = (page, label) => page.$$('#drawer button').find((b) => b.textContent === label);
 
-test('the rail has the game first, Tickets, Standup, Calendar, Email and Slack under Work, after Now, QA under Team, and links every view once in reading order, What\'s new from its foot and Setup from Settings', async () => {
+test('the rail has the game first, Tickets, Standup, Calendar, Email, Slack and Scheduled under Work, after Now, QA under Team, and links every view once in reading order, What\'s new from its foot and Setup from Settings', async () => {
   const page = await openPage();
   page.show(snapshot(), 'tickets');
   const groups = page.$$('.rail .navgroup').map((g) => [g.querySelector('h2').textContent, g.querySelectorAll('.navlink').map((a) => a.getAttribute('href'))]);
   assert.deepEqual(groups, [
     ['You', ['#game']],
     ['Now', ['#overview', '#needs-you']],
-    ['Work', ['#tickets', '#standup', '#calendar', '#email', '#slack']],
+    ['Work', ['#tickets', '#standup', '#calendar', '#email', '#slack', '#scheduled']],
     ['Team', ['#qa']],
     ['Agents', ['#agents', '#artifacts']],
     ['Reviews', ['#merge-requests', '#review-queue', '#full-auto', '#review-runs', '#watching', '#leaderboard', '#settings']],

@@ -1363,16 +1363,38 @@ rules.
 
 A fresh install follows the machine and starts with re-review on change off.
 
+## Scheduled
+
+**Scheduled**, under Work in the rail, lists the routines on your Claude account: each one's name,
+a line on what it does, when it runs, whether it is on or paused, when it next runs, and how its
+last run ended, soonest first. It is read only. Nothing on it runs, edits, pauses or deletes a
+routine, and it has no button for any of that. It is off until you turn it on, in Settings under
+Features.
+
+- **The read** is one headless `claude -p` run with Haiku, on the Claude account you are signed in
+  to, in `dontAsk` mode with no tool but the routines one, no session kept and none of your
+  settings, stopped after two minutes or 25 cents. Claude is told to list once and stop. What the
+  page shows comes from the list the tool returned, never from anything Claude says.
+- **Only a plain list can run.** The list includes every routine's prompt, which is text Claude
+  could be talked into following, so a hook on the run refuses any other call to the tool (a run,
+  an edit, a fetch of one routine or its logs) and the read fails if it sees one.
+- **When**: when you open the page and the last read is over 30 minutes old, and on **Refresh**.
+  Nothing reads in the background while the page is closed. A read costs about ten cents.
+- **If a read fails** the last list stays, with a banner saying how long ago it was read and why
+  this one failed. A routine that stopped running shows as paused or as having a failed last run.
+
+Nothing is kept on disk: the list lives in the worker until it restarts.
+
 ## Features
 
 **Features**, near the top of Settings, has a switch for Tickets, Standup, QA, the calendar,
-Email, Slack, the game, the leaderboard and Artifacts, and each one's own group in Settings has
+Email, Slack, the game, the leaderboard, Artifacts and Scheduled, and each one's own group in Settings has
 the same switch. One that is off leaves the rail, its view says it is off with a link back to the
 switch, and nothing for it runs in the background: no Jira read for Tickets, no standup worked
-out, no QA board read, no calendar read or meeting banner, no leaderboard build and no artifact
-record read. Email, Slack and the game keep the switch they always had, in their own settings
-files; the rest are in `~/.config/underlings/features.json`. A new install has QA off, Email
-and Slack off as they always were, and the rest on.
+out, no QA board read, no calendar read or meeting banner, no leaderboard build, no artifact
+record read and no routines read. Email, Slack and the game keep the switch they always had, in their own settings
+files; the rest are in `~/.config/underlings/features.json`. A new install has QA and Scheduled off,
+Email and Slack off as they always were, and the rest on.
 
 ## Filtering Settings
 

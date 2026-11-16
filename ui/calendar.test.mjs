@@ -112,7 +112,7 @@ async function click(page, node) {
 test('Calendar sits under Work, after Standup', async () => {
   const html = await readFile(new URL('../dashboard.html', import.meta.url), 'utf8');
   const work = html.slice(html.indexOf('<h2>Work</h2>'), html.indexOf('</div>', html.indexOf('<h2>Work</h2>')));
-  assert.deepEqual([...work.matchAll(/href="#([\w-]+)"/g)].map((m) => m[1]), ['tickets', 'standup', 'calendar', 'email', 'slack']);
+  assert.deepEqual([...work.matchAll(/href="#([\w-]+)"/g)].map((m) => m[1]), ['tickets', 'standup', 'calendar', 'email', 'slack', 'scheduled']);
 });
 
 test('the week runs Monday to Friday, and the weekend is a toggle away that is remembered', async () => {

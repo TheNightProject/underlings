@@ -3,6 +3,7 @@ import { createInterface } from 'node:readline';
 import { gmailRun } from '../../lib/fixtures/gmail.mjs';
 import { draftRun, slackRun, threadAnswer, channelAnswer, toolRun } from '../../lib/fixtures/slack.mjs';
 import { gmailWorld, SLACK_ME, slackWorld } from './world-messages.mjs';
+import { routinesWorld } from './world-routines.mjs';
 
 const args = process.argv.slice(2);
 const epoch = Number(process.env.DEMO_EPOCH) || Date.now();
@@ -53,6 +54,7 @@ function answer(input, flags) {
     const { threads, picks } = gmailWorld(epoch);
     return gmailRun({ threads, picks });
   }
+  if (input.startsWith('list my routines')) return toolRun([['RemoteTrigger', { action: 'list' }, `HTTP 200\n${JSON.stringify({ data: routinesWorld(epoch) })}`]], { tools: ['RemoteTrigger'] });
   if (input.startsWith('Suggest my reply')) return draftReply(input, slack);
   if (/^Make these \d+ calls together/m.test(input)) return conversation(callsIn(input), slack);
   return toolRun([], { output: {} });
