@@ -4,7 +4,7 @@ const APP_FOLDER = document.querySelector('meta[name="app-folder"]')?.getAttribu
 const VIEWS = {
   overview: 'viewOverview', 'needs-you': 'viewNeeds', agents: 'viewAgents', artifacts: 'viewArtifacts',
   'merge-requests': 'viewMergeRequests', 'review-queue': 'viewQueue', 'full-auto': 'viewFullAuto', 'review-runs': 'viewRuns',
-  tickets: 'viewTickets', standup: 'viewStandup', calendar: 'viewCalendar', email: 'viewEmail', slack: 'viewSlack', qa: 'viewQa', watching: 'viewWatching', leaderboard: 'viewLeaderboard', settings: 'viewSettings',
+  tickets: 'viewTickets', standup: 'viewStandup', calendar: 'viewCalendar', email: 'viewEmail', slack: 'viewSlack', qa: 'viewQa', scheduled: 'viewScheduled', watching: 'viewWatching', leaderboard: 'viewLeaderboard', settings: 'viewSettings',
   'whats-new': 'viewWhatsNew', game: 'viewGame', setup: 'viewSetup',
 };
 const ui = {
@@ -252,7 +252,7 @@ const newTicketType = () => {
 const regExpText = (text) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 
 // Each switch is named after the view it hides.
-const FEATURE_NAMES = { tickets: 'Tickets', standup: 'Standup', qa: 'QA', calendar: 'The calendar', email: 'Email', slack: 'Slack', game: 'The game', leaderboard: 'The leaderboard', artifacts: 'Artifacts' };
+const FEATURE_NAMES = { tickets: 'Tickets', standup: 'Standup', qa: 'QA', calendar: 'The calendar', email: 'Email', slack: 'Slack', game: 'The game', leaderboard: 'The leaderboard', artifacts: 'Artifacts', scheduled: 'Scheduled' };
 const featureOn = (name) => state?.features?.[name] !== false;
 const featureOf = (name) => (Object.hasOwn(FEATURE_NAMES, name) ? name : null);
 
@@ -401,7 +401,7 @@ async function reloadCode() {
 
 const VIEW_ICONS = {
   overview: 'dashboard', 'needs-you': 'bell', agents: 'bot', artifacts: 'sparkles', 'merge-requests': 'merge', 'review-queue': 'inbox',
-  'full-auto': 'zap', 'review-runs': 'activity', tickets: 'ticket', standup: 'clipboard', calendar: 'calendar', email: 'mail', slack: 'hash', qa: 'flask', watching: 'eye', leaderboard: 'trophy', settings: 'settings',
+  'full-auto': 'zap', 'review-runs': 'activity', tickets: 'ticket', standup: 'clipboard', calendar: 'calendar', email: 'mail', slack: 'hash', qa: 'flask', scheduled: 'clock', watching: 'eye', leaderboard: 'trophy', settings: 'settings',
   'whats-new': 'scroll-text', game: 'gamepad', setup: 'list-checks',
 };
 
