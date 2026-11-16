@@ -2,6 +2,16 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.2.1 (2026-11-16)
+
+### New
+
+- Install and update Underlings with Homebrew: `brew install --cask thenightproject/tap/underlings`, then `brew upgrade --cask underlings`
+
+### Changed
+
+- Re-record the README media in dark mode
+
 ## 1.2.0 (2026-11-11)
 
 ### New
