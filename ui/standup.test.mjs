@@ -77,7 +77,7 @@ const lineNode = (page, id) => page.$$('.standup-line').find((n) => n.dataset.li
 test('Standup sits under Work, after Tickets and before the Calendar, Email and Slack', async () => {
   const html = await readFile(new URL('../dashboard.html', import.meta.url), 'utf8');
   const work = html.slice(html.indexOf('<h2>Work</h2>'), html.indexOf('</div>', html.indexOf('<h2>Work</h2>')));
-  assert.deepEqual([...work.matchAll(/href="#([\w-]+)"/g)].map((m) => m[1]), ['tickets', 'standup', 'calendar', 'email', 'slack']);
+  assert.deepEqual([...work.matchAll(/href="#([\w-]+)"/g)].map((m) => m[1]), ['tickets', 'standup', 'calendar', 'email', 'slack', 'scheduled']);
 });
 
 test('each section lists its groups, a box per line ticked as the worker says, and a line with no ticket stands out', async () => {

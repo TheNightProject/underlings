@@ -4,7 +4,7 @@ import { KEY_PATTERN as LIB_KEY } from '../lib/ticketkeys.mjs';
 import { openPage } from './testkit.mjs';
 
 const AT = '2026-11-10T09:00:00Z';
-const FEATURES = ['tickets', 'standup', 'qa', 'calendar', 'email', 'slack', 'game', 'leaderboard', 'artifacts'];
+const FEATURES = ['tickets', 'standup', 'qa', 'calendar', 'email', 'slack', 'game', 'leaderboard', 'artifacts', 'scheduled'];
 const allOn = Object.fromEntries(FEATURES.map((f) => [f, true]));
 
 function snapshot({ features = allOn, matrix = {} } = {}) {
@@ -48,7 +48,7 @@ test('every feature switched off leaves the rail, and a group left with nothing 
   const p = await page();
   p.show(snapshot(), 'overview');
   for (const f of FEATURES) assert.ok(rail(p).includes(f), f);
-  p.show(snapshot({ features: { ...allOn, tickets: false, standup: false, qa: false, calendar: false, email: false, slack: false, game: false, leaderboard: false, artifacts: false } }), 'overview');
+  p.show(snapshot({ features: { ...allOn, tickets: false, standup: false, qa: false, calendar: false, email: false, slack: false, game: false, leaderboard: false, artifacts: false, scheduled: false } }), 'overview');
   for (const f of FEATURES) assert.ok(!rail(p).includes(f), f);
   assert.deepEqual(rail(p), ['overview', 'needs-you', 'agents', 'merge-requests', 'review-queue', 'full-auto', 'review-runs', 'watching', 'settings']);
   const shown = p.$$('.navgroup').filter((g) => !g.hidden).map((g) => g.querySelector('h2').textContent);
@@ -69,7 +69,7 @@ test('Settings has one Features group of every switch, each flipping in a click,
   p.show(snapshot({ features: { ...allOn, qa: false } }), 'settings');
   await p.settle(40);
   const group = p.$('#feature-settings');
-  assert.deepEqual(group.querySelectorAll('.setting label').map((l) => l.textContent), ['Tickets', 'Standup', 'QA', 'The calendar', 'Email', 'Slack', 'The game', 'The leaderboard', 'Artifacts']);
+  assert.deepEqual(group.querySelectorAll('.setting label').map((l) => l.textContent), ['Tickets', 'Standup', 'QA', 'The calendar', 'Email', 'Slack', 'The game', 'The leaderboard', 'Artifacts', 'Scheduled']);
   assert.equal(p.$('#feature-all-qa').getAttribute('aria-checked'), 'false');
   p.$('#feature-all-qa').click();
   await p.settle(20);
