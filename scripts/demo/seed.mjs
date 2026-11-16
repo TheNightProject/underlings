@@ -37,7 +37,7 @@ export function seedWorld({ root, home, stateDir, runnerPid, now = Date.now() })
   write(config, 'config.json', { port: 0 });
   write(config, 'setup.json', { doneAt: new Date(now).toISOString() });
   write(config, 'locale.json', { locale: { timeZone: 'Europe/London', region: 'en-GB', clock: '24' }, hours: { from: '08:00', to: '18:00', workDays: [1, 2, 3, 4, 5] } });
-  write(config, 'features.json', { tickets: true, standup: true, qa: true, calendar: true, leaderboard: true, artifacts: true });
+  write(config, 'features.json', { tickets: true, standup: true, qa: true, calendar: true, leaderboard: true, artifacts: true, scheduled: true });
   write(config, 'qa.json', { jql: 'project = ABC AND status = QA', group: 'acme' });
   write(config, 'game.json', { on: true, toasts: true });
   write(config, 'email.json', { enabled: true });
