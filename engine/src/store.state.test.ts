@@ -127,7 +127,6 @@ test('every state.json writer builds what it writes from a read taken inside its
     ['markSeen', () => watch.markSeen([mr()])],
     ['scheduleReReview', () => watch.scheduleReReview(mr())],
     ['unscheduleReReview', () => watch.unscheduleReReview(key)],
-    ['moveAutomation', () => { store.mutateState((st) => { st.watches[key]!.automation = 're-review Engine!621'; }); return watch.moveAutomation(key); }],
     ['recordVerdict', () => store.recordVerdict(key, 'approved')],
     ['noteOwnActivity', () => store.noteOwnActivity(1001, 621, { notes: 1 })],
     ['thematrix changed', () => takeChange(mr({ sha: 'moved' }), { autoOnly: false })],

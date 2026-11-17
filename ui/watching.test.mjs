@@ -31,7 +31,7 @@ function snapshot() {
 }
 
 function watchRow(key, extra = {}) {
-  return { key, iid: Number(key.split('!')[1]), repo: 'engine', title: null, webUrl: 'https://x', auto: false, automation: null, daily: null, agent: null, stillOpen: true, moved: false, reviewedAt: AT, addedAt: AT, ...extra };
+  return { key, iid: Number(key.split('!')[1]), repo: 'engine', title: null, webUrl: 'https://x', auto: false, daily: null, agent: null, stillOpen: true, moved: false, reviewedAt: AT, addedAt: AT, ...extra };
 }
 
 const SETTINGS = {
@@ -99,7 +99,7 @@ test('a menu item acts once and closes the menu, and Watch and Mark seen are sin
 
 const DAILY = '2026-11-07T12:00:00.000Z';
 
-test('Re-review daily takes two clicks and sends what the page saw, and a scheduled one offers its stop, neither naming Orca', async () => {
+test('Re-review daily takes two clicks and sends what the page saw, and a scheduled one offers its stop', async () => {
   const p = await page({ watching: [watchRow(WATCHED, { daily: DAILY })] });
   p.show(snapshot(), 'merge-requests');
   menuButton(p, PLAIN).click();
@@ -107,31 +107,13 @@ test('Re-review daily takes two clicks and sends what the page saw, and a schedu
   assert.deepEqual(p.posts, []);
   press(p, '.menu', 'Look once a day, and review on days it moved?');
   await p.settle();
-  assert.deepEqual(p.posts, [['/api/matrix/schedule', { key: PLAIN, expect: { daily: null, automation: null } }]]);
+  assert.deepEqual(p.posts, [['/api/matrix/schedule', { key: PLAIN, expect: { daily: null } }]]);
   menuButton(p, WATCHED).click();
   await p.settle();
-  assert.doesNotMatch(p.$('.menu').textContent, /Orca/);
   press(p, '.menu', 'Stop the daily re-review');
   press(p, '.menu', 'Stop it?');
   await p.settle();
-  assert.deepEqual(p.posts[1], ['/api/matrix/unschedule', { key: WATCHED, expect: { daily: DAILY, automation: null } }]);
-});
-
-test('daily re-reviews Orca still holds are listed once, each with a two-click move onto the schedule here', async () => {
-  const p = await page({ watching: [watchRow(WATCHED, { automation: 're-review engine!8', title: 'MR 8' }), watchRow(CLOSED, { stillOpen: false, automation: 're-review engine!3' }), watchRow(PLAIN, { title: 'MR 7' })] });
-  p.show(snapshot(), 'watching');
-  await p.settle();
-  const listed = p.$$('#main .section').find((s) => s.querySelector('h2')?.textContent === 'Daily re-reviews Orca still runs');
-  assert.deepEqual(listed.querySelectorAll('.row').map((r) => r.querySelector('.ref').textContent), ['MR 8'], 'only the open one, as a closed MR has nothing to move');
-  press(p, '#main .section', "Move to the schedule here");
-  assert.deepEqual(p.posts, []);
-  press(p, '#main .section', 'Move re-review engine!8 here?');
-  await p.settle();
-  assert.deepEqual(p.posts, [['/api/matrix/move-automation', { key: WATCHED, expect: { daily: null, automation: 're-review engine!8' } }]]);
-  p.show(snapshot(), 'merge-requests');
-  menuButton(p, WATCHED).click();
-  await p.settle();
-  assert.ok(p.$$('.menu button').some((b) => b.textContent === "Move to the schedule here"), 'and the MR\'s own menu offers the same move');
+  assert.deepEqual(p.posts[1], ['/api/matrix/unschedule', { key: WATCHED, expect: { daily: DAILY } }]);
 });
 
 test('Escape or a click elsewhere closes the menu, and Escape hands focus back to its button', async () => {
@@ -169,7 +151,7 @@ test('a click elsewhere leaves a menu that another part of the page opened', asy
 test('the Watching view lists each watch with Stop, Auto, Mark seen and Agent, and clears the closed ones in two clicks', async () => {
   const p = await page({
     watching: [
-      watchRow(WATCHED, { auto: true, moved: true, agent: 'working', title: 'MR 8', automation: 're-review engine!8' }),
+      watchRow(WATCHED, { auto: true, moved: true, agent: 'working', title: 'MR 8', daily: DAILY }),
       watchRow(CLOSED, { stillOpen: false }),
       watchRow('acme/engine!4', { stillOpen: false, auto: true }),
       watchRow(PLAIN, { title: 'MR 7' }),
@@ -186,7 +168,7 @@ test('the Watching view lists each watch with Stop, Auto, Mark seen and Agent, a
   closed.querySelectorAll('button')[0].click();
   press(p, '#main', 'Auto');
   await p.settle();
-  assert.deepEqual(p.posts, [['/api/matrix/unwatch', { key: CLOSED, expect: { daily: null, automation: null } }], ['/api/matrix/auto', { key: WATCHED, auto: false }]]);
+  assert.deepEqual(p.posts, [['/api/matrix/unwatch', { key: CLOSED, expect: { daily: null } }], ['/api/matrix/auto', { key: WATCHED, auto: false }]]);
   press(p, '#main', 'Stop');
   assert.equal(p.posts.length, 2, 'stopping one with a daily re-review only arms the first time');
   press(p, '#main', 'Clear 2 closed');

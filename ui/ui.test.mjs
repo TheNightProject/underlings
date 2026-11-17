@@ -134,6 +134,11 @@ test('nothing on the page or in the worker can start the terminal app any more',
   for (const { name, text } of [page, ...scripts, ...workerCode]) assert.doesNotMatch(text, /start-matrix|startMatrix|Start TheMatrix/i, name);
 });
 
+test('nothing on the page or in the worker names Orca, as the app is the only way to run it', () => {
+  const shipped = workerCode.filter(({ name }) => !/\.test\.|workerproc|testkit/.test(name));
+  for (const { name, text } of [page, ...scripts, ...shipped]) assert.doesNotMatch(text, /\bOrca\b/i, name);
+});
+
 test('every ui file compiles on its own', () => {
   assert.ok(scripts.length > 0, 'there are no ui scripts');
   for (const { name, text } of scripts) assert.doesNotThrow(() => new vm.Script(text, { filename: name }), name);
