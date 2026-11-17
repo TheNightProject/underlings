@@ -221,6 +221,8 @@ export interface Ticket {
   status: string;
   labels: string[];
   url: string;
+  /** The open pull requests that close it, as owner/repo#12, where the source links them. */
+  prs?: string[];
 }
 
 export const SEVERITY_ORDER: Severity[] = ['CRITICAL', 'MAJOR', 'MINOR', 'NIT', 'QUESTION'];

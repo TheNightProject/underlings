@@ -3,6 +3,11 @@ const TICKETS_POLL_MS = 3000;
 const TICKETS_REREAD_MS = 30000;
 const KICKOFF_GRACE_MS = 5 * 60000;
 const TICKET_LAYOUT_KEY = 'cc.ticketLayout';
+const TICKETS_OFF = {
+  jira: 'Tickets are off until you set your Jira site.',
+  github: 'Tickets come from GitHub Issues, which wait until GitHub is switched on.',
+  chosen: 'Tickets are switched off under Ticket settings.',
+};
 let ticketSeq = 0;
 let ticketsWake = null;
 
@@ -66,7 +71,7 @@ function viewTickets(d) {
       chips([['all', 'All (' + tickets.length + ')'], ...statuses.map((s) => [s, s + ' (' + tickets.filter((x) => x.status === s).length + ')'])], t.filter, (v) => { t.filter = v; render(); }),
       searchBox('ticket-q', 'Search key, summary or epic', t.search, (v) => { t.search = v; render(true); }),
       picker('ticket-epic', 'Every epic', t.epic, epics, (v) => { t.epic = v; render(); })),
-    !data ? (t.error ? null : el('p', { class: 'empty' }, icon('clock'), 'Reading your tickets from Jira…'))
+    !data ? (t.error ? null : el('p', { class: 'empty' }, icon('clock'), 'Reading your tickets from ' + ticketSourceName() + '…'))
       : shown.length ? ticketsShown(shown, tickets, d) : data.read && !data.off ? empty(tickets.length ? 'No ticket matches.' : 'You have no open tickets.') : null,
   ];
 }
@@ -97,15 +102,16 @@ function ticketMatches(x, search) {
 
 function ticketsBanner(t, data) {
   if (t.error) return banner('Could not read your tickets: ' + t.error, true);
-  if (data?.off) return banner('Tickets are off until you set your Jira site.', false, ' ', el('a', { class: 'fix-link', ...inPage('#setup') }, icon('list-checks'), 'Set up Jira'));
-  if (data?.error) return banner('Jira cannot be read right now, so ' + (data.read ? 'this is the list from ' + ago(data.fetchedAt) : 'there is no list to show') + '. acli said: ' + data.error, true, ' ', retryTicketsButton(t, data));
-  if (data && !data.read) return el('p', { class: 'empty' }, icon('clock'), 'Reading your tickets from Jira…');
+  if (data?.off) return banner(TICKETS_OFF[data.offWhy] ?? TICKETS_OFF.jira, false, ' ', el('a', { class: 'fix-link', ...inPage('#setup') }, icon('list-checks'), 'Set up tickets'));
+  const from = data?.source?.name ?? 'Jira';
+  if (data?.error) return banner(from + ' cannot be read right now, so ' + (data.read ? 'this is the list from ' + ago(data.fetchedAt) : 'there is no list to show') + '. ' + (from === 'Jira' ? 'acli' : from) + ' said: ' + data.error, true, ' ', retryTicketsButton(t, data));
+  if (data && !data.read) return el('p', { class: 'empty' }, icon('clock'), 'Reading your tickets from ' + from + '…');
   return null;
 }
 
 function retryTicketsButton(t, data) {
   const busy = t.reading || data.loading;
-  return el('button', { id: 'tickets-retry', disabled: busy, title: 'Read your tickets from Jira again now', onclick: retryTickets },
+  return el('button', { id: 'tickets-retry', disabled: busy, title: 'Read your tickets from ' + (data.source?.name ?? 'Jira') + ' again now', onclick: retryTickets },
     icon(busy ? 'clock' : 'refresh'), busy ? 'Reading…' : 'Retry now');
 }
 
@@ -217,15 +223,15 @@ function ticketDrawer(d) {
     el('div', { class: 'drawer-head' },
       el('div', { class: 'drawer-title' },
         el('div', { class: 'title' }, x?.summary ?? t.key),
-        metaLine(t.key, x?.status, t.loading ? 'reading Jira…' : null)),
+        metaLine(t.key, x?.status, t.loading ? 'reading ' + ticketSourceName() + '…' : null)),
       el('div', { class: 'actions' },
-        outside(x?.url, 'Open in Jira'),
+        outside(x?.url, ticketsOnGithub() ? 'Open on GitHub' : 'Open in Jira'),
         el('button', { class: 'icon-only', title: 'Close (Esc)', 'aria-label': 'Close', onclick: closeTicket }, icon('x')))),
     el('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Ticket sections' }, TICKET_TABS.map(([id, label]) =>
       el('button', { class: 'tab', role: 'tab', id: 'ticket-tab-' + id, 'aria-selected': String(id === tab[0]), onclick: () => openTicket(t.key, id) }, label))),
     el('div', { class: 'drawer-body', role: 'tabpanel', 'aria-labelledby': 'ticket-tab-' + tab[0] },
       t.error ? banner(t.error, true) : null,
-      tab[0] === 'agent' ? ticketAgentTab(t, d) : x ? ticketOverview(t, x, d) : t.error ? null : el('p', { class: 'empty' }, icon('clock'), 'Reading the ticket from Jira…')));
+      tab[0] === 'agent' ? ticketAgentTab(t, d) : x ? ticketOverview(t, x, d) : t.error ? null : el('p', { class: 'empty' }, icon('clock'), 'Reading the ticket from ' + ticketSourceName() + '…')));
 }
 
 function ticketOverview(t, x, d) {
@@ -250,7 +256,7 @@ function ticketActions(t, x, d) {
         x.targets.map((s) => el('option', { value: s, selected: s === t.moveTo }, s))),
       t.moveTo ? guarded('ticket-move:' + x.key, 'Move', 'chevron', 'Move ' + x.key + ' to ' + t.moveTo + '?', () => moveTicket(x, t.moveTo), true) : null),
     kickoffAlive(x.run, d)
-      ? el('div', { class: 'actions' }, kickoffChip(x, d), el('span', { class: 'meta' }, 'Answer it in the Agent tab. It asks you before it pushes, raises an MR or touches Jira.'))
+      ? el('div', { class: 'actions' }, kickoffChip(x, d), el('span', { class: 'meta' }, 'Answer it in the Agent tab. It asks you before it pushes, raises an MR or touches ' + ticketSourceName() + '.'))
       : el('div', { class: 'actions' }, guarded('ticket-start:' + x.key, 'Start with an agent', 'bot', 'Start ' + x.key + ' with an agent' + '?', () => startKickoff(x))));
 }
 

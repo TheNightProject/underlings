@@ -11,7 +11,7 @@ function threadTicket(key, t, prefix) {
   const flow = ui.drafts.get('ticket:' + t.id);
   if (flow) return { button: null, panel: ticketPanel(key, t, flow) };
   if (!mayRaise(key, t)) return {};
-  return { button: el('button', { id: prefix + 'ticket-make-' + t.id, title: 'Draft a Jira ticket from this thread, then reply and resolve it', onclick: (e) => startTicket(e, key, t, prefix) }, icon('ticket'), 'Make a ticket') };
+  return { button: el('button', { id: prefix + 'ticket-make-' + t.id, title: 'Draft a ' + ticketSourceName() + ' ticket from this thread, then reply and resolve it', onclick: (e) => startTicket(e, key, t, prefix) }, icon('ticket'), 'Make a ticket') };
 }
 
 const finished = (raised) => Boolean(raised.ticket && raised.replied && raised.resolved);
@@ -176,14 +176,14 @@ function foundTicket(key, t, flow, found, firstId) {
 }
 
 function searchNote(flow) {
-  return flow.searchError ? el('div', { class: 'meta bad' }, 'Jira could not be searched (' + flow.searchError + '), so a ticket may already cover this.') : null;
+  return flow.searchError ? el('div', { class: 'meta bad' }, ticketSourceName() + ' could not be searched (' + flow.searchError + '), so a ticket may already cover this.') : null;
 }
 
 function ticketForm(key, t, flow, id, cancel) {
   const busyId = 'ticket:' + t.id;
   const busy = ui.busy.has(busyId);
-  const epic = () => flow.epicKey.trim().toUpperCase();
-  const ready = () => Boolean(flow.summary.trim() && flow.description.trim() && TICKET_KEY.test(epic()));
+  const epic = () => parentKeyOf(flow.epicKey);
+  const ready = () => Boolean(flow.summary.trim() && flow.description.trim() && isParentKey(epic()));
   const create = guarded(busyId, 'Create ticket', 'ticket', 'Create a ticket under ' + epic() + '?', () => createTicketFromDraft(key, t, flow, epic(), busyId), true);
   create.disabled = busy || !ready();
   const typed = (field) => (e) => {
@@ -204,7 +204,7 @@ function ticketForm(key, t, flow, id, cancel) {
       el('label', { for: id('description') }, 'Description'),
       el('textarea', { id: id('description'), maxlength: MAX_TICKET_TEXT, readonly: busy, oninput: typed('description') }, flow.description)),
     el('div', { class: 'ticket-field' },
-      el('label', { for: id('epic') }, 'Parent epic'),
+      el('label', { for: id('epic') }, parentLabel()),
       el('div', { class: 'ticket-epic' },
         el('input', { id: id('epic'), type: 'text', value: flow.epicKey, placeholder: exampleKey(), readonly: busy, spellcheck: 'false', autocomplete: 'off', 'aria-describedby': id('epic-note'), oninput: typedEpic }),
         el('span', { class: 'meta', id: id('epic-note') }, epicNote(flow, epic())))),
@@ -215,7 +215,7 @@ function ticketForm(key, t, flow, id, cancel) {
 
 function epicNote(flow, epic) {
   if (flow.epic && epic === flow.epic.key) return flow.epic.summary;
-  return flow.epicNote && !epic ? flow.epicNote : epic && !TICKET_KEY.test(epic) ? 'An epic key looks like ' + exampleKey() + '.' : '';
+  return flow.epicNote && !epic ? flow.epicNote : epic && !isParentKey(epic) ? parentHint() : '';
 }
 
 function createTicketFromDraft(key, t, flow, epic, busyId) {

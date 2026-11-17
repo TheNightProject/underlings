@@ -9,6 +9,8 @@ export const emptyWorld = (viewer = 'frank-gh') => ({
   orgs: [],
   repos: [],
   prs: [],
+  issues: [],
+  projects: [],
   compares: {},
   files: {},
   logs: {},
@@ -129,7 +131,23 @@ function shapes(world, web) {
       commits: { nodes: [{ commit: { statusCheckRollup: p.rollup ? { state: p.rollup } : null, checkSuites: { nodes: (p.runs ?? []).map((databaseId) => ({ workflowRun: { databaseId } })) } } }] },
     };
   };
-  return { find, repoOf, pr };
+  const issue = (i) => ({
+    id: issueId(i), number: i.number, title: i.title, url: `${web}/${i.repo}/issues/${i.number}`, state: i.state ?? 'OPEN', body: i.body ?? '',
+    repository: { nameWithOwner: i.repo },
+    labels: { nodes: (i.labels ?? []).map((name) => ({ name })) },
+    parent: parentOf(world, i),
+    projectItems: { nodes: world.projects.flatMap((p) => p.items.filter((it) => it.issue === issueKey(i)).map((it) => ({ id: it.id, project: { id: p.id }, status: it.status ? { name: it.status } : null }))) },
+    closedByPullRequestsReferences: { nodes: (i.closedBy ?? []).map((key) => ({ number: Number(key.split('#')[1]), repository: { nameWithOwner: key.split('#')[0] } })) },
+  });
+  return { find, repoOf, pr, issue, world };
+}
+
+const issueKey = (i) => `${i.repo}#${i.number}`;
+const issueId = (i) => `I_${i.repo.replace(/\W/g, '_')}_${i.number}`;
+
+function parentOf(world, i) {
+  const parent = i.parent ? world.issues.find((p) => issueKey(p) === i.parent) : null;
+  return parent ? { number: parent.number, title: parent.title, repository: { nameWithOwner: parent.repo } } : null;
 }
 
 const rate = (world) => ({ cost: 1, remaining: 4990, resetAt: new Date(world.clock() + 3_600_000).toISOString() });
@@ -152,10 +170,24 @@ function graphqlAnswer(world, shape, { op, body }) {
     PrChecks: () => ({ repository: checksOf(world, shape, v) }),
     PrNode: () => ({ repository: onePr(shape, v, (p) => ({ id: prId(p), headRefOid: p.headRefOid })) }),
     PrMerge: () => ({ repository: mergeFacts(shape, v) }),
+    MyIssues: () => ({ assigned: issueSearch(world, shape, v.assigned), authored: issueSearch(world, shape, v.authored) }),
+    IssueSearch: () => ({ search: issueSearch(world, shape, v.query, v.first) }),
+    Issue: () => ({ repository: oneIssue(shape, v.owner, v.name, v.number, shape.issue) }),
+    Issues: () => manyIssues(shape, v),
+    SubIssues: () => ({ repository: oneIssue(shape, v.owner, v.name, v.number, (i) => ({ subIssues: { nodes: world.issues.filter((c) => c.parent === issueKey(i)).slice(-v.last).map(shape.issue) } })) }),
+    ProjectBoard: () => projectBoard(world, v),
+    MoveItem: () => moveItem(world, v),
+    AddItem: () => addItem(world, v),
+    AddSubIssue: () => addSubIssue(world, v),
   };
   const make = answers[op] ?? mutations(world, shape, v)[op];
   if (!make) return { status: 200, body: { errors: [{ message: `the fake GitHub has no query named ${op}` }] } };
-  const data = make();
+  let data;
+  try {
+    data = make();
+  } catch (err) {
+    return { body: { data: null, errors: [{ type: 'NOT_FOUND', message: err.message }] } };
+  }
   if (data instanceof Refusal) return { body: { data: { [data.field]: null }, errors: [{ type: data.type, message: data.message }] } };
   return { body: { data: { rateLimit: rate(world), ...data } } };
 }
@@ -282,6 +314,8 @@ function diffLines(patch) {
 }
 
 function writeAnswer(world, shape, { method, path, body }) {
+  const issue = issueWrite(world, shape, method, path, body);
+  if (issue) return issue;
   const parts = path.split('/').filter(Boolean);
   if (parts[0] !== 'repos' || parts.length < 6) return null;
   const repo = `${parts[1]}/${parts[2]}`;
@@ -412,6 +446,77 @@ function involved(world, shape, v, open) {
   return out;
 }
 
+const ISSUE_TERMS = {
+  'is:open': (i) => (i.state ?? 'OPEN') === 'OPEN',
+  'assignee:@me': (i, me) => (i.assignees ?? []).includes(me),
+  'author:@me': (i, me) => i.author === me,
+};
+
+/** Enough of GitHub's issue search for the app's own queries: the qualifiers it sends, closed:DAY, and quoted phrases joined by OR in the body. */
+function issueSearch(world, shape, text = '', first = 100) {
+  const me = world.viewer.login;
+  const words = String(text).match(/"[^"]*"|\S+/g) ?? [];
+  if (!words.includes('is:issue')) return { nodes: [] };
+  const phrases = words.filter((w) => w.startsWith('"')).map((w) => w.slice(1, -1));
+  const closed = words.find((w) => w.startsWith('closed:'))?.slice('closed:'.length);
+  const hits = world.issues.filter((i) => words.every((w) => !ISSUE_TERMS[w] || ISSUE_TERMS[w](i, me))
+    && (!closed || (i.state === 'CLOSED' && String(i.closedAt ?? '').startsWith(closed)))
+    && (!phrases.length || phrases.some((p) => String(i.body ?? '').includes(p))));
+  return { nodes: hits.slice(0, first).map(shape.issue) };
+}
+
+function oneIssue(shape, owner, name, number, pick) {
+  const repo = `${owner}/${name}`;
+  if (!shape.repoOf(repo)) return null;
+  const found = shape.world.issues.find((i) => i.repo === repo && i.number === Number(number));
+  return { issue: found ? pick(found) : null };
+}
+
+function manyIssues(shape, v) {
+  const out = {};
+  for (let n = 0; v[`o${n}`] !== undefined; n += 1) out[`i${n}`] = oneIssue(shape, v[`o${n}`], v[`n${n}`], v[`k${n}`], shape.issue);
+  return out;
+}
+
+function boardOf(p) {
+  const field = p.field === null ? null : { __typename: p.field?.type ?? 'ProjectV2SingleSelectField', id: p.field?.id ?? `PVTSSF_${p.id}`, options: p.field?.options ?? [] };
+  return { id: p.id, title: p.title, url: `https://github.com/${p.ownerType === 'user' ? 'users' : 'orgs'}/${p.owner}/projects/${p.number}`, field };
+}
+
+function projectBoard(world, v) {
+  const found = world.projects.find((p) => p.owner === v.owner && p.number === Number(v.number));
+  const isOrg = world.orgs.includes(v.owner) || world.projects.some((p) => p.owner === v.owner && p.ownerType !== 'user');
+  const isUser = v.owner === world.viewer.login || world.projects.some((p) => p.owner === v.owner && p.ownerType === 'user');
+  const projectOf = (type) => ({ projectV2: found && (found.ownerType ?? 'org') === type ? boardOf(found) : null });
+  return { organization: isOrg ? projectOf('org') : null, user: isUser ? projectOf('user') : null };
+}
+
+function moveItem(world, v) {
+  const project = world.projects.find((p) => p.id === v.project);
+  const item = project?.items.find((it) => it.id === v.item);
+  const option = project?.field?.options?.find((o) => o.id === v.option);
+  if (!item || !option || (project.field.id ?? `PVTSSF_${project.id}`) !== v.field) throw new Error('the fake GitHub could not find that item, field or option');
+  item.status = option.name;
+  return { updateProjectV2ItemFieldValue: { projectV2Item: { id: item.id } } };
+}
+
+function addItem(world, v) {
+  const project = world.projects.find((p) => p.id === v.project);
+  const issue = world.issues.find((i) => issueId(i) === v.content);
+  if (!project || !issue) throw new Error('the fake GitHub could not find that project or issue');
+  const item = { id: `PVTI_${project.items.length + 1}_${issue.number}`, issue: issueKey(issue), status: null };
+  project.items.push(item);
+  return { addProjectV2ItemById: { item: { id: item.id } } };
+}
+
+function addSubIssue(world, v) {
+  const parent = world.issues.find((i) => issueId(i) === v.parent);
+  const child = world.issues.find((i) => issueId(i) === v.child);
+  if (!parent || !child) throw new Error('the fake GitHub could not find those issues');
+  child.parent = issueKey(parent);
+  return { addSubIssue: { issue: { id: v.parent } } };
+}
+
 function repoPrs(shape, v, open) {
   const out = {};
   for (let n = 0; v[`o${n}`] !== undefined; n += 1) {
@@ -519,4 +624,21 @@ function contentsAnswer(world, repo, path, ref) {
 function logAnswer(world, jobId) {
   const text = world.logs[jobId];
   return text === undefined ? null : { text };
+}
+
+/** Opening an issue, and closing or reopening one, which is all the app writes to GitHub's REST API. */
+function issueWrite(world, shape, method, path, body) {
+  const [, repos, owner, name, kind, number] = path.split('/');
+  const repo = `${owner}/${name}`;
+  if (repos !== 'repos' || kind !== 'issues' || !shape.repoOf(repo)) return null;
+  if (method === 'POST' && number === undefined) {
+    const taken = [...world.issues, ...world.prs].filter((i) => i.repo === repo).map((i) => i.number);
+    const made = { repo, number: Math.max(0, ...taken) + 1, title: body.title, body: body.body ?? '', state: 'OPEN', author: world.viewer.login, assignees: body.assignees ?? [], labels: [] };
+    world.issues.push(made);
+    return { status: 201, body: { number: made.number, title: made.title, html_url: shape.issue(made).url, node_id: issueId(made) } };
+  }
+  const found = world.issues.find((i) => i.repo === repo && i.number === Number(number));
+  if (method !== 'PATCH' || !found) return null;
+  if (body.state) Object.assign(found, { state: body.state.toUpperCase(), closedAt: body.state === 'closed' ? new Date(world.clock()).toISOString() : null });
+  return { body: { number: found.number, state: body.state ?? 'open', html_url: shape.issue(found).url } };
 }

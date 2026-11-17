@@ -79,3 +79,34 @@ export function githubWorld(over = {}) {
     ...over,
   };
 }
+
+const issue = (over) => ({ state: 'OPEN', author: 'ivan', assignees: [], labels: [], body: '', parent: null, closedBy: [], ...over });
+
+/** frank-gh's issues: two on the Project, one off it, one only written by him, a parent, and others' work that is not his. */
+export function issueList() {
+  return [
+    issue({ repo: 'acme-co/web', number: 9, title: 'Token lookups are slow', assignees: ['frank-gh'], labels: ['perf'], parent: 'acme-co/web#1', closedBy: ['acme-co/web#12'], body: 'Every request reads the token again.' }),
+    issue({ repo: 'acme-co/web', number: 1, title: 'Make the web app fast', author: 'trent', assignees: ['trent'] }),
+    issue({ repo: 'acme-co/engine', number: 4, title: 'Split the engine in two', assignees: ['frank-gh'] }),
+    issue({ repo: 'octo/api', number: 30, title: 'Document the client', author: 'frank-gh' }),
+    issue({ repo: 'octo/web', number: 8, title: 'Shipped last week', assignees: ['frank-gh'] }),
+    issue({ repo: 'acme-co/web', number: 20, title: 'Closed already', assignees: ['frank-gh'], state: 'CLOSED', closedAt: '2026-11-09T15:00:00Z' }),
+    issue({ repo: 'acme-co/web', number: 21, title: 'Someone else\'s', assignees: ['rupert'] }),
+  ];
+}
+
+export const BOARD_COLUMNS = ['Todo', 'In Progress', 'In Review', 'Done'];
+
+/** acme-co's Project 3, Roadmap, whose Status gives the columns; octo/web#8 sits in Done. */
+export function roadmap(over = {}) {
+  return {
+    owner: 'acme-co', number: 3, id: 'PVT_roadmap', title: 'Roadmap', ownerType: 'org',
+    field: { id: 'PVTSSF_status', options: BOARD_COLUMNS.map((name, n) => ({ id: `opt_${n}`, name })) },
+    items: [
+      { id: 'PVTI_9', issue: 'acme-co/web#9', status: 'In Progress' },
+      { id: 'PVTI_4', issue: 'acme-co/engine#4', status: null },
+      { id: 'PVTI_8', issue: 'octo/web#8', status: 'Done' },
+    ],
+    ...over,
+  };
+}

@@ -21,7 +21,7 @@ export { cancelAutoMerge, fetchMrEnd, fetchSince, fetchTodos } from './data/gitl
 export { changesRequestedBy, forgeOf, forges, forgeView, heldByMe } from './data/forge.js';
 export { checkToken as githubTokenCheck, forgetGithubToken, githubLimits, githubOn, githubTokenFile, githubWeb } from './data/github.js';
 export { fetchMyTickets, fetchTickets, isAvailable, transitionTicket } from './ticketsource.js';
-export { createTicket, ticketChildren, ticketsMentioning, viewTicket } from './ticketsource.js';
+export { createTicket, ticketChildren, ticketColumns, ticketsMentioning, viewTicket } from './ticketsource.js';
 export { removeWorktree } from './agents/index.js';
 export { agentCommands } from './agentprompts.js';
 export { pluginDir, skillsPlugin } from './plugin.js';

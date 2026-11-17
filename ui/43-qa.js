@@ -35,6 +35,7 @@ function viewQa() {
     header('QA', 'Every ticket waiting for testing across the team, by repo and how long it has waited. Click a cell to list its tickets.',
       qaRefreshButton(data), board ? button('Copy for Slack', 'copy', () => copyQa(listed, board), true) : null),
     box.error ? banner('Could not read QA: ' + box.error, true) : null,
+    data?.needsJira ? banner(data.needsJira + '.', false, ' ', el('a', { class: 'fix-link', ...inPage('#settings') }, icon('settings'), 'Ticket settings')) : null,
     data?.error ? banner((board ? 'The last read failed, so this is from ' + ago(board.generatedAt) + ': ' : 'Could not read QA: ') + data.error, true) : null,
     board && board.jql !== data.jql ? banner('This was read for ' + board.jql + '. Reading ' + data.jql + ' now.') : null,
     data && data.configured === false ? qaUnset(data) : qaWaiting(box, data),

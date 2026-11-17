@@ -222,6 +222,17 @@ const view = () => (Object.hasOwn(VIEWS, location.hash.slice(1)) ? location.hash
 const TICKET_KEY_SOURCE = '[A-Z][A-Z0-9]+-[1-9]\\d*';
 const TICKET_KEY = new RegExp('^' + TICKET_KEY_SOURCE + '$');
 const JIRA_URL = new RegExp('https:\\/\\/[\\w-]+\\.atlassian\\.net\\/browse\\/(' + TICKET_KEY_SOURCE + ')');
+// A GitHub issue as owner/repo#12, kept identical to the engine's GITHUB_ISSUE_PATTERN and lib/ticketkeys.mjs.
+const GITHUB_ISSUE_SOURCE = '[\\w.-]+\\/[\\w.-]+#[1-9]\\d*';
+const GITHUB_ISSUE = new RegExp('^' + GITHUB_ISSUE_SOURCE + '$');
+const GITHUB_REPO = /^[\w.-]+\/[\w.-]+$/;
+const ticketsOnGithub = () => state?.matrix?.ticketSource?.id === 'github';
+const ticketSourceName = () => state?.matrix?.ticketSource?.name ?? 'Jira';
+// On GitHub a new ticket goes under a parent issue, or straight into a repo; on Jira under an epic.
+const isParentKey = (text) => (ticketsOnGithub() ? GITHUB_ISSUE.test(text) || GITHUB_REPO.test(text) : TICKET_KEY.test(text));
+const parentKeyOf = (text) => (ticketsOnGithub() ? String(text).trim() : String(text).trim().toUpperCase());
+const parentLabel = () => (ticketsOnGithub() ? 'Parent issue or repo' : 'Parent epic');
+const parentHint = () => (ticketsOnGithub() ? 'A parent is an issue such as acme/web#12, or a repo such as acme/web.' : 'An epic key looks like ' + exampleKey() + '.');
 const DEFAULT_GITLAB_HOST = 'https://gitlab.com';
 const gitlabHost = () => state?.matrix?.gitlabHost || DEFAULT_GITLAB_HOST;
 const DEFAULT_GITHUB_WEB = 'https://github.com';
@@ -244,7 +255,7 @@ function rowRef(r) {
 function readOnlyNote(key) {
   return forgeAllows(key, 'post') ? null : el('span', { class: 'pill s-quiet read-only', title: READ_ONLY_WHY }, 'read only here');
 }
-const exampleKey = () => (state?.matrix?.defaultProject || state?.matrix?.jiraProjects?.[0] || 'ABC') + '-1234';
+const exampleKey = () => (ticketsOnGithub() ? 'acme/web#12' : (state?.matrix?.defaultProject || state?.matrix?.jiraProjects?.[0] || 'ABC') + '-1234');
 const ownProjects = () => state?.matrix?.jiraProjects ?? [];
 const newTicketType = () => {
   const type = state?.matrix?.issueType || 'Task';

@@ -1,5 +1,8 @@
+import { ticketSourceOf } from '../../lib/ticketkeys.mjs';
 import type { AcliOptions } from './data/acli.js';
+import { githubIssues } from './data/github-issues.js';
 import * as jira from './data/jira.js';
+import { loadSettings } from './data/store.js';
 import { TICKET_KEY } from './ticketkeys.js';
 import type { Ticket } from './types.js';
 
@@ -27,7 +30,7 @@ export interface NewTicket {
 
 /** Where tickets come from: every read and write the app makes of them goes through one of these. */
 export interface TicketSource {
-  readonly id: 'jira';
+  readonly id: 'jira' | 'github';
   readonly name: string;
   isKey(key: string): boolean;
   mine(limit?: number): Promise<Ticket[]>;
@@ -40,6 +43,8 @@ export interface TicketSource {
   inProgress(): Promise<Ticket[]>;
   movedTo(status: string, day: string): Promise<Ticket[]>;
   movedBy(status: string, day: string): Promise<Ticket[]>;
+  /** The board's columns in order, or null for the page's own. */
+  columns(): Promise<string[] | null>;
   available(): Promise<boolean>;
 }
 
@@ -57,21 +62,38 @@ export const jiraSource: TicketSource = {
   inProgress: () => jira.ticketsInProgress(),
   movedTo: (status, day) => jira.ticketsMovedTo(status, day),
   movedBy: (status, day) => jira.ticketsMovedBy(status, day),
+  columns: () => Promise.resolve(null),
   available: () => jira.isAvailable(),
 };
 
-export function ticketSource(): TicketSource {
-  return jiraSource;
+const SOURCES: Record<TicketSource['id'], TicketSource> = { jira: jiraSource, github: githubIssues };
+const OFF: Record<string, string> = {
+  chosen: 'Tickets are off under Ticket settings',
+  github: 'Tickets come from GitHub Issues, and GitHub is off: switch it on in Setup',
+  jira: 'No Jira site set. Add one in settings to use the ticket pane.',
+};
+
+/** The source chosen under Ticket settings, or null while tickets are off. */
+export function ticketSource(): TicketSource | null {
+  const chosen = ticketSourceOf(loadSettings());
+  return chosen.id === 'off' ? null : SOURCES[chosen.id as TicketSource['id']];
 }
 
-export const fetchMyTickets = (limit?: number): Promise<Ticket[]> => ticketSource().mine(limit);
-export const viewTicket = (key: string, options?: TicketReadOptions): Promise<TicketView> => ticketSource().view(key, options);
-export const fetchTickets = (keys: string[]): Promise<Map<string, Ticket>> => ticketSource().find(keys);
-export const ticketsMentioning = (phrases: string[], limit?: number): Promise<Ticket[]> => ticketSource().mentioning(phrases, limit);
-export const ticketChildren = (parent: string, limit?: number): Promise<Ticket[]> => ticketSource().children(parent, limit);
-export const createTicket = (ticket: NewTicket): Promise<Ticket> => ticketSource().create(ticket);
-export const transitionTicket = (key: string, status: string): Promise<void> => ticketSource().move(key, status);
-export const ticketsInProgress = (): Promise<Ticket[]> => ticketSource().inProgress();
-export const ticketsMovedTo = (status: string, day: string): Promise<Ticket[]> => ticketSource().movedTo(status, day);
-export const ticketsMovedBy = (status: string, day: string): Promise<Ticket[]> => ticketSource().movedBy(status, day);
-export const isAvailable = (): Promise<boolean> => ticketSource().available();
+function source(): TicketSource {
+  const found = ticketSource();
+  if (found) return found;
+  throw new Error(OFF[ticketSourceOf(loadSettings()).why ?? 'chosen'] ?? OFF['chosen']);
+}
+
+export const fetchMyTickets = async (limit?: number): Promise<Ticket[]> => source().mine(limit);
+export const viewTicket = async (key: string, options?: TicketReadOptions): Promise<TicketView> => source().view(key, options);
+export const fetchTickets = async (keys: string[]): Promise<Map<string, Ticket>> => source().find(keys);
+export const ticketsMentioning = async (phrases: string[], limit?: number): Promise<Ticket[]> => source().mentioning(phrases, limit);
+export const ticketChildren = async (parent: string, limit?: number): Promise<Ticket[]> => source().children(parent, limit);
+export const createTicket = async (ticket: NewTicket): Promise<Ticket> => source().create(ticket);
+export const transitionTicket = async (key: string, status: string): Promise<void> => source().move(key, status);
+export const ticketsInProgress = async (): Promise<Ticket[]> => source().inProgress();
+export const ticketsMovedTo = async (status: string, day: string): Promise<Ticket[]> => source().movedTo(status, day);
+export const ticketsMovedBy = async (status: string, day: string): Promise<Ticket[]> => source().movedBy(status, day);
+export const isAvailable = async (): Promise<boolean> => source().available();
+export const ticketColumns = async (): Promise<string[] | null> => source().columns();

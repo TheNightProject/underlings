@@ -214,7 +214,7 @@ function goTo(target) {
   if (target === 'claude-code') return slot('openClaudeCode');
   // The Claude Code window draws only the terminal, so a drawer opened there would cover it; the dashboard opens it instead.
   if (slot('terminalWindowOnly')) return;
-  const ticket = new RegExp('^ticket:(' + TICKET_KEY_SOURCE + ')$').exec(target);
+  const ticket = new RegExp('^ticket:(' + TICKET_KEY_SOURCE + '|' + GITHUB_ISSUE_SOURCE + ')$').exec(target);
   if (ticket) return slot('openTicket', ticket[1]);
   if (target.startsWith('agent:')) return slot('agentWinOpen', target.slice('agent:'.length));
   const m = /^mr:(.+):([a-z]+)$/.exec(target);

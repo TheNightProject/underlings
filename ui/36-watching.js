@@ -6,7 +6,7 @@ const SETTING_GROUPS = [
   ['Refresh every', ['pollSeconds']],
   ['Code folder', ['workspaceRoot']],
   ['Jira site', ['jiraSite']],
-  ['Tickets', ['jira.projects', 'jira.defaultProject', 'jira.statuses', 'jira.doneStatuses', 'jira.issueType', 'jira.ticketTemplate', 'tickets.noQaPaths']],
+  ['Tickets', ['tickets.source', 'tickets.githubProject', 'jira.projects', 'jira.defaultProject', 'jira.statuses', 'jira.doneStatuses', 'jira.issueType', 'jira.ticketTemplate', 'tickets.noQaPaths']],
   ['Leaderboard', ['leaderboardDays', 'pointWeights']],
   ['Running agents', ['agentPermissions', 'maxAgents', 'agentBudgetUsd']],
   ['Full auto guardrails', ['autoHoldSeconds', 'autoMaxComments', 'autoMaxDiffLines', 'autoSensitivePaths', 'autoFooter']],

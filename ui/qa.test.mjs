@@ -305,3 +305,11 @@ test('the Overview shows QA at a glance and where it piles up, and a repo there 
   await page.settle(60);
   assert.deepEqual(listed(page), ['ABC-3801']);
 });
+
+test('while tickets come from GitHub Issues, QA says it needs Jira and points at Ticket settings', async () => {
+  const words = 'QA reads the team\'s tickets with a JQL search, which only Jira has, so it waits while tickets come from GitHub Issues';
+  const page = await open({ data: qaView({ board: null, needsJira: words }) });
+  assert.deepEqual(page.errors, []);
+  assert.ok(text(page.$('#main')).includes(words + '.'));
+  assert.ok(page.$$('#main .fix-link').some((a) => a.getAttribute('href') === '#settings'));
+});

@@ -107,7 +107,7 @@ every check once more.
 | Claude Code | `claude auth status` says signed in | a link to install it, or `claude auth login` to copy |
 | GitLab token | on by default: GitLab, at gitlab.com or your **GitLab host**, knows the token and it has the `api` scope. Switched off, it is optional and asks nothing | the switch, a link that makes one with `api` ticked, a field to paste it, and the host field |
 | GitHub | optional, and off until you switch it on here: the token in use is known to GitHub, with `repo` and `read:org` | the switch, a link that makes a token, a field to paste one, and `gh auth refresh -s` for a token gh holds |
-| Jira | optional: a site is set, `acli` is on the PATH and `acli jira auth status` says signed in | the site field, a link to install `acli`, or `acli jira auth login --web` to copy |
+| Tickets | optional, by **Tickets from**: for Jira, a site is set, `acli` is on the PATH and `acli jira auth status` says signed in; for GitHub Issues, GitHub is on and the **GitHub Project**, when one is named, can be read, its columns listed | the Tickets from picker, then for Jira the site field, a link to install `acli`, or `acli jira auth login --web` to copy, and for GitHub Issues the Project field |
 | Code folder | the folder exists and has at least one git checkout in it, counted | the folder field, and **Choose…** for the Mac's folder picker |
 | Agent commands | always: each is the Underlings skill or your own | a field for each, see Agent skills |
 | Underlings skills | optional: the plugin is installed in your own Claude Code, at the version this app ships | the two commands it will run, shown first, with **Install the skills**, **Update the skills** or **Remove them**, see Agent skills |
@@ -179,7 +179,14 @@ Settings. Being signed in to `gh` never turns it on, and while it is off nothing
   taken for you on the other, so a name shared by two people is one row in People for both.
 - **References.** `owner/repo#12` and pull request links open the drawer, in a description and
   in Claude Code's terminal; there `repo#12` links when one known GitHub repo has that name, and
-  a bare `#12` never does. Inside a pull request, `#12` is that repo's.
+  a bare `#12` never does. Inside a pull request, `#12` is that repo's. While tickets come from
+  GitHub Issues, an `owner/repo#12` that your tickets list opens the ticket drawer instead, as an
+  issue and a pull request share their repo's numbers.
+- **Issues as tickets.** **Tickets from**, under Ticket settings, set to GitHub Issues makes your
+  GitHub issues the tickets, as Tickets describes. It needs GitHub on; with GitHub off, Tickets
+  says so and nothing is asked. The token needs `repo` for private repos, and `project` (or
+  `read:project` to read alone) for a GitHub Project; a fine-grained token needs read and write
+  access to issues and, for an organisation's Project, to its projects.
 
 ## Workspaces
 
@@ -767,9 +774,16 @@ NIT, NAB or Consider you are leaving out of the MR:
   failed after the ticket existed is offered again on its own, and a ticket whose key `acli` did
   not print is shown under its epic, to be found there and answered by hand.
 
+While tickets come from GitHub Issues the ticket is a GitHub issue, under a parent issue or in a
+repo, and `acli` is never sought; Tickets, GitHub Issues, says how.
+
 ## Tickets
 
-With no Jira site set, Tickets says it is off and asks Jira nothing; Setup sets the site.
+Tickets come from Jira or from GitHub Issues, by **Tickets from** under Ticket settings or in
+Setup; Jira is the default. With Jira and no site set, with GitHub Issues and GitHub off, or with
+Off, Tickets says it is off and why, and asks nothing; Setup puts each right. QA needs Jira, and
+says so while tickets come from GitHub Issues. What follows is Jira; the GitHub Issues section
+below says what differs.
 
 **Tickets**, under Work in the rail, lists your open tickets in **Your projects**, or in every project
 while that is blank (anything not in a **Finished status**, or outside Jira's Done category while
@@ -820,6 +834,31 @@ counts only when the key is the first in its title. **Sync statuses** lists ever
 with its own **Move**, and **Apply all** sends them one at a time through the same action, so each
 line says whether it moved, was skipped because its status changed, or was refused, and why.
 
+### GitHub Issues
+
+- **Your tickets** are your open issues, assigned to you or written by you, from one GraphQL
+  query of two searches, narrowed by **GitHub repos** as pull requests are. A key is
+  `owner/repo#12`. An issue's parent issue is its epic, and the open pull requests that close it
+  are its MRs, beside any MR that names it.
+- **The board** is a GitHub Project (v2), named under Ticket settings as **GitHub Project**, by
+  its link or as `owner/number` such as `acme/3`. Its single-select field named Status gives the
+  columns, in its order, and an issue's status is its value there, or No Status when it has none.
+  A move sets that value with `updateProjectV2ItemFieldValue`; a column the Project lacks is
+  refused. The Project is read once every five minutes. An issue in Done, or in a **Finished
+  status** of yours, leaves the list, as does one that closes.
+- **Off the Project**, or with none named, an issue is Open or Closed, and those are its only
+  moves: Closed closes it, Open reopens it.
+- **Make a ticket** takes a parent issue, `owner/repo#12`, or a repo, `owner/repo`, in place of
+  an epic. The issue is opened in that repo, assigned to you, with the template's headings as
+  Markdown headings; it is then put under the parent as a sub-issue and on the Project, best
+  effort, so a link GitHub refuses leaves the issue made and unlinked.
+- **Start with an agent** works as it does for Jira, on the `owner/repo#12` key. The kickoff skill
+  reads the issue with `gh issue view`, and the agent is told to stop and ask you before any push,
+  pull request, move of the issue or comment.
+- **Standup** lists your issues closed that day under Tickets moved, as Closed, since GitHub keeps
+  no history of a Project's Status, and as in progress your issues whose Status names progress,
+  which needs a Project. The game counts an issue of yours closing as finished work.
+
 ## Standup
 
 **Standup**, under Work in the rail, works out your standup with no questions asked and lets you
@@ -829,7 +868,8 @@ again** reads everything afresh. The day picker and its arrows step over your da
 
 - **Yesterday**: the MRs you merged and opened that day, from your own GitLab events (an MR
   someone else merged for you counts, and one opened and merged the same day is said once); the
-  tickets you moved to QA, Done, Closed or Resolved, from Jira through `acli`; your meetings;
+  tickets you moved to QA, Done, Closed or Resolved, from Jira through `acli` (or your issues
+  closed that day, from GitHub Issues); your meetings;
   and the other people's MRs you commented on or approved, one line each with the count,
   grouped by ticket with the busiest ticket first and those with no ticket last. Your own MRs
   are never reviews.
@@ -1042,6 +1082,8 @@ anything that writes, then proposes your reply. One click starts it, since start
 **QA**, under Team in the rail, shows every ticket waiting for testing across the team and where
 it is piling up. It starts switched off, and once on it waits, saying what to set, until it has
 the JQL for your tickets in QA, such as `project = ABC AND status = QA`, in Settings under QA.
+It needs Jira: while tickets come from GitHub Issues it says so and reads nothing, as GitHub has
+no search of the team's tickets by status and no history of their moves.
 Each ticket is joined to the MRs merged in the last 60 days that name it in their title or branch,
 in any case, in the **Groups** set there, or the groups your open MRs are in while that is blank.
 
@@ -1463,11 +1505,13 @@ Settings, where only the page edits them:
 | `jira.doneStatuses` | blank, Jira's Done category | the statuses that mean finished, the first being where the game counts finished work |
 | `jira.issueType` | `Task` | the type of a ticket raised from a review thread, an email or a Slack message |
 | `jira.ticketTemplate` | blank, free text | lines starting `#` are the headings a drafted ticket has, in bold in Jira; the rest is said to Claude as written |
+| `tickets.source` | `jira` | where tickets come from: `jira`, `github` for GitHub Issues, or `off` |
+| `tickets.githubProject` | blank | the GitHub Project whose Status field gives the board its columns, as `owner/number` |
 | `tickets.noQaPaths` | blank | repo paths whose merged MRs suggest finished rather than QA |
 | `gitlab.host` | `https://gitlab.com` | every GitLab REST and GraphQL call, the token link and the MR links on the page |
 
-A key anywhere is `[A-Z][A-Z0-9]+-[1-9]\d*`, one pattern shared by the page, the worker and the
-engine; in free text only a key whose project your MRs, tickets, agents or `jira.projects` use
+A key anywhere is `[A-Z][A-Z0-9]+-[1-9]\d*`, or for a GitHub issue `owner/repo#12`, each one
+pattern shared by the page, the worker and the engine; in free text only a key whose project your MRs, tickets, agents or `jira.projects` use
 becomes a link, so UTF-8 and SHA-256 stay text.
 
 ## Layout

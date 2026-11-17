@@ -371,3 +371,13 @@ test('Needs you carries a card for each forge that stopped answering, each with 
   await page.settle();
   assert.deepEqual(page.posts.at(-1), ['/api/matrix/refresh', {}]);
 });
+
+test('with tickets from GitHub Issues, owner/repo#12 in a terminal opens the ticket when your tickets list it, and an issue of yours links to its page', async () => {
+  const page = await open(snapshot([row(GH)], { matrix: { ticketSource: { id: 'github', name: 'GitHub' } } }));
+  const k = known(page, { tickets: ['acme-co/web#9'] });
+  assert.deepEqual(found(page, 'Picked up acme-co/web#9 for acme-co/web#12.', k), [['ticket', 'acme-co/web#9', 'acme-co/web#9'], ['mr', GH, 'acme-co/web#12']]);
+  const action = plain(page.window.terminalAction(page.window.terminalRefs(['acme-co/web#9'], k)[0], k));
+  assert.deepEqual([action.kind, action.words, action.url], ['ticket', 'open the ticket (no agent yet)', 'https://github.com/acme-co/web/issues/9']);
+  assert.equal(page.run("isParentKey('acme-co/web#9') && isParentKey('acme-co/web') && !isParentKey('ABC-12')"), true);
+  assert.equal(page.run('exampleKey()'), 'acme/web#12');
+});

@@ -197,3 +197,16 @@ test('Set up is in Jump to', async () => {
   assert.deepEqual(entry.map((e) => e.label), ['Set up']);
   assert.ok(entry[0].terms.includes('token'));
 });
+
+test('the tickets check picks where tickets come from, and with GitHub Issues asks for the Project rather than an Atlassian site', async () => {
+  const github = { id: 'jira', state: 'pass', optional: true, title: 'GitHub Issues', detail: 'Tickets are your open GitHub issues, on the board of the Project acme/3: Todo, Doing, Done.', source: 'github', project: 'acme/3' };
+  const { page, posts } = await setupPage(FAILING.map((c) => (c.id === 'jira' ? github : c)));
+  const picker = page.$('#setup-ticket-source');
+  assert.deepEqual(picker.querySelectorAll('option').map((o) => [o.textContent, Boolean(o.selected)]), [['Jira', false], ['GitHub Issues', true], ['Off', false]]);
+  assert.equal(page.$('#setup-github-project').getAttribute('value'), 'acme/3');
+  assert.equal(page.$('input#setup-jira'), null, 'no Atlassian site while tickets come from GitHub');
+  picker.value = 'jira';
+  page.fire(picker, 'change');
+  await page.settle(100);
+  assert.deepEqual(posts, [['/api/matrix/settings', { patch: { 'tickets.source': 'jira' } }]]);
+});
