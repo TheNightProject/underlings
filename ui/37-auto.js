@@ -100,7 +100,7 @@ function driverBanner(m) {
 
 function driverFix(d) {
   if (d.fix === 'rebuild') return el('div', { class: 'actions heal' }, slot('rebuildButton'));
-  if (d.fix === 'settings') return el('div', { class: 'actions' }, el('a', { class: 'fix-link', ...inPage('#settings') }, icon('settings'), 'Open Settings to set the workspace root'));
+  if (d.fix === 'settings') return el('div', { class: 'actions' }, el('a', { class: 'fix-link', ...inPage('#settings') }, icon('settings'), 'Open Settings to set the code folder'));
   if (d.fix === 'token') return slot('tokenField');
   return null;
 }

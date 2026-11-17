@@ -166,7 +166,7 @@ function setupJiraFix(c) {
 
 function setupWorkspaceFix(c) {
   return el('div', { class: 'setup-fix' },
-    setupField('setup-root', 'Workspace root', c.root, '/Users/you/code', saveSettingFrom('workspaceRoot', 'setup-root'), 'setup-workspaceRoot'),
+    setupField('setup-root', 'Code folder', c.root, '/Users/you/code', saveSettingFrom('workspaceRoot', 'setup-root'), 'setup-workspaceRoot'),
     c.names?.length ? el('p', { class: 'hint setup-names' }, c.names.join(', ') + (c.checkouts > c.names.length ? ' and ' + (c.checkouts - c.names.length) + ' more' : '')) : null);
 }
 
@@ -235,7 +235,7 @@ async function finishSetupView() {
 
 function setupSettingsGroup() {
   return el('section', { class: 'section settings-group', id: 'setup-settings' }, el('h2', {}, 'Setup'),
-    el('p', { class: 'hint' }, 'Checks Claude Code, your GitLab token, GitHub, Jira, the workspace root, the agent commands, the Underlings skills and the artifact hook, with a fix for each.'),
+    el('p', { class: 'hint' }, 'Checks Claude Code, your GitLab token, GitHub, Jira, the code folder, the agent commands, the Underlings skills and the artifact hook, with a fix for each.'),
     el('div', {}, el('a', { class: 'fix-link', ...inPage('#setup') }, icon('list-checks'), 'Open Setup')));
 }
 

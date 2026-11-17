@@ -415,8 +415,8 @@ export const SETTING_ROWS: SettingRow[] = [
   { key: 'rowTint', label: 'Row tint', hint: 'colours the whole row, not just its left edge.', kind: 'toggle' },
   {
     key: 'workspaceRoot',
-    label: 'Workspace',
-    hint: `the checkout agents run against. Full auto in ${APP_NAME} cannot launch reviews while this is blank.`,
+    label: 'Code folder',
+    hint: `the folder your clones live in, where agents start. Full auto in ${APP_NAME} cannot launch reviews while this is blank.`,
     kind: 'text',
   },
   {

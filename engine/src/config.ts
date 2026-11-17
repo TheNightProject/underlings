@@ -10,7 +10,7 @@ export interface RepoSpec {
   label: string;
   /** Open MRs seen at discovery, used to size each query. */
   openCount?: number;
-  /** Local checkout, relative to the workspace root, for ticket worktrees. */
+  /** Local checkout, relative to the code folder, for ticket worktrees. */
   dir?: string;
   /** Prefix for a new worktree directory, e.g. ce-cos3568. */
   prefix?: string;

@@ -111,11 +111,11 @@ export function kickoffPrompt(key: string, checkouts = discoverCheckouts(root())
 // A command of your own finds its repos itself; the kickoff skill is handed the ones found here.
 function kickoffCheckouts(): Checkout[] {
   const found = discoverCheckouts(root());
-  if (!found.length && !agentCommands().kickoffCommand) throw new Error(`No git checkouts under ${root()} to start a ticket in. Set Workspace root in Settings to the folder your clones live in.`);
+  if (!found.length && !agentCommands().kickoffCommand) throw new Error(`No git checkouts under ${root()} to start a ticket in. Set Code folder in Settings to the folder your clones live in.`);
   return found;
 }
 
-/** The kickoff agent finds the repo and cuts the checkout itself, so it starts in the workspace folder. */
+/** The kickoff agent finds the repo and cuts the checkout itself, so it starts in the code folder. */
 export async function launchKickoff(key: string, url = ''): Promise<LaunchOutcome> {
   if (!TICKET_KEY.test(key)) throw new Error(`${key} is not a Jira key`);
   const prompt = kickoffPrompt(key, kickoffCheckouts());
@@ -174,7 +174,7 @@ function fixRefusal(mr: Mr, threads: Discussion[], { me, head, conflicts }: FixO
   return null;
 }
 
-/** The checkout sits beside the repos so the agent, started in the workspace root, gets the workspace CLAUDE.md and commands. */
+/** The checkout sits beside the repos so the agent, started in the code folder, gets the workspace CLAUDE.md and commands. */
 export async function launchFix(mr: Mr, threads: Discussion[], opts: FixOptions): Promise<LaunchOutcome> {
   const key = mrKey(mr);
   const refused = fixRefusal(mr, threads, opts);
@@ -211,7 +211,7 @@ async function startFix(mr: Mr, checkout: string, brief: (path: string) => strin
   }
 }
 
-// Every agent starts in the workspace root, where the workspace CLAUDE.md, settings and commands are.
+// Every agent starts in the code folder, where the workspace CLAUDE.md, settings and commands are.
 function startAgent(spec: Omit<AgentSpec, 'cwd'>): Promise<LaunchOutcome> {
   return claudeHost.start({ ...spec, cwd: root() });
 }

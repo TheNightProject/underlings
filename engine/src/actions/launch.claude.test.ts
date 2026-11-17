@@ -94,7 +94,7 @@ test('a second fix waits while the last fix agent is still recorded, even one wh
   assert.equal(again.name, 'fix-Engine-88-2', 'the first checkout and its branch are still there, so the second gets a name of its own');
 });
 
-test('a kickoff starts Claude Code in the workspace root on the kickoff prompt, recorded as the ticket\'s run', async () => {
+test('a kickoff starts Claude Code in the code folder on the kickoff prompt, recorded as the ticket\'s run', async () => {
   const launched = await launchKickoff('ABC-1234', 'https://example.atlassian.net/browse/ABC-1234');
   const agent = agentFor(launched.handle);
   assert.deepEqual([launched.how, launched.name, agent?.kind, agent?.ticket, agent?.cwd, agent?.worktree], ['claude', 'kickoff-ABC-1234', 'kickoff', 'ABC-1234', root, null]);
@@ -118,7 +118,7 @@ test('a ticket from the terminal app cuts its checkout beside the repos and star
   assert.equal(firstPrompt(launched.handle ?? ''), ticketPrompt('ABC-12', 'Fix it', checkout));
 });
 
-test('a ticket finds its repo\'s checkout under the workspace root itself, and names the worktree with the ticket\'s own key', async () => {
+test('a ticket finds its repo\'s checkout under the code folder itself, and names the worktree with the ticket\'s own key', async () => {
   const ticket = { key: 'ABC-12', summary: 'Fix it', status: 'To Do', labels: [], url: '' };
   const launched = await launchTicket(ticket, { path: 'acme/engine', label: 'Engine' });
   const checkout = join(root, 'engine-abc-12');
@@ -128,16 +128,16 @@ test('a ticket finds its repo\'s checkout under the workspace root itself, and n
 
 test('a ticket or fix with no checkout to start from says where to clone it and which setting to change', async () => {
   const ticket = { key: 'ABC-13', summary: 'Fix it', status: 'To Do', labels: [], url: '' };
-  const said = new RegExp(`^Error: No checkout of acme/missing under ${root}\\. Clone it there as ${join(root, 'missing')}, or set Workspace root in Settings`);
+  const said = new RegExp(`^Error: No checkout of acme/missing under ${root}\\. Clone it there as ${join(root, 'missing')}, or set Code folder in Settings`);
   await assert.rejects(launchTicket(ticket, { path: 'acme/missing', label: 'Missing' }), said);
   await assert.rejects(launchFix({ ...mr(), projectPath: 'acme/missing' }, THREADS, OPTS), said);
 });
 
-test('a built-in kickoff with no checkouts under the workspace root starts nothing, and says what to set', async () => {
+test('a built-in kickoff with no checkouts under the code folder starts nothing, and says what to set', async () => {
   const empty = realpathSync(mkdtempSync(join(tmpdir(), 'launch-empty-')));
   changeSettings((s) => ({ ...s, workspaceRoot: empty }));
   try {
-    await assert.rejects(launchKickoff('ABC-77'), new RegExp(`^Error: No git checkouts under ${empty} to start a ticket in\\. Set Workspace root in Settings`));
+    await assert.rejects(launchKickoff('ABC-77'), new RegExp(`^Error: No git checkouts under ${empty} to start a ticket in\\. Set Code folder in Settings`));
     assert.equal(loadRuns()['ticket:ABC-77'], undefined, 'no run was recorded');
     changeSettings((s) => ({ ...s, agents: { ...s.agents, kickoffCommand: '/start' } }));
     const launched = await launchKickoff('ABC-77');

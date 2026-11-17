@@ -4,7 +4,7 @@ const SETTING_GROUPS = [
   ['Repos', ['repoFilter']],
   ['Reviewing', ['holdWhileReviewing', 'closeWorkspaceWhenDone', 'reReviewOnChange']],
   ['Refresh every', ['pollSeconds']],
-  ['Workspace root', ['workspaceRoot']],
+  ['Code folder', ['workspaceRoot']],
   ['Jira site', ['jiraSite']],
   ['Tickets', ['jira.projects', 'jira.defaultProject', 'jira.statuses', 'jira.doneStatuses', 'jira.issueType', 'jira.ticketTemplate', 'tickets.noQaPaths']],
   ['Leaderboard', ['leaderboardDays', 'pointWeights']],

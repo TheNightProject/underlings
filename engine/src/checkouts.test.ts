@@ -51,5 +51,5 @@ test('a repo maps to the clone of its project, the one named after it first, and
 });
 
 test('no checkout says where to clone it, or which setting to change', () => {
-  assert.equal(noCheckout('acme/missing', '/work').message, 'No checkout of acme/missing under /work. Clone it there as /work/missing, or set Workspace root in Settings to the folder your clones live in.');
+  assert.equal(noCheckout('acme/missing', '/work').message, 'No checkout of acme/missing under /work. Clone it there as /work/missing, or set Code folder in Settings to the folder your clones live in.');
 });

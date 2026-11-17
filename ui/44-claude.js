@@ -352,7 +352,7 @@ function claudeEmpty() {
   const s = claudeState();
   return el('div', { class: 'cp-empty' },
     el('p', {}, el('b', {}, 'Ask Claude anything.')),
-    el('p', {}, 'It works in ' + (s?.cwd ?? 'your workspace root') + ', with that folder\'s CLAUDE.md, skills and memory, and it can read ' + APP_NAME + ': what needs you, MRs, the review queue, agents, tickets, standup and QA.'),
+    el('p', {}, 'It works in ' + (s?.cwd ?? 'your code folder') + ', with that folder\'s CLAUDE.md, skills and memory, and it can read ' + APP_NAME + ': what needs you, MRs, the review queue, agents, tickets, standup and QA.'),
     el('p', {}, 'It can also start reviews, fixes and kickoffs, answer agents, queue, post or discard findings, merge and move tickets, and every one of those asks you here first.'),
     s && !s.tools ? el('p', { class: 'hint bad' }, 'Its ' + APP_NAME + ' tools need the worker restarted once.') : null);
 }
