@@ -134,7 +134,7 @@ test('an MR you already approved is not approved twice, but the verdict is still
   assert.equal(recorded(), 'approved');
 });
 
-test('deciding closes the review workspace once its agent has stopped', async () => {
+test('deciding removes the review agent once it has stopped', async () => {
   const { host, removed } = hostStub();
   const decision = await decide(mr(), 'approve', { hosts: host });
   assert.deepEqual(decision.workspace, { closed: true });

@@ -23,8 +23,9 @@ async function scanCleanup() {
 function cleanupSection(c) {
   const cancel = button('Cancel', 'x', () => { ui.cleanup = null; render(); });
   if (c.loading) return section('Clean up', banner('Checking every agent, every git worktree beside the repos, and their git state…'), el('div', { class: 'actions' }, cancel));
-  const payload = cleanupPayload(c.candidates.filter((x) => c.picked.has(x.id)));
-  const label = cleanupLabel(payload);
+  const picked = c.candidates.filter((x) => c.picked.has(x.id));
+  const payload = cleanupPayload(picked);
+  const label = cleanupLabel(picked, payload);
   return section('Clean up',
     banner(`Removes finished agents, and git worktrees with nothing left in them: every agent finished, no activity for ${c.staleHours} h, or a finished review with nothing left to post. A worktree with uncommitted or unpushed work stays. Only safe ones start ticked, and each is checked again before it goes.`),
     c.candidates.length ? el('div', { class: 'list' }, c.candidates.map(cleanupRow)) : empty('Nothing to clean up.'),
@@ -59,8 +60,11 @@ function cleanupPayload(picked) {
   };
 }
 
-function cleanupLabel({ remove, close }) {
-  const text = [remove.length && 'remove ' + plural(remove.length, 'workspace'), close.length && 'close ' + plural(close.length, 'finished agent')].filter(Boolean).join(', ');
+function cleanupLabel(picked, { close }) {
+  const removing = picked.filter((c) => c.action === 'remove');
+  const worktrees = removing.filter((c) => c.worktree).length;
+  const agents = removing.length - worktrees;
+  const text = [worktrees && 'remove ' + plural(worktrees, 'worktree'), agents && 'remove ' + plural(agents, 'agent'), close.length && 'close ' + plural(close.length, 'finished agent')].filter(Boolean).join(', ');
   return text && text[0].toUpperCase() + text.slice(1);
 }
 

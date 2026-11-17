@@ -28,7 +28,7 @@ const BADGES: Record<TicketPhase, Omit<TicketBadge, 'phase'>> = {
   none: { glyph: '  ', width: 2, colour: 'gray', label: '' },
   // All of these sit above U+FFFF and carry no variation selector. A BMP emoji measures
   // as one cell and a surrogate pair as two, so mixing the two shifts whole rows sideways.
-  starting: { glyph: '🚀', width: 2, colour: 'cyan', label: 'workspace starting' },
+  starting: { glyph: '🚀', width: 2, colour: 'cyan', label: 'agent starting' },
   working: { glyph: '🔄', width: 2, colour: 'yellow', label: 'agent working' },
   idle: { glyph: '👋', width: 2, colour: 'magenta', label: 'agent stopped, wants you' },
   stalled: { glyph: '🚫', width: 2, colour: 'red', label: 'agent gone, nothing raised' },

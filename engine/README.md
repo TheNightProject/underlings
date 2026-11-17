@@ -19,7 +19,7 @@ queue list [--json]      show what is waiting to be posted
 queue done <pass>        a full-auto review agent saying it has finished
 runs [<repoPath>!<iid>]  what each review agent printed, from the journal
 changed <repoPath> <iid> exit 0 if the MR moved since last seen
-gc [--finished] [--yes]  close review workspaces there is nothing left to do in
+gc [--finished] [--yes]  remove review agents there is nothing left to do in
 --once [--json]          print the MR list and exit
 ```
 
@@ -213,7 +213,7 @@ body rather than being lost to a failed anchor.
 ## Housekeeping
 
 `gc` lists review agents with nothing left to do, and `--yes` removes them. It will not
-touch one that is still live, one with findings still queued, or a workspace with a branch,
+touch one that is still live, one with findings still queued, or one with a branch,
 because a branch is somebody's work. The app's Clean up also lists the git worktrees beside
 the repos.
 

@@ -402,7 +402,7 @@ The plugin has six more, for you to type in the Claude panel or your own termina
 - `/underlings:update-tickets` sweeps your open tickets with a comment and a status move each.
 
 They take what they need from the app by name: your **Jira site**, **Default project**, **Ticket
-template**, **GitLab host**, **Workspace** and time zone from Settings, and your **Language** and
+template**, **GitLab host**, **Code folder** and time zone from Settings, and your **Language** and
 **Writing rules** from your profile, which the app hands the review and kickoff skills itself. Run
 in your own terminal, a skill asks for what it cannot find. Every skill says "merge request or pull
 request", reviews only ever queue, and nothing is posted or moved without your say.
@@ -605,10 +605,10 @@ again from source and packs only that build, with none of node-pty's prebuilt bi
 **Clean up** in the Agents view lists what can go, ticks the safe ones, and acts only on what
 you confirm, checking each one again first:
 
-- Every git worktree beside the repos (`git worktree list` in each checkout under the workspace
-  root) is a workspace, with the agents that work in it; an agent with no worktree, a review or a
-  kickoff, is a workspace of its own. Main checkouts are never listed.
-- A workspace goes when every agent in it finished over an hour ago, or it has had no activity
+- Every git worktree beside the repos (`git worktree list` in each checkout under the Code
+  folder) is listed with the agents that work in it; an agent with no worktree, a review or a
+  kickoff, is listed on its own. Main checkouts are never listed.
+- A worktree or agent goes when every agent in it finished over an hour ago, or it has had no activity
   for `staleHours` (24 by default). A turn cut short by **Stop** or an error is not finished, and
   one with an agent still waiting on you is never ticked.
 - A worktree goes through `git worktree remove`, from its own checkout and without `--force`,
@@ -721,7 +721,7 @@ status, epic, the description as text, its MRs, and on your own tickets two acti
   review engine). The worker views the ticket again first and answers 409 if
   its status changed since the page looked, or while another move on that ticket is under way;
   Jira's own refusal comes back in its words.
-- **Start with an agent** ("Start ABC-1234 with an agent?") starts Claude Code in the workspace
+- **Start with an agent** ("Start ABC-1234 with an agent?") starts Claude Code in the Code
   folder, as `kickoff-ABC-1234`, on the `/underlings:kickoff` skill or your kickoff command (see Agent
   skills), told to stop and ask you before any push, MR, Jira transition or comment. The skill
   is handed the checkouts found under the Code folder, so the agent picks the repo and cuts
@@ -1072,7 +1072,7 @@ Only one of a rebase, a merge and a fix agent is under way on an MR at a time.
 
 **Fix N comments with an agent**, in the row's menu or on the Threads tab, and **Fix this with an
 agent** on one thread, cut a checkout of the MR's branch beside the repos under the Code folder
-and start Claude Code in the workspace folder, told to work in that checkout. Its brief is built from the live
+and start Claude Code in the Code folder, told to work in that checkout. Its brief is built from the live
 threads; threads a bot started are left out unless you fix one on its own. The agent changes the
 code, raises tickets for what it leaves for later, reviews its own change against the MR's target
 branch (`/underlings:pre-mr-review`, or your self-review command, see Agent skills), then stops to ask

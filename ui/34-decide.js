@@ -25,7 +25,7 @@ function decideCard(r, d, where = 'row') {
   const closes = decideSummary().tidies === true && r.agent !== 'working';
   const id = (verdict) => 'decide-' + verdict + ':' + r.key;
   const send = (verdict) => matrixAct('decide', { key: r.key, verdict, expect: { sha: r.sha } }, id(verdict));
-  const tail = closes ? ' and close the review workspace?' : '?';
+  const tail = closes ? ' and remove the review agent?' : '?';
   return el('div', { class: 'decide', role: 'group', 'aria-label': 'Comments are up on ' + short(r.key) },
     el('div', { class: 'row-head' },
       el('span', { class: 'pill s-done' }, icon('check-circle'), 'Comments are up'),
@@ -48,8 +48,8 @@ function postedTally(kinds) {
 
 function decideNote(r, closes) {
   const hold = r.flags.held && r.flags.heldByMe !== false ? 'Approving lifts the hold on it.' : 'Requesting changes blocks the merge until you lift it.';
-  if (closes) return hold + ' Either one closes the review workspace; its run log is kept.';
-  if (decideSummary().tidies && r.agent === 'working') return hold + ' Its review agent is still working, so the workspace stays open.';
+  if (closes) return hold + ' Either one removes the review agent; its run log is kept.';
+  if (decideSummary().tidies && r.agent === 'working') return hold + ' Its review agent is still working, so it stays.';
   return hold;
 }
 
