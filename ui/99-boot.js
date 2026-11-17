@@ -10,11 +10,10 @@ document.addEventListener('click', guardLinks, true);
 document.addEventListener('auxclick', guardLinks, true);
 closeOnBackdrop(document.getElementById('sheet'), 'closeFile');
 closeOnBackdrop(document.getElementById('drawer'), 'closeDrawer');
-// The worker names a place to go, or offers this page a banner of its own; anything else is a change to read.
+// The worker names a place to go; anything else is a change to read.
 function onWorkerEvent(e) {
   const data = String(e.data ?? '');
   if (data.startsWith('goto:')) slot('goTo', data.slice('goto:'.length));
-  else if (data.startsWith('attention:')) slot('onAttentionEvent', data);
   else refresh();
 }
 

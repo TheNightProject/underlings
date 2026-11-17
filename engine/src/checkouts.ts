@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface Checkout {
-  /** The folder's name under the workspace root. */
+  /** The folder's name under the code folder. */
   dir: string;
   /** The GitLab project its origin remote points at, such as acme/engine. */
   path: string | null;
@@ -50,5 +50,5 @@ export function checkoutFor(projectPath: string, checkouts: Checkout[]): Checkou
 
 export function noCheckout(projectPath: string, root: string): Error {
   const name = projectPath.split('/').pop() ?? projectPath;
-  return new Error(`No checkout of ${projectPath} under ${root}. Clone it there as ${join(root, name)}, or set Workspace root in Settings to the folder your clones live in.`);
+  return new Error(`No checkout of ${projectPath} under ${root}. Clone it there as ${join(root, name)}, or set Code folder in Settings to the folder your clones live in.`);
 }

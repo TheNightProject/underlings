@@ -374,6 +374,6 @@ function agentReviewing(ctx) {
   if (agent) return agentRow(agent, { pinned: true });
   return [
     el('div', { class: 'row-head' }, el('span', { class: 'pill s-working' }, icon('bot'), 'agent ' + r.agent)),
-    el('p', { class: 'meta' }, String(r.agentHandle ?? '').startsWith('claude:') ? 'Its agent is not listed yet, so it cannot be answered from here.' : 'Its agent is an Orca terminal, which this page does not show.'),
+    el('p', { class: 'meta' }, 'Its agent is not listed yet, so it cannot be answered from here.'),
   ];
 }

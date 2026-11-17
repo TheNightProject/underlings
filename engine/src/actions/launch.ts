@@ -12,7 +12,8 @@ import { agentCommands, kickoffLine } from '../agentprompts.js';
 import { checkoutFor, discoverCheckouts, noCheckout, type Checkout } from '../checkouts.js';
 import type { Discussion } from '../data/forge.js';
 import type { AgentSpec } from '../agents/host.js';
-import { agentStateOn, launchHost, listWorkspaceAgents, listWorktrees, removeWorktree } from '../agents/index.js';
+import { claudeHost } from '../agents/claude.js';
+import { agentStateOn, listWorkspaceAgents, listWorktrees, removeWorktree } from '../agents/index.js';
 import { loadRuns, loadSettings, recordRun } from '../data/store.js';
 import { conflictBrief, fixBrief, fixKey } from '../fix.js';
 import { workspaceForReview } from '../gc.js';
@@ -27,7 +28,7 @@ const run = promisify(execFile);
 const root = (): string => workspaceRoot(loadSettings().workspaceRoot);
 
 export interface LaunchOutcome {
-  how: 'worktree' | 'terminal' | 'claude';
+  how: 'claude';
   handle?: string;
   path?: string;
   name?: string;
@@ -110,11 +111,11 @@ export function kickoffPrompt(key: string, checkouts = discoverCheckouts(root())
 // A command of your own finds its repos itself; the kickoff skill is handed the ones found here.
 function kickoffCheckouts(): Checkout[] {
   const found = discoverCheckouts(root());
-  if (!found.length && !agentCommands().kickoffCommand) throw new Error(`No git checkouts under ${root()} to start a ticket in. Set Workspace root in Settings to the folder your clones live in.`);
+  if (!found.length && !agentCommands().kickoffCommand) throw new Error(`No git checkouts under ${root()} to start a ticket in. Set Code folder in Settings to the folder your clones live in.`);
   return found;
 }
 
-/** The kickoff agent finds the repo and cuts the checkout itself, so it starts in the workspace folder. */
+/** The kickoff agent finds the repo and cuts the checkout itself, so it starts in the code folder. */
 export async function launchKickoff(key: string, url = ''): Promise<LaunchOutcome> {
   if (!TICKET_KEY.test(key)) throw new Error(`${key} is not a Jira key`);
   const prompt = kickoffPrompt(key, kickoffCheckouts());
@@ -173,7 +174,7 @@ function fixRefusal(mr: Mr, threads: Discussion[], { me, head, conflicts }: FixO
   return null;
 }
 
-/** The checkout sits beside the repos so the agent, started in the workspace root, gets the workspace CLAUDE.md and commands. */
+/** The checkout sits beside the repos so the agent, started in the code folder, gets the workspace CLAUDE.md and commands. */
 export async function launchFix(mr: Mr, threads: Discussion[], opts: FixOptions): Promise<LaunchOutcome> {
   const key = mrKey(mr);
   const refused = fixRefusal(mr, threads, opts);
@@ -201,7 +202,7 @@ async function startFix(mr: Mr, checkout: string, brief: (path: string) => strin
     await run('git', ['-C', checkout, 'fetch', '--quiet', 'origin', mr.sourceBranch]);
     await run('git', ['-C', checkout, 'worktree', 'add', '--quiet', '-b', name, path, `origin/${mr.sourceBranch}`]);
     recordRun(journal, { worktreePath: path });
-    const started = await startAgent({ name, prompt: brief(path), title: `fix ${refNumber(mr)}`, kind: 'fix', mr: mrKey(mr), worktree: path, link: mr.webUrl });
+    const started = await startAgent({ name, prompt: brief(path), title: `fix ${refNumber(mr)}`, kind: 'fix', mr: mrKey(mr), worktree: path });
     recordRun(journal, { status: 'running', terminal: started.handle });
     return { how: started.how, handle: started.handle, path, name, ...(started.note ? { note: started.note } : {}) };
   } catch (e) {
@@ -210,9 +211,9 @@ async function startFix(mr: Mr, checkout: string, brief: (path: string) => strin
   }
 }
 
-// Every agent starts in the workspace root, where the workspace CLAUDE.md, settings and commands are.
+// Every agent starts in the code folder, where the workspace CLAUDE.md, settings and commands are.
 function startAgent(spec: Omit<AgentSpec, 'cwd'>): Promise<LaunchOutcome> {
-  return launchHost().start({ ...spec, cwd: root() });
+  return claudeHost.start({ ...spec, cwd: root() });
 }
 
 async function freeFixName(checkout: string, base: string): Promise<string> {

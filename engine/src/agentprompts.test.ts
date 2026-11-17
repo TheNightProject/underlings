@@ -131,8 +131,7 @@ test('the commands are saved through the settings, each on its own, as one line,
   const { applied } = updateSettings({ agents: { kickoffCommand: '  /start\n  now ' } });
   assert.deepEqual(applied, ['agents']);
   assert.deepEqual(loadSettings().agents, { ...BUILT_IN_COMMANDS, reviewCommand: '/review', kickoffCommand: '/start now' });
-  for (const bad of [{ agentHost: 'orca' }, { reviewCommand: 7 }, [], 'x', {}]) assert.deepEqual(updateSettings({ agents: bad }).dropped, ['agents'], JSON.stringify(bad));
-  assert.equal(loadSettings().agentHost, 'claude');
+  for (const bad of [{ model: 'opus' }, { reviewCommand: 7 }, [], 'x', {}]) assert.deepEqual(updateSettings({ agents: bad }).dropped, ['agents'], JSON.stringify(bad));
   assert.equal(JSON.parse(readFileSync(STATE_FILE, 'utf8')).settings.agents.reviewCommand, '/review');
 });
 

@@ -267,9 +267,9 @@ test('a failed launch is journalled in Review runs', async () => {
   watchedAuto();
   await reReviewWith([mr({ sha: 'head-2' })]);
   const fake = fakeWorld({ mrs: [mr({ sha: 'head-2' })] });
-  fake.ports.launch = (m, prompt) => startAutoReview(m, prompt, async () => { throw new Error('no Orca'); });
+  fake.ports.launch = (m, prompt) => startAutoReview(m, prompt, async () => { throw new Error('claude would not start'); });
   const report = await autoReReview(context(fake.world, ''), fake.ports, store.loadState().watches);
-  assert.deepEqual(report.errors, [`re-review of ${KEY}: no Orca`]);
+  assert.deepEqual(report.errors, [`re-review of ${KEY}: claude would not start`]);
   assert.equal(store.loadRuns()[KEY]?.status, 'launch failed');
 });
 

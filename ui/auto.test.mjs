@@ -102,7 +102,7 @@ test('the Full auto view says why it is stopped and offers the fix beside it', a
   assert.equal(banner({ state: 'stopped', why: 'GITLAB_TOKEN is not set' }), 'Full auto is stopped: GITLAB_TOKEN is not set.');
   banner({ state: 'stopped', fix: 'rebuild', why: 'the review engine needs rebuilding: this build has no takeAutoTurn' });
   assert.equal(buttonsIn(page, '#main .banner', 'Rebuild the engine').length, 1);
-  banner({ state: 'stopped', fix: 'settings', why: 'there is no workspace root to launch reviews in' });
+  banner({ state: 'stopped', fix: 'settings', why: 'there is no code folder to launch reviews in' });
   assert.equal(page.$('#main .banner a.fix-link').getAttribute('href'), '#settings');
   banner({ state: 'stopped', fix: 'token', why: 'GITLAB_TOKEN is not set' });
   assert.ok(page.$('#main .banner #gitlab-token'));
@@ -321,10 +321,10 @@ test('the rail counts review runs whose agent is working now', async () => {
   assert.equal(page.$('[data-count="runs"]').textContent, '2');
 });
 
-test('Settings marks a blank workspace root red, but only while full auto has none to launch into', async () => {
-  const rows = [{ key: 'workspaceRoot', label: 'Workspace', hint: 'the checkout agents run against.', kind: 'text', bounds: null, value: '' }];
+test('Settings marks a blank code folder red, but only while full auto has none to launch into', async () => {
+  const rows = [{ key: 'workspaceRoot', label: 'Code folder', hint: 'the folder your clones live in.', kind: 'text', bounds: null, value: '' }];
   const settings = { rows, repos: { filter: '', matching: [], total: 0, perRefresh: 1, perMinute: 1, heavy: false } };
-  const page = await served(snapshot({ driver: driver({ state: 'stopped', fix: 'settings', why: 'there is no workspace root to launch reviews in' }) }), (path) => (path.startsWith('/api/matrix/settings') ? settings : null));
+  const page = await served(snapshot({ driver: driver({ state: 'stopped', fix: 'settings', why: 'there is no code folder to launch reviews in' }) }), (path) => (path.startsWith('/api/matrix/settings') ? settings : null));
   page.open('settings');
   await page.settle(50);
   assert.equal(page.$('#main .setting .hint.bad').textContent, 'Full auto cannot launch reviews while this is blank.');

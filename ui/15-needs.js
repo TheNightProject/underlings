@@ -18,10 +18,9 @@ const OPEN_WORDS = {
   'fix-threads': 'Fix with an agent', 'fix-conflicts': 'Fix conflicts', 'fix-pipeline': 'Fix the pipeline', decide: 'Approve or request changes', reply: 'Reply',
 };
 const shownToasts = new Set();
-const shownOffers = new Set();
 
 function attention() {
-  return state?.attention ?? { cards: [], agents: [], system: [], email: [], slack: [], count: 0, prefs: {}, toasts: [], offers: [], notReaching: null };
+  return state?.attention ?? { cards: [], agents: [], system: [], email: [], slack: [], count: 0, prefs: {}, toasts: [], notReaching: null };
 }
 
 function viewNeeds(d) {
@@ -48,25 +47,11 @@ function finishSetup() {
   render(true);
 }
 
-const inApp = () => state?.shell === 'app';
-
-// The plugin needs Orca's permission and Orca's banners; the app only needs macOS to allow its own.
-function setupSteps() {
-  if (inApp()) return [el('li', {}, 'In macOS System Settings, Notifications, ' + APP_NAME + ': allow notifications and choose Banners, or Alerts to keep them on screen.')];
-  return [
-    el('li', {}, 'In Orca, Settings, Plugins, ' + APP_NAME + ': approve “Show desktop notifications labeled with the plugin name”. Until you do, the plugin does not run at all, full auto included.'),
-    el('li', {}, 'In the same place, turn ' + APP_NAME + ' off and on once, as its worker has changed.'),
-    el('li', {}, 'In macOS System Settings, Notifications, Orca: allow notifications and choose Banners, or Alerts to keep them on screen.'),
-    el('li', {}, 'Optional: in Orca, Settings, Keybindings, Plugins, bind “' + APP_NAME + ': Open what needs me”, which opens what the last banner named.'),
-    el('li', {}, 'Optional: turn on clickable banners under Notifications in Settings, so a banner opens its MR here.'),
-  ];
-}
-
 function setupBanner() {
   if (setupDone()) return null;
   return el('section', { class: 'banner setup', 'aria-label': 'Set up desktop notifications' }, icon('bell'), el('div', {},
     el('b', {}, 'Once, so banners reach you'),
-    el('ol', {}, setupSteps()),
+    el('ol', {}, el('li', {}, 'In macOS System Settings, Notifications, ' + APP_NAME + ': allow notifications and choose Banners, or Alerts to keep them on screen.')),
     el('div', { class: 'actions' }, button('Done', 'check', finishSetup, true))));
 }
 
@@ -258,12 +243,8 @@ function tabBadge(count) {
 
 const pageFocused = () => typeof document.hasFocus === 'function' && document.hasFocus();
 
-function notificationPermission() {
-  return typeof Notification === 'function' ? Notification.permission : 'denied';
-}
-
 function beat() {
-  api('/api/attention/presence', { page: PAGE_ID, focused: pageFocused(), visible: document.visibilityState === 'visible', permission: notificationPermission(), panel: Boolean(slot('claudePanelShown')) }).catch(() => {});
+  api('/api/attention/presence', { page: PAGE_ID, focused: pageFocused(), visible: document.visibilityState === 'visible', panel: Boolean(slot('claudePanelShown')) }).catch(() => {});
 }
 
 // A toast for whatever the worker held back from a banner because this page had focus, shown once each.
@@ -277,38 +258,12 @@ function onAttention() {
     toast(t.title, false, t.join ? outside(t.join, 'Join', true) : button('Open', 'chevron', () => goTo(t.target), true));
     if (t.kind !== 'meeting') document.querySelector('[data-count="needs"]')?.classList.add('pulse');
   }
-  for (const o of a.offers) if (o.page === PAGE_ID && !shownOffers.has(o.id)) clickableBanner(o);
-}
-
-function clickableBanner(offer) {
-  shownOffers.add(offer.id);
-  if (notificationPermission() !== 'granted') return;
-  const shown = new Notification(offer.title, { body: offer.body, tag: offer.id });
-  shown.onclick = () => {
-    api('/api/summon', { target: offer.target }).catch(() => {});
-    goTo(offer.target);
-  };
-  api('/api/attention/ack', { id: offer.id }).catch(() => {});
-}
-
-function onAttentionEvent(data) {
-  const offered = /^attention:offer:([\w-]+):([\w-]+)$/.exec(data);
-  if (offered && offered[1] === PAGE_ID) refresh();
-}
-
-async function turnOnClickable() {
-  if (typeof Notification !== 'function') return toast('This browser tab cannot show notifications of its own.', true);
-  const permission = await Notification.requestPermission();
-  beat();
-  if (permission !== 'granted') return toast('The tab was not allowed to show notifications, so Orca\'s banners stay.', true);
-  attentionCall('prefs', { clickable: true });
 }
 
 function notificationsGroup() {
   const a = attention();
   const p = a.prefs ?? {};
   const set = (patch) => attentionCall('prefs', patch);
-  const permission = notificationPermission();
   return el('section', { class: 'section settings-group', id: 'notifications' }, el('h2', {}, 'Notifications'),
     noteSwitch('note-enabled', 'Desktop banners', 'a banner when something needs you, page open or not. While this page has focus it shows a toast instead.', p.enabled !== false, (v) => set({ enabled: v })),
     el('div', { class: 'setting' }, el('label', { for: 'note-test' }, 'Test banner'),
@@ -319,11 +274,6 @@ function notificationsGroup() {
       el('input', { id: 'note-from', type: 'time', value: p.quietFrom ?? '22:00', onchange: (e) => set({ quietFrom: e.target.value }) }),
       el('input', { id: 'note-to', type: 'time', value: p.quietTo ?? '07:00', 'aria-label': 'Quiet until', onchange: (e) => set({ quietTo: e.target.value }) }))) : null,
     noteSwitch('note-weekends', 'Quiet on days off', 'holds banners on the days outside your working days.', Boolean(p.weekends), (v) => set({ weekends: v })),
-    inApp() ? null : el('div', { class: 'setting' }, el('label', { for: 'note-clickable' }, 'Clickable banners'),
-      el('div', { class: 'control' }, p.clickable && permission === 'granted'
-        ? el('button', { id: 'note-clickable', type: 'button', role: 'switch', 'aria-checked': 'true', onclick: () => set({ clickable: false }) }, 'On')
-        : el('button', { id: 'note-clickable', type: 'button', onclick: turnOnClickable }, icon('bell'), 'Turn on clickable banners')),
-      el('p', { class: 'hint' }, 'While this tab is open it shows the banner itself, so a click opens that MR here. Orca asks once to allow it. If the tab does not answer within 10 s, Orca\'s banner goes out instead.')),
     el('p', { class: a.notReaching ? 'hint bad' : 'hint' }, a.notReaching ? 'Banners are not reaching you: ' + a.notReaching + '.' : 'Every banner sent so far was delivered.'));
 }
 

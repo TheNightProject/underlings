@@ -147,12 +147,11 @@ test('the request rate is what trips the limit: queries times refreshes', () => 
   assert.ok(requestRate(5, 0).perMinute > 0, 'a nonsense interval must not divide by zero');
 });
 
-test('the workspace root prefers the setting over where you happened to start', () => {
-  // Running from a home directory is normal; assuming the working directory is the
-  // checkout is what made every launch fail with "No Orca workspace covers /Users/<me>".
+test('the code folder prefers the setting over where you happened to start', () => {
+  // Running from a home directory is normal, so the working directory is only a last guess.
   assert.equal(workspaceRoot('/home/dev/work'), '/home/dev/work');
   assert.equal(workspaceRoot('  /home/dev/work  '), '/home/dev/work', 'typed-in whitespace');
-  assert.equal(workspaceRoot(''), process.env['ORCA_WORKSPACE_ROOT'] ?? process.cwd());
-  assert.equal(workspaceRoot(undefined), process.env['ORCA_WORKSPACE_ROOT'] ?? process.cwd());
-  assert.equal(workspaceRoot('   '), process.env['ORCA_WORKSPACE_ROOT'] ?? process.cwd());
+  assert.equal(workspaceRoot(''), process.env['UNDERLINGS_CODE_FOLDER'] ?? process.cwd());
+  assert.equal(workspaceRoot(undefined), process.env['UNDERLINGS_CODE_FOLDER'] ?? process.cwd());
+  assert.equal(workspaceRoot('   '), process.env['UNDERLINGS_CODE_FOLDER'] ?? process.cwd());
 });

@@ -185,7 +185,7 @@ test('Settings has the full-screen reminder in the Calendar group: on or off, ho
   assert.equal(page.$('#cal-remind').value ?? page.$('#cal-remind').querySelectorAll('option').find((o) => o.selected).getAttribute('value'), '5', 'the banner keeps its own lead time');
 });
 
-test('in the Orca plugin Settings says only the app can cover the screen, and the banner reminds instead', async () => {
+test('where the screen cannot be covered, Settings says only the app can, and the banner reminds instead', async () => {
   const page = await open({ search: '?t=test', hash: 'settings', settings: { ...SETTINGS, overlayHere: false } });
-  assert.match(text(page.$('#calendar-settings')), /Only the Underlings app can cover the screen, so here in Orca the banner above is your reminder/);
+  assert.match(text(page.$('#calendar-settings')), /Only the Underlings app can cover the screen, so here the banner above is your reminder/);
 });

@@ -25,7 +25,7 @@ function snapshot(attention = {}, matrix = {}) {
     version: { ui: 1, lib: 1, worker: 1, loaded: 1 },
     agents: [],
     artifacts: [],
-    attention: { cards, agents: [], system: [], count: cards.length, prefs: { enabled: true, quiet: false, quietFrom: '22:00', quietTo: '07:00', weekends: false, clickable: false }, toasts: [], offers: [], notReaching: null, ...attention },
+    attention: { cards, agents: [], system: [], count: cards.length, prefs: { enabled: true, quiet: false, quietFrom: '22:00', quietTo: '07:00', weekends: false }, toasts: [], offers: [], notReaching: null, ...attention },
     matrix: {
       available: true, me: 'frank', paused: false, holdSeconds: null, holdWhileReviewing: false,
       inbox: { fetchedAt: AT, loading: false, error: null, repoCount: 1, rows: [row(KEY), row(OWN, { author: 'frank', flags: { mine: true }, pipeline: 'FAILED' })] },
@@ -169,12 +169,12 @@ test('while the page has focus a banner the worker held back shows as a toast wi
   assert.equal(node.hidden, true, 'shown once');
 });
 
-test('a focused page tells the worker so, beating with its focus, visibility, permission and whether the Claude panel is open', async () => {
+test('a focused page tells the worker so, beating with its focus, visibility and whether the Claude panel is open', async () => {
   const page = await needsPage({ focus: () => true });
   page.run('presenceStart()');
   await page.settle(20);
   const [, body] = page.posts.find(([p]) => p === '/api/attention/presence');
-  assert.deepEqual(Object.keys(body).sort(), ['focused', 'page', 'panel', 'permission', 'visible']);
+  assert.deepEqual(Object.keys(body).sort(), ['focused', 'page', 'panel', 'visible']);
   assert.deepEqual([body.focused, body.panel], [true, false]);
 });
 
@@ -183,17 +183,15 @@ test('the first-run banner lists the one-time steps until Done, and says nothing
   const store = { getItem: (k) => saved.get(k) ?? null, setItem: (k, v) => saved.set(k, v) };
   const page = await needsPage({ store });
   const setup = page.$('#main .banner.setup');
-  assert.match(setup.textContent, /approve “Show desktop notifications labeled with the plugin name”/);
-  assert.match(setup.textContent, /turn Underlings off and on once/);
-  assert.match(setup.textContent, /macOS System Settings, Notifications, Orca/);
-  assert.match(setup.textContent, /Underlings: Open what needs me/);
+  assert.match(setup.textContent, /macOS System Settings, Notifications, Underlings: allow notifications/);
+  assert.doesNotMatch(setup.textContent, /Orca|plugin/);
   buttonIn(setup, 'Done').click();
   assert.equal(page.$('#main .banner.setup'), null);
 });
 
-test('a banner Orca would not show is said at the top of Needs you, with the way to the settings', async () => {
-  const page = await needsPage({ snap: snapshot({ notReaching: 'notifications are turned off for Orca' }) });
-  assert.match(page.$('#main').textContent, /Desktop notifications are not reaching you: notifications are turned off for Orca\./);
+test('a banner macOS would not show is said at the top of Needs you, with the way to the settings', async () => {
+  const page = await needsPage({ snap: snapshot({ notReaching: 'macOS will not show notifications for the app' }) });
+  assert.match(page.$('#main').textContent, /Desktop notifications are not reaching you: macOS will not show notifications for the app\./);
 });
 
 test('Settings has a Notifications group whose switches save at once', async () => {
@@ -205,7 +203,7 @@ test('Settings has a Notifications group whose switches save at once', async () 
   page.$('#note-enabled').click();
   await page.settle();
   assert.deepEqual(page.posts.filter(([p]) => p === '/api/attention/prefs').map(([, b]) => b), [{ quiet: true }, { enabled: false }]);
-  assert.match(group.textContent, /Clickable banners/);
+  assert.doesNotMatch(group.textContent, /Clickable banners/);
 });
 
 test('Send a test banner asks the worker for one', async () => {

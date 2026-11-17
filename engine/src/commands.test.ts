@@ -92,9 +92,9 @@ test('the hold note is the one saved in Settings, and a blank one posts the defa
 
 test('a launch that fails holds nothing', async () => {
   const failing = async (): Promise<void> => {
-    throw new Error('orca is not running');
+    throw new Error('claude is not running');
   };
-  await assert.rejects(startReview(mr(), failing), /orca is not running/);
+  await assert.rejects(startReview(mr(), failing), /claude is not running/);
   assert.deepEqual(calls, ['fetch']);
 });
 
@@ -123,14 +123,14 @@ test('a review is launched, and so baselined, on the MR as GitLab has it now, un
 });
 
 test('r refuses while the other front end is still launching a review, or has launched one since the terminals were listed', () => {
-  const listed = { terminals: [{ handle: 't-old', title: 'claude', agent: 'claude', connected: false, orphaned: true }], listedAt: Date.now() - 60_000 };
+  const listed = { terminals: [{ handle: 't-old', title: 'claude', agent: 'claude', connected: false, orphaned: true, working: false }], listedAt: Date.now() - 60_000 };
   toggleWatch(mr());
   recordReviewTerminal('acme/engine!621', 't-old');
   assert.equal(reviewRefusal(mr(), listed), null, 'the last agent is gone');
   recordRun('acme/engine!621', { webUrl: '', startedAt: new Date().toISOString(), status: 'launching', tail: [] });
   assert.equal(reviewRefusal(mr(), listed), 'an agent is already reading !621, f focuses it');
   recordRun('acme/engine!621', { status: 'working', terminal: 't-new' });
-  assert.equal(reviewRefusal(mr(), listed), 'an agent is already reading !621, f focuses it', 'back from Orca, after the list');
+  assert.equal(reviewRefusal(mr(), listed), 'an agent is already reading !621, f focuses it', 'back from its host, after the list');
 });
 
 test('approving lifts a hold that is on now, even when the caller copy predates it', async () => {

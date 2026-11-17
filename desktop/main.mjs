@@ -137,12 +137,12 @@ async function activate() {
 }
 
 async function askForAnotherPort(taken) {
-  const [free, plugin] = await Promise.all([nextFreePort(taken), heldByOurWorker(taken)]);
+  const [free, ours] = await Promise.all([nextFreePort(taken), heldByOurWorker(taken)]);
   const { response } = await dialog.showMessageBox({
     type: 'warning',
-    message: `Port ${taken} is taken by ${plugin ? `another copy of ${APP_NAME}, most likely the Orca plugin` : 'another program'}.`,
-    detail: plugin
-      ? 'Turn the Orca plugin off (Orca, Settings, Plugins) while you use the app. Until then, full auto\'s lock stops the two driving at once.'
+    message: `Port ${taken} is taken by ${ours ? `another copy of ${APP_NAME}, such as one run from a checkout` : 'another program'}.`,
+    detail: ours
+      ? 'Quit the other copy while you use this one. Until then, full auto\'s lock stops the two driving at once.'
       : `Change "port" in ~/.config/${FOLDER}/config.json to keep the app off it.`,
     buttons: free ? [`Use port ${free}`, 'Quit'] : ['Quit'],
     defaultId: 0,

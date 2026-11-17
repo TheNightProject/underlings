@@ -1,7 +1,7 @@
 export { buildBoard, BOARD_STAGES } from './actions/board.js';
 export { fixRunAlive, kickoffPrompt, kickoffRunAlive, launchFix, launchKickoff } from './actions/launch.js';
 export { discard, editQueued, postOne } from './actions/post.js';
-export { isWatched, markSeen, moveAutomation, scheduleReReview, setAuto, stopWatching, toggleWatch, unscheduleReReview } from './actions/watch.js';
+export { isWatched, markSeen, scheduleReReview, setAuto, stopWatching, toggleWatch, unscheduleReReview } from './actions/watch.js';
 export { autoConfig } from './auto/config.js';
 export { autoPoll, autoTick } from './auto/engine.js';
 export { agentOnFor, backgroundPoll, backgroundTick, fencedPorts, reportLine, type BackgroundInput, type BackgroundReport } from './auto/driver.js';

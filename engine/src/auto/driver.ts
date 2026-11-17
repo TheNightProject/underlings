@@ -34,7 +34,7 @@ function emptyReport(): BackgroundReport {
   return { launched: [], asked: [], reReviewed: [], sent: 0, held: 0, captured: 0, errors: [] };
 }
 
-/** Longer than a launch can take: an Orca one's calls, each at its timeout, add up to under five minutes. */
+/** Longer than a launch can take. */
 const LAUNCH_IN_FLIGHT_MS = 5 * 60_000;
 
 /** Launched by either front end, and either not back from its host yet or started since the agents were listed. */
@@ -46,7 +46,7 @@ function launchedUnlisted(run: ReviewRun | undefined, listedAt: number | undefin
   return live && listedAt !== undefined && started >= listedAt;
 }
 
-/** One agent per MR: a second would hold it again and queue the same findings twice. Claude stays open after a review, so one Orca calls done no longer counts. */
+/** One agent per MR: a second would hold it again and queue the same findings twice. */
 export function agentOnFor(
   watches: Record<string, Watch>,
   runs: Record<string, ReviewRun>,

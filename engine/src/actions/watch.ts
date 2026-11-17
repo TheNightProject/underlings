@@ -67,7 +67,6 @@ export function watchForReview(mr: Mr, terminal?: string): { alreadyWatched: boo
       iid: mr.iid,
       webUrl: mr.webUrl,
       auto: existing?.auto ?? loadSettings().reReviewOnChange !== false,
-      ...(existing?.automation ? { automation: existing.automation } : {}),
       ...(existing?.daily ? { daily: existing.daily } : {}),
       seen: fingerprint(mr),
       addedAt: existing?.addedAt ?? new Date().toISOString(),
@@ -115,17 +114,6 @@ export function scheduleReReview(mr: Mr, now = Date.now()): string {
 export function unscheduleReReview(key: string): void {
   mutateState((state) => {
     delete state.watches[key]?.daily;
-  });
-}
-
-/** The Orca automation is left for you to delete in Orca, so this says which one it was. */
-export function moveAutomation(key: string, now = Date.now()): string {
-  return changeWatch(key, (watch) => {
-    const name = watch.automation;
-    if (!name) throw new Error(`${key} has no daily re-review in Orca`);
-    watch.daily ??= { nextAt: new Date(now + DAY_MS).toISOString() };
-    delete watch.automation;
-    return name;
   });
 }
 

@@ -1,4 +1,3 @@
-import { agentWorking } from './agents/host.js';
 import { readTerminal } from './agents/index.js';
 import type { AgentTerminal, TerminalRead } from './agents/host.js';
 import { loadRuns, loadState, recordRun } from './data/store.js';
@@ -72,7 +71,7 @@ export async function captureReviewOutput(terminals: AgentTerminal[], options: C
       continue;
     }
     if (!t.agent || t.orphaned || !t.connected) continue;
-    const status = agentWorking(t) ? 'working' : 'idle';
+    const status = t.working ? 'working' : 'idle';
     if (!hasNewOutput(t, target.run) || reads >= MAX_READS_PER_CAPTURE) {
       markLive(target, status);
       continue;

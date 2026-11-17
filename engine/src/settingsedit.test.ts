@@ -77,9 +77,10 @@ test('a switch takes true or false only, and text is trimmed', () => {
 });
 
 test('a choice takes only the values it offers, and the spend cap only an amount of dollars or blank', () => {
-  const { applied, dropped } = updateSettings({ agentPermissions: 'auto', agentHost: 'vm', agentBudgetUsd: '2.50' });
-  assert.deepEqual([applied, dropped], [['agentPermissions', 'agentBudgetUsd'], ['agentHost']]);
-  assert.deepEqual([stored()['agentPermissions'], stored()['agentHost'], stored()['agentBudgetUsd']], ['auto', 'claude', '2.50']);
+  const { applied, dropped } = updateSettings({ agentPermissions: 'auto', agentBudgetUsd: '2.50' });
+  assert.deepEqual([applied, dropped], [['agentPermissions', 'agentBudgetUsd'], []]);
+  assert.deepEqual(updateSettings({ agentPermissions: 'sometimes' }).dropped, ['agentPermissions']);
+  assert.deepEqual([stored()['agentPermissions'], stored()['agentBudgetUsd']], ['auto', '2.50']);
   assert.deepEqual(updateSettings({ agentBudgetUsd: 'lots' }).dropped, ['agentBudgetUsd']);
   assert.deepEqual(updateSettings({ agentBudgetUsd: '' }).applied, ['agentBudgetUsd']);
   assert.equal(stored()['agentBudgetUsd'], '');

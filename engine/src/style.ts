@@ -27,7 +27,6 @@ export function writingStyle(): WritingStyle {
   }
 }
 
-/** Each on one line, as the review prompt is typed into a terminal by the Orca fallback. */
 export function styleLines(what: string, style: WritingStyle = writingStyle()): string[] {
   return [style.language ? `Write ${what} in ${style.language}.` : null, style.rules ? `Writing rules for ${what}: ${style.rules}` : null].filter((line): line is string => line !== null);
 }

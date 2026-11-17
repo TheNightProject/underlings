@@ -3,7 +3,7 @@ import { linkSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, sta
 import { join } from 'node:path';
 import { STATE_DIR } from '../config.js';
 
-/** The worker taking turns: the app, or the Orca plugin, each under its own pid. */
+/** The worker taking turns, each copy of the app under its own pid. */
 export type AutoOwner = string;
 
 export const AUTO_BEAT_MS = 5_000;

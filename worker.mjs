@@ -9,8 +9,6 @@ import { APP_NAME, branded } from './lib/product.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const UI = join(ROOT, 'ui');
-// The host reaps a worker idle for five minutes; any host call counts as activity.
-const KEEPALIVE_MS = 240_000;
 const MAX_BODY = 64 * 1024;
 const PREVIEW = '/preview/';
 const TOOLS = '/api/mcp/';
@@ -29,8 +27,6 @@ let origin;
 let config;
 let app;
 let generation = 0;
-let keepalive;
-let host = null;
 let desktop = null;
 let pageUrl;
 let log = () => {};
@@ -39,7 +35,6 @@ export default async function activate(ctx) {
   log = (text) => ctx.log(text);
   movedHome(ctx);
   config = { port: 47321, ...(await readJson(join(configDir(), 'config.json'), {})) };
-  host = ctx.host;
   desktop = ctx.desktop ?? null;
   if (desktop?.port) config.port = desktop.port;
   token = await loadToken();
@@ -55,14 +50,12 @@ export default async function activate(ctx) {
   ctx.commands.register('latest', () => app.openPage(config, pageUrl, app.latestTarget?.()));
   if (desktop) ctx.commands.register('goto', (target) => app.openPage(config, pageUrl, target));
   if (desktop) ctx.commands.register('claude', () => app.openClaude());
-  keepalive = setInterval(() => ctx.host.call('storage.keys').catch(() => {}), KEEPALIVE_MS);
-  // Not awaited: activation has a ten second budget and the first MR fetch alone can use most of it.
+  // Not awaited, so the window opens before the first MR fetch, which can take a while.
   app.start(config, shellFor(null)).catch((err) => log(`could not start: ${err.message}`));
 }
 
-// Orca exits the worker once this returns, so a full auto step still writing gets the wait that app.stop bounds.
+// The app quits once this returns, so a full auto step still writing gets the wait that app.stop bounds.
 export async function deactivate() {
-  clearInterval(keepalive);
   await app?.stop?.();
   server?.close();
 }
@@ -73,7 +66,7 @@ function shellFor(carried) {
 
 function alert(title, body = '', target) {
   const banner = { title: title.slice(0, 120), body: body.slice(0, 1000) };
-  if (!desktop) return host.call('notifications.show', banner);
+  if (!desktop) return { delivered: false };
   return desktop.notify({ ...banner, open: () => app.openPage(config, pageUrl, target) });
 }
 
@@ -91,7 +84,7 @@ function sameGeneration(specifier, context, nextResolve) {
   return { ...resolved, url: url.href };
 }
 
-// The server, token, open event streams and keepalive stay; a broken import leaves the running code in place.
+// The server, token and open event streams stay; a broken import leaves the running code in place.
 async function reload() {
   if (!reloadable) throw Object.assign(new Error(`this Node cannot re-import modules, so restart ${APP_NAME}`), { status: 501 });
   generation += 1;

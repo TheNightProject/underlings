@@ -20,7 +20,7 @@ beforeEach(() => resetState());
 const KEY = 'acme/engine!621';
 
 function agent(handle: string, over: Partial<AgentTerminal> = {}): AgentTerminal {
-  return { handle, title: '✳ claude', agent: 'claude', connected: true, orphaned: false, ...over };
+  return { handle, title: 'review !1', agent: 'claude', connected: true, orphaned: false, working: false, ...over };
 }
 
 function reader() {
@@ -65,7 +65,7 @@ test('a new run clears the last one\'s terminal and workspace, then records its 
   let finish = (): void => undefined;
   const launched = startAutoReview(mr(), '/team:review x', async () => {
     await new Promise<void>((resolve) => (finish = resolve));
-    return { how: 'worktree', handle: 't-new', path: '/new' };
+    return { how: 'claude', handle: 't-new', path: '/new' };
   });
   await new Promise((resolve) => setImmediate(resolve));
   const launching = store.loadRuns()[KEY];
@@ -89,7 +89,7 @@ test('a terminal gone from a list that worked marks its run ended; a list that f
   assert.deepEqual([store.loadRuns()[KEY]?.status, store.loadRuns()[KEY]?.endedAt], ['ended', new Date(START).toISOString()]);
 });
 
-test('a run started since Orca was listed is not read as gone from that list', async () => {
+test('a run started since the agents were listed is not read as gone from that list', async () => {
   const listedAt = Date.now();
   store.recordRun(KEY, { webUrl: '', status: 'working', terminal: 't-new', startedAt: new Date(listedAt + 1).toISOString() });
   await captureReviewOutput([], { listed: true, listedAt, now: START });
@@ -102,18 +102,18 @@ test('a run started since Orca was listed is not read as gone from that list', a
 test('a run its terminal is seen live in again is no longer ended, whatever is on screen', async () => {
   for (const screen of [['back'], []]) {
     store.recordRun(KEY, { webUrl: '', status: 'ended', endedAt: new Date(START).toISOString(), terminal: 't1' });
-    await captureReviewOutput([agent('t1', { title: '◐ claude' })], { listed: true, read: async () => ({ tail: screen }), now: START });
+    await captureReviewOutput([agent('t1', { working: true })], { listed: true, read: async () => ({ tail: screen }), now: START });
     const run = store.loadRuns()[KEY];
     assert.deepEqual([run?.status, run?.endedAt], ['working', undefined], JSON.stringify(screen));
   }
 });
 
-test('a live terminal reads as working or idle from its title', async () => {
+test('a live agent reads as working or idle, as its host says', async () => {
   store.recordRun(KEY, { webUrl: '', status: 'launching', terminal: 't1' });
   const r = reader();
-  await captureReviewOutput([agent('t1', { title: '◐ claude' })], { listed: true, read: r.fn, now: START });
+  await captureReviewOutput([agent('t1', { working: true })], { listed: true, read: r.fn, now: START });
   assert.equal(store.loadRuns()[KEY]?.status, 'working');
-  await captureReviewOutput([agent('t1', { title: '✳ claude', lastOutputAt: START - 1 })], { listed: true, read: r.fn, now: START + 1 });
+  await captureReviewOutput([agent('t1', { lastOutputAt: START - 1 })], { listed: true, read: r.fn, now: START + 1 });
   assert.equal(store.loadRuns()[KEY]?.status, 'idle', 'and nothing new on screen needs no read to say so');
   assert.equal(r.read.length, 1);
 });
@@ -128,12 +128,4 @@ test('at most twelve terminals are read in one go, newest first', async () => {
   await captureReviewOutput(terminals, { listed: true, read: r.fn, now: START });
   assert.equal(r.read.length, MAX_READS_PER_CAPTURE);
   assert.ok(!r.read.includes('t0') && r.read.includes('t14'));
-});
-
-test('a Claude Code agent says whether it is working itself, as its title carries no spinner', async () => {
-  store.recordRun(KEY, { webUrl: '', startedAt: new Date(START).toISOString(), status: 'launching', terminal: 'claude:a' });
-  await captureReviewOutput([agent('claude:a', { title: 'review !621', working: true })], { listed: true, read: reader().fn, now: START });
-  assert.equal(store.loadRuns()[KEY]?.status, 'working');
-  await captureReviewOutput([agent('claude:a', { title: '◐ review !621', working: false })], { listed: true, read: reader().fn, now: START });
-  assert.equal(store.loadRuns()[KEY]?.status, 'idle');
 });

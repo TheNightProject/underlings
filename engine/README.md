@@ -151,7 +151,7 @@ default, adds one saying it went unread.
 ### Who drives it
 
 Full auto, auto re-review and capturing what each review agent has on screen run in one
-place at a time: the worker, in the app or in the Orca plugin, whether or not its page is
+place at a time: the worker of one copy of the app, whether or not its page is
 open. A lock in the state folder decides which: `auto.lock`, beaten every 5 s and taken over
 at once from a worker that died, or else only once it is 30 s stale and still the same on a
 second look 5 s later. Each worker says it is there in `frontends/`. Every send claims its
@@ -229,9 +229,9 @@ archived out of the queue, and is only ever appended to.
 
 Every agent, a review, a fix or a ticket kickoff, runs as
 Claude Code in the background: `claude -p` with stream-json both ways, started in the
-workspace root, where the workspace `CLAUDE.md`, settings and commands are, under your
+Code folder, where the workspace `CLAUDE.md`, settings and commands are, under your
 own login and settings. A fix or a ticket also gets a plain git worktree cut beside the repos,
-and its prompt names it. Each repo's checkout is found under the workspace root by its `origin`
+and its prompt names it. Each repo's checkout is found under the Code folder by its `origin`
 remote, or by a folder of its name, so nothing is configured by hand; a ticket's worktree is
 `<prefix>-<key>` with the key as it is, in lower case, such as `eng-abc-1234`. The same one-agent rules hold as before: one review agent per MR, and
 a second fix or kickoff waits until the last one's agent has been removed.
@@ -256,26 +256,13 @@ Agents run in Claude Code's auto mode, so an action it judges safe goes ahead an
 asks you. `"agentPermissions": "ask"` in the settings of `state.json` starts new agents without it,
 so every action your allow list does not cover asks. An agent keeps the mode it started with.
 
-### Orca, as a fallback
-
-`"agentHost": "orca"` in the settings of `state.json` runs agents in Orca terminals again, as
-they ran before, until headless agents have proved themselves. It is not a row in Settings.
-Orca is asked nothing unless it is set: no terminal list, no workspace
-list, no launch. With it set, Orca's agents and Claude Code's are listed together, and each
-call goes to the host that started the agent. An agent started in Orca reads as gone once the
-setting is back to `claude`, so let it finish first.
-
 ## Scheduled re-reviews
 
 Re-review daily, in the app, keeps a daily slot on the watch in `state.json`. Whichever
 worker holds the full auto turn looks at each slot that is due from
-its poll: an MR that moved since it was last seen gets the review command, as Orca's daily
-automation did, and either way its next look is a day later. Pause stops it, an MR with an
+its poll: an MR that moved since it was last seen gets the review command, and either way
+its next look is a day later. Pause stops it, an MR with an
 agent on it waits, and an author in full auto is left to full auto.
-
-A watch that an older build scheduled as an Orca automation keeps its name in `automation`
-until it is moved onto the schedule, which the app offers. The automation itself
-stays in Orca until you delete it there; `changed`, its precheck, still works.
 
 ## Standup
 

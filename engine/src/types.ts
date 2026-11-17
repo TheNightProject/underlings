@@ -125,8 +125,6 @@ export interface Watch {
   webUrl: string;
   /** Re-review the moment the poller sees a change. */
   auto: boolean;
-  /** Name of the Orca automation an older build scheduled for this watch, until it is moved to `daily`. */
-  automation?: string;
   /** A daily re-review: when it next looks, and it reviews only if the MR moved since the last look. */
   daily?: { nextAt: string };
   /** Set when the watch came from launching a review, so "moved" means "moved since

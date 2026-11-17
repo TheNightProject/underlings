@@ -578,7 +578,7 @@ function calOverlaySetting(s) {
       el('select', { id: 'cal-overlay-which', 'aria-label': 'Which meetings', disabled: busy || !on, onchange: (e) => calSaveSettings({ overlayWhich: e.target.value }) },
         (s?.overlayWhichOptions ?? Object.keys(CAL_OVERLAY_WHICH)).map((id) => el('option', { value: id, selected: id === (s?.overlayWhich ?? 'all') }, CAL_OVERLAY_WHICH[id] ?? id)))),
     el('p', { class: 'hint' }, s && !s.overlayHere
-      ? 'Only the ' + APP_NAME + ' app can cover the screen, so here in Orca the banner above is your reminder. These settings apply once you run the app.'
+      ? 'Only the ' + APP_NAME + ' app can cover the screen, so here the banner above is your reminder.'
       : 'Covers every display, full-screen apps included, this long before each meeting picked here, once each: Join (Enter), Snooze or Dismiss (Esc). It keeps its own lead time, so the banner above can come earlier.'));
 }
 

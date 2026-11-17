@@ -4,11 +4,11 @@ const SETTING_GROUPS = [
   ['Repos', ['repoFilter']],
   ['Reviewing', ['holdWhileReviewing', 'closeWorkspaceWhenDone', 'reReviewOnChange']],
   ['Refresh every', ['pollSeconds']],
-  ['Workspace root', ['workspaceRoot']],
+  ['Code folder', ['workspaceRoot']],
   ['Jira site', ['jiraSite']],
   ['Tickets', ['jira.projects', 'jira.defaultProject', 'jira.statuses', 'jira.doneStatuses', 'jira.issueType', 'jira.ticketTemplate', 'tickets.noQaPaths']],
   ['Leaderboard', ['leaderboardDays', 'pointWeights']],
-  ['Running agents', ['agentHost', 'agentPermissions', 'maxAgents', 'agentBudgetUsd']],
+  ['Running agents', ['agentPermissions', 'maxAgents', 'agentBudgetUsd']],
   ['Full auto guardrails', ['autoHoldSeconds', 'autoMaxComments', 'autoMaxDiffLines', 'autoSensitivePaths', 'autoFooter']],
   ['What reviews post as you', ['holdNote', 'postedFooter', 'autoFooterText']],
 ];
@@ -88,12 +88,11 @@ function menuGuarded(...args) {
 
 // What the worker checks a schedule action against, so a change since the page read it is refused.
 function scheduleOf(w) {
-  return { daily: w?.daily ?? null, automation: w?.automation ?? null };
+  return { daily: w?.daily ?? null };
 }
 
 function scheduleItem(key) {
   const expect = scheduleOf(knownWatch(key));
-  if (expect.automation) return moveButton(key, expect, true);
   const name = expect.daily ? 'unschedule' : 'schedule';
   const run = () => { ui.menu = null; matrixAct(name, { key, expect }, name + ':' + key); };
   return expect.daily
@@ -101,28 +100,11 @@ function scheduleItem(key) {
     : menuGuarded(name + ':' + key, 'Re-review daily', 'clock', 'Look once a day, and review on days it moved?', run);
 }
 
-function moveButton(key, expect, inMenu) {
-  const id = 'move-automation:' + key;
-  const run = () => { ui.menu = null; matrixAct('move-automation', { key, expect }, id); };
-  return (inMenu ? menuGuarded : guarded)(id, 'Move to the schedule here', 'clock', 'Move ' + expect.automation + ' here?', run, !inMenu);
-}
-
 function stopWatchButton(key, expect, label, inMenu) {
   const id = 'unwatch:' + key;
   const run = () => { ui.menu = null; matrixAct('unwatch', { key, expect }, id); };
-  if (expect.daily || expect.automation) return (inMenu ? menuGuarded : guarded)(id, label, 'eyeoff', 'Stop, and its daily re-review?', run);
+  if (expect.daily) return (inMenu ? menuGuarded : guarded)(id, label, 'eyeoff', 'Stop, and its daily re-review?', run);
   return inMenu ? mrMenuItem(id, label, 'eyeoff', run) : el('button', { id: 'b-' + id, disabled: ui.busy.has(id), onclick: run }, icon('eyeoff'), label);
-}
-
-// Daily re-reviews an older build scheduled as Orca automations, each with its two-click move onto the schedule here.
-function orcaSchedules(rows) {
-  const left = rows.filter((w) => w.automation && w.stillOpen);
-  if (!left.length) return null;
-  return section('Daily re-reviews Orca still runs',
-    banner('These were scheduled as Orca automations. Moving one puts it on the schedule here, which whichever worker drives full auto runs. The automation itself is left for you to delete from Orca.'),
-    el('div', { class: 'list' }, left.map((w) => el('div', { class: 'row' },
-      el('div', { class: 'row-head' }, el('span', { class: 'pill s-info', title: w.automation }, icon('clock'), 'Orca'), mrRef(w.key, w.title ?? short(w.key))),
-      el('div', { class: 'actions' }, moveButton(w.key, scheduleOf(w), false))))));
 }
 
 function closeMrMenu(e) {
@@ -163,7 +145,6 @@ function viewWatching(d) {
     header('Watching', watchingSummary(rows, data), allAutoButton(rows.filter((w) => w.stillOpen && !w.auto)), clearClosedButton(rows.filter(pick.closed))),
     matrixBanners(d.m),
     ui.watching.error ? banner('Could not read the watches: ' + ui.watching.error, true) : null,
-    orcaSchedules(rows),
     rows.length ? el('div', { class: 'filters' }, chips(WATCH_FILTERS.map(([f, label]) => [f, f === 'all' ? label : label + ' ' + count(f)]), ui.watching.filter, (f) => { ui.watching.filter = f; render(); })) : null,
     !data ? empty(ui.watching.error ? 'Nothing to show yet.' : 'Reading the watches…')
       : shown.length ? el('div', { class: 'list' }, shown.map(watchRow))

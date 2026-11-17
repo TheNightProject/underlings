@@ -1,59 +1,35 @@
 import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
-import { after, beforeEach, test } from 'node:test';
+import { after, afterEach, beforeEach, test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import type { Discussion } from './data/gitlab.js';
 import type { Mr } from './types.js';
 
 const state = mkdtempSync(join(tmpdir(), 'thematrix-fix-'));
 const root = mkdtempSync(join(tmpdir(), 'thematrix-fix-root-'));
+const fixtures = fileURLToPath(new URL('./fixtures/claude/', import.meta.url));
+chmodSync(join(fixtures, 'fake-claude.mjs'), 0o755);
 mkdirSync(join(root, 'engine', '.git'), { recursive: true });
 process.env['UNDERLINGS_STATE_DIR'] = state;
-process.env['ORCA_WORKSPACE_ROOT'] = root;
+process.env['UNDERLINGS_CODE_FOLDER'] = root;
+process.env['UNDERLINGS_CLAUDE_BIN'] = join(fixtures, 'fake-claude.mjs');
+process.env['FAKE_CLAUDE_FIRST'] = join(fixtures, 'question.jsonl');
+process.env['FAKE_CLAUDE_RESUME'] = join(fixtures, 'resume.jsonl');
 
-interface Orca {
-  terminals: { handle: string; tabId: string; leafId: string }[];
-  agents: { paneKey: string; state: string }[];
-  worktrees: { displayName: string; id?: string; path?: string; isMainWorktree?: boolean }[];
-  branches: string[];
-  created: Record<string, unknown>;
-  createFails?: string;
-  linkFails?: boolean;
-  slowList?: Promise<void>;
-}
-
+// git at its boundary: nothing it is asked runs, and the branches it lists are the test's.
 const calls: string[][] = [];
-const FOLDER = { displayName: 'Acme', id: `repo1::${root}`, path: root, isMainWorktree: true };
-const WORKSPACE_ID = `repo1::${root}::workspace:w1`;
-const CREATED = { worktree: { id: WORKSPACE_ID, path: root }, launch: { outcome: { kind: 'terminal', handle: 'term_fix' } } };
-const fresh = (): Orca => ({ terminals: [], agents: [], worktrees: [FOLDER], branches: [], created: CREATED });
-let orcaWorld: Orca = fresh();
-
-async function orcaReply(args: string[]): Promise<unknown> {
-  const verb = args.slice(0, 2).join(' ');
-  if (verb === 'terminal list') return { terminals: orcaWorld.terminals };
-  if (verb === 'worktree ps') return { worktrees: [{ agents: orcaWorld.agents }] };
-  if (verb === 'worktree list') return orcaWorld.slowList?.then(() => ({ worktrees: orcaWorld.worktrees })) ?? { worktrees: orcaWorld.worktrees };
-  if (verb === 'worktree create' && orcaWorld.createFails) return null;
-  if (verb === 'worktree create') return orcaWorld.created;
-  if (verb === 'worktree set' && orcaWorld.linkFails) return null;
-  if (verb === 'terminal create') return { terminal: { handle: 'term_new' } };
-  return {};
-}
-
+let branches: string[] = [];
+let worktreeAddFails: string | null = null;
 const fakeExecFile = Object.assign(() => undefined, {
   [promisify.custom]: async (cmd: string, args: string[]) => {
-    const bare = args.filter((a) => a !== '--json');
-    calls.push([cmd.split('/').pop() ?? cmd, ...bare]);
-    if (cmd === 'git') return { stdout: bare.includes('branch') ? orcaWorld.branches.join('\n') : '', stderr: '' };
-    const result = await orcaReply(bare);
-    const stdout = JSON.stringify(result === null ? { ok: false, error: { message: orcaWorld.createFails } } : { ok: true, result });
-    if (result === null) throw Object.assign(new Error('exit 1'), { stdout });
-    return { stdout, stderr: '' };
+    calls.push([cmd.split('/').pop() ?? cmd, ...args]);
+    if (worktreeAddFails && args.includes('worktree') && args.includes('add')) throw new Error(worktreeAddFails);
+    return { stdout: args.includes('branch') ? branches.join('\n') : '', stderr: '' };
   },
 });
 Object.assign(childProcess, { execFile: fakeExecFile });
@@ -63,8 +39,7 @@ const { fixRunAlive, launchFix } = await import('./actions/launch.js');
 const { conflictBrief, fixableThreads, fixBrief, isBotThread } = await import('./fix.js');
 const { changeSettings, loadRuns, recordRun } = await import('./data/store.js');
 const { TEAM_JIRA } = await import('./jira.testkit.js');
-// These are the Orca host's launches: the fallback a state file that names agentHost orca keeps.
-changeSettings((s) => ({ ...s, agentHost: 'orca' }));
+const { claudeHost } = await import('./agents/claude.js');
 
 after(() => {
   rmSync(state, { recursive: true, force: true });
@@ -72,8 +47,12 @@ after(() => {
 });
 beforeEach(() => {
   calls.length = 0;
-  orcaWorld = fresh();
+  branches = [];
+  worktreeAddFails = null;
   writeFileSync(join(state, 'runs.json'), '{}');
+});
+afterEach(async () => {
+  for (const agent of await claudeHost.agents()) await claudeHost.removeWorkspace(agent.handle);
 });
 
 const KEY = 'acme/engine!88';
@@ -218,14 +197,17 @@ test('a very long note is cut, and says where the rest is', () => {
   assert.ok(text.length < 6500, `a 9000 character note leaves a brief of ${text.length}`);
 });
 
-const orcaCalls = () => calls.filter(([cmd]) => cmd === 'orca').map((c) => c.slice(1));
-const createCall = () => orcaCalls().find((c) => c[0] === 'worktree' && c[1] === 'create');
-const flag = (args: string[] | undefined, name: string) => args?.[args.indexOf(name) + 1];
-
 const gitCalls = () => calls.filter(([cmd]) => cmd === 'git').map((c) => c.slice(1));
+const agentsStarted = async () => (await claudeHost.agents()).length;
 const OPTS = { me: 'frank', head: 'aaa111', targetBranch: 'main' };
 
-test('a fix cuts a checkout of the MR branch under the workspace root, starts an agent there without taking focus, and links it to the MR', async () => {
+function promptOf(handle: string | undefined): string {
+  const input = join(state, 'agents', (handle ?? '').slice('claude:'.length), 'input.jsonl');
+  const first = JSON.parse(readFileSync(input, 'utf8').split('\n')[0] ?? '{}') as { message?: { message?: { content?: string } } };
+  return first.message?.message?.content ?? '';
+}
+
+test('a fix cuts a checkout of the MR branch under the code folder, then starts an agent briefed to work in it', async () => {
   const threads = fixableThreads(THREADS);
   const launched = await launchFix(mr(), threads, OPTS);
   const checkout = join(root, 'engine');
@@ -233,71 +215,38 @@ test('a fix cuts a checkout of the MR branch under the workspace root, starts an
     ['-C', checkout, 'fetch', '--quiet', 'origin', 'feat/88'],
     ['-C', checkout, 'worktree', 'add', '--quiet', '-b', 'fix-Engine-88', CHECKOUT, 'origin/feat/88'],
   ]);
-  assert.ok(CHECKOUT.startsWith(root + sep), 'the checkout is under the workspace root');
-  const create = createCall();
-  assert.ok(create, 'an Orca workspace was made');
-  assert.equal(flag(create, '--repo'), 'id:repo1', 'on the workspace folder Orca knows, not a repo it has never registered');
-  assert.equal(flag(create, '--name'), 'fix-Engine-88');
-  assert.equal(flag(create, '--agent'), 'claude');
-  assert.equal(flag(create, '--surface'), 'terminal');
-  assert.equal(flag(create, '--prompt'), fixBrief({ mr: mr(), targetBranch: 'main', threads, checkout: CHECKOUT }));
-  assert.ok(!create.includes('--activate') && !create.includes('--focus'), 'it never takes focus');
-  assert.ok(gitCalls().findIndex((c) => c.includes('add')) < calls.findIndex((c) => c[2] === 'create'), 'the checkout exists before the agent is told to work in it');
-  assert.deepEqual(orcaCalls().find((c) => c[1] === 'set'), ['worktree', 'set', '--worktree', `id:${WORKSPACE_ID}`, '--gitlab-mr', mr().webUrl]);
-  assert.deepEqual(launched, { how: 'worktree', handle: 'term_fix', path: CHECKOUT, name: 'fix-Engine-88' });
+  assert.ok(CHECKOUT.startsWith(root + sep), 'the checkout is under the code folder');
+  assert.deepEqual([launched.how, launched.path, launched.name], ['claude', CHECKOUT, 'fix-Engine-88']);
+  assert.equal(promptOf(launched.handle), fixBrief({ mr: mr(), targetBranch: 'main', threads, checkout: CHECKOUT }));
   const run = loadRuns()[`fix:${KEY}`];
-  assert.deepEqual([run?.status, run?.terminal, run?.worktreePath, run?.webUrl, run?.sha], ['running', 'term_fix', CHECKOUT, mr().webUrl, mr().sha]);
+  assert.deepEqual([run?.status, run?.terminal, run?.worktreePath, run?.webUrl, run?.sha], ['running', launched.handle, CHECKOUT, mr().webUrl, mr().sha]);
 });
 
-test('a name taken by an Orca workspace, a local branch or a folder is skipped', async () => {
-  orcaWorld.worktrees = [FOLDER, { displayName: 'fix-Engine-88' }];
-  orcaWorld.branches = ['fix-Engine-88-2'];
-  mkdirSync(join(root, 'fix-Engine-88-3'));
+test('a name taken by a local branch or a folder is skipped', async () => {
+  branches = ['fix-Engine-88'];
+  mkdirSync(join(root, 'fix-Engine-88-2'));
   try {
     const { name, path } = await launchFix(mr(), THREADS, OPTS);
-    assert.deepEqual([name, path], ['fix-Engine-88-4', join(root, 'fix-Engine-88-4')]);
+    assert.deepEqual([name, path], ['fix-Engine-88-3', join(root, 'fix-Engine-88-3')]);
     assert.deepEqual(gitCalls().find((c) => c.includes('branch')), ['-C', join(root, 'engine'), 'branch', '--list', 'fix-Engine-88*', '--format=%(refname:short)']);
   } finally {
-    rmSync(join(root, 'fix-Engine-88-3'), { recursive: true });
+    rmSync(join(root, 'fix-Engine-88-2'), { recursive: true });
   }
 });
 
-test('an agent Orca starts without saying where is given the brief in a terminal of its own workspace', async () => {
-  orcaWorld.created = { worktree: { id: WORKSPACE_ID, path: root } };
-  const launched = await launchFix(mr(), THREADS, OPTS);
-  const terminal = orcaCalls().find((c) => c[0] === 'terminal' && c[1] === 'create');
-  assert.equal(flag(terminal, '--worktree'), `id:${WORKSPACE_ID}`);
-  assert.ok(!terminal?.includes('--focus'));
-  const send = orcaCalls().find((c) => c[1] === 'send');
-  assert.deepEqual([flag(send, '--terminal'), flag(send, '--text')], ['term_new', fixBrief({ mr: mr(), targetBranch: 'main', threads: THREADS, checkout: CHECKOUT })]);
-  assert.deepEqual([launched.how, launched.handle], ['terminal', 'term_new']);
-  assert.equal(loadRuns()[`fix:${KEY}`]?.terminal, 'term_new');
-});
-
-test('an agent that started is kept even when Orca will not link its workspace to the MR', async () => {
-  orcaWorld.linkFails = true;
-  const launched = await launchFix(mr(), THREADS, OPTS);
-  assert.equal(launched.note, 'Orca did not link fix-Engine-88 to its MR');
-  assert.equal(loadRuns()[`fix:${KEY}`]?.status, 'running');
-});
-
 test('two fixes asked for at once start one agent, and the second is refused while the first is on its way', async () => {
-  let release = () => {};
-  orcaWorld.slowList = new Promise((resolve) => { release = resolve; });
-  const both = Promise.allSettled([launchFix(mr(), THREADS, OPTS), launchFix(mr(), THREADS, OPTS)]);
-  release();
-  const [first, second] = await both;
+  const [first, second] = await Promise.allSettled([launchFix(mr(), THREADS, OPTS), launchFix(mr(), THREADS, OPTS)]);
   assert.equal(first.status, 'fulfilled');
   assert.match(String(second.status === 'rejected' && second.reason), /a fix agent is already starting on !88/);
-  assert.equal(orcaCalls().filter((c) => c[0] === 'worktree' && c[1] === 'create').length, 1);
+  assert.equal(await agentsStarted(), 1);
   assert.equal(gitCalls().filter((c) => c.includes('add')).length, 1);
 });
 
 test('a conflicts fix needs conflicts GitLab still reports, takes no threads, and is briefed to merge the target in', async () => {
   await assert.rejects(launchFix(mr(), [], { ...OPTS, conflicts: true }), /GitLab reports no conflicts on !88/);
-  assert.equal(createCall(), undefined);
-  await launchFix(mr({ conflicts: true }), [], { ...OPTS, targetBranch: 'feat/base', conflicts: true });
-  assert.equal(flag(createCall(), '--prompt'), conflictBrief({ mr: mr({ conflicts: true }), targetBranch: 'feat/base', checkout: CHECKOUT }));
+  assert.equal(await agentsStarted(), 0);
+  const launched = await launchFix(mr({ conflicts: true }), [], { ...OPTS, targetBranch: 'feat/base', conflicts: true });
+  assert.equal(promptOf(launched.handle), conflictBrief({ mr: mr({ conflicts: true }), targetBranch: 'feat/base', checkout: CHECKOUT }));
 });
 
 test('a fix is refused on an MR you did not write, or whose head moved, and nothing is started', async () => {
@@ -305,30 +254,15 @@ test('a fix is refused on an MR you did not write, or whose head moved, and noth
   await assert.rejects(launchFix(mr({ sha: 'bbb222' }), THREADS, { me: 'frank', head: 'aaa111', targetBranch: 'main' }), /the head of !88 moved since you looked/);
   await assert.rejects(launchFix(mr(), [], { me: 'frank', head: 'aaa111', targetBranch: 'main' }), /nothing on !88 is left to fix/);
   await assert.rejects(launchFix(mr({ sourceBranch: '--upload-pack=x' }), THREADS, { me: 'frank', head: 'aaa111', targetBranch: 'main' }), /not a branch/);
-  assert.deepEqual(orcaCalls(), []);
+  assert.equal(await agentsStarted(), 0);
   assert.deepEqual(loadRuns(), {});
 });
 
-test('a fix is refused while an agent still runs on the last fix run\'s terminal, even one that has ended its turn', async () => {
-  recordRun(`fix:${KEY}`, { webUrl: mr().webUrl, startedAt: '2026-11-05T09:00:00Z', status: 'running', terminal: 'term_old' });
-  orcaWorld.terminals = [{ handle: 'term_old', tabId: 'tab1', leafId: 'leaf1' }];
-  for (const agentState of ['working', 'waiting', 'done']) {
-    orcaWorld.agents = [{ paneKey: 'tab1:leaf1', state: agentState }];
-    assert.equal(await fixRunAlive(KEY), true, agentState);
-    await assert.rejects(launchFix(mr(), THREADS, { me: 'frank', head: 'aaa111', targetBranch: 'main' }), /a fix agent is still open on !88/);
-  }
-  assert.equal(createCall(), undefined);
-});
-
-test('once the last fix agent has gone, or its launch failed, another starts under a name Orca has free', async () => {
-  recordRun(`fix:${KEY}`, { webUrl: mr().webUrl, startedAt: '2026-11-05T09:00:00Z', status: 'running', terminal: 'term_old' });
-  orcaWorld.terminals = [{ handle: 'term_old', tabId: 'tab1', leafId: 'leaf1' }];
-  assert.equal(await fixRunAlive(KEY), false, 'a terminal with no agent left in it');
+test('once the last fix agent has gone, or its launch failed, it no longer counts as open', async () => {
+  recordRun(`fix:${KEY}`, { webUrl: mr().webUrl, startedAt: '2026-11-05T09:00:00Z', status: 'running', terminal: 'claude:00000000-0000-4000-8000-000000000000' });
+  assert.equal(await fixRunAlive(KEY), false, 'an agent no longer listed');
   recordRun(`fix:${KEY}`, { status: 'launch failed', terminal: undefined });
   assert.equal(await fixRunAlive(KEY), false);
-  orcaWorld.worktrees = [FOLDER, { displayName: 'fix-Engine-88' }];
-  await launchFix(mr(), THREADS, OPTS);
-  assert.equal(flag(createCall(), '--name'), 'fix-Engine-88-2');
 });
 
 test('a launch still on its way counts as alive for a while, so two clicks cannot start two agents', async () => {
@@ -338,15 +272,16 @@ test('a launch still on its way counts as alive for a while, so two clicks canno
   assert.equal(await fixRunAlive(KEY), false);
 });
 
-test("Orca's refusal is kept on the run and passed on", async () => {
-  orcaWorld.createFails = 'branch fix-Engine-88 already exists';
-  await assert.rejects(launchFix(mr(), THREADS, { me: 'frank', head: 'aaa111', targetBranch: 'main' }), /branch fix-Engine-88 already exists/);
+test('a checkout git refuses is kept on the run and passed on, and no agent starts', async () => {
+  worktreeAddFails = 'fatal: a branch named fix-Engine-88 already exists';
+  await assert.rejects(launchFix(mr(), THREADS, { me: 'frank', head: 'aaa111', targetBranch: 'main' }), /a branch named fix-Engine-88 already exists/);
   const run = loadRuns()[`fix:${KEY}`];
   assert.equal(run?.status, 'launch failed');
-  assert.match(String(run?.tail?.[0]), /branch fix-Engine-88 already exists/);
+  assert.match(String(run?.tail?.[0]), /a branch named fix-Engine-88 already exists/);
+  assert.equal(await agentsStarted(), 0);
 });
 
-test('both briefs ask before pushing with AskUserQuestion, so Orca shows the agent as waiting on you', () => {
+test('both briefs ask before pushing with AskUserQuestion, so the agent shows as waiting on you', () => {
   const mr = { iid: 88, webUrl: 'https://x', sourceBranch: 'feat/88', sha: 'h', ticket: null } as unknown as Mr;
   for (const brief of [fixBrief({ mr, threads: [], targetBranch: 'main', checkout: '/w' }), conflictBrief({ mr, targetBranch: 'main', checkout: '/w' })]) {
     assert.match(brief, /STOP and ask me with the AskUserQuestion tool, offering Yes and No/);

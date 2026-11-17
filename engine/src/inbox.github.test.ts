@@ -13,8 +13,8 @@ const h = githubHarness();
 process.env['GITLAB_TOKEN'] = 'gitlab-token';
 process.env['GITHUB_TOKEN'] = 'ghp_0123456789abcdefghijklmnopqrstuv';
 
-// Orca at its boundary: no terminals, and nothing is started.
-Object.assign(childProcess, { execFile: Object.assign(() => undefined, { [promisify.custom]: () => Promise.reject(new Error('spawn orca ENOENT')) }) });
+// Nothing is run.
+Object.assign(childProcess, { execFile: Object.assign(() => undefined, { [promisify.custom]: () => Promise.reject(new Error('spawn ENOENT')) }) });
 syncBuiltinESMExports();
 
 let gitlabDown = false;

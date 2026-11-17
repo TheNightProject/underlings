@@ -14,7 +14,7 @@ const workerCode = await Promise.all(['worker.mjs', ...(await list('lib/', /\.mj
 const SLOTS = [
   'ticketChip', 'pipelineChip', 'stateChips', 'threadsChip', 'agentButton', 'reviewButton', 'ownMrActions', 'mrMenu', 'decideCard',
   'drawerOverview', 'drawerFindings', 'drawerFiles', 'drawerThreads', 'drawerPipeline', 'drawerAgent',
-  'needsNow', 'onAttention', 'onAttentionEvent', 'goTo', 'presenceStart', 'notificationsGroup', 'onRequestRow', 'postAllButton', 'queueItem', 'handedBackThreads', 'agentRow',
+  'needsNow', 'onAttention', 'goTo', 'presenceStart', 'notificationsGroup', 'onRequestRow', 'postAllButton', 'queueItem', 'handedBackThreads', 'agentRow',
   'agentConsole', 'threadActions', 'itemThread', 'engineBanner', 'matrixHealth', 'headerExtras',
 ];
 
@@ -96,14 +96,13 @@ test('the worker runs the system open in one place, and only once the link is kn
   assert.ok(opener.indexOf('isWebLink(url)') > 0 && opener.indexOf('isWebLink(url)') < opener.indexOf('run(OPEN'), 'the check comes first');
 });
 
-// An Orca banner cannot open anything, so its own command is the one way to its item; approving a permission happens only in Orca.
-test("no copy sends you to the command palette or Orca's settings, except from a banner, for a permission or a changed worker.mjs", async () => {
-  const copy = [page, { name: 'panel.html', text: await read('panel.html') }, ...scripts, ...workerCode];
+// The app's banners open their item when clicked, so no copy sends you to the command palette to find it.
+test('no copy sends you to the command palette or to a plugin\'s settings', () => {
   const palette = /\bCmd\s*\+?\s*J\b|⌘\s*J|command palette|\brun\s+Open Underlings\b/i;
-  for (const { name, text } of copy) {
+  for (const { name, text } of [page, ...scripts, ...workerCode]) {
     for (const line of text.split('\n').map((l) => l.replace(/<\/?[a-z][^<>]*>/gi, ' '))) {
-      if (!/Open what needs me/.test(line)) assert.doesNotMatch(line, palette, name);
-      if (/Settings,\s*Plugins/i.test(line)) assert.match(line, /worker\b.*\b(?:has changed|is out of date)|desktop notifications/i, `${name}: ${line.trim()}`);
+      assert.doesNotMatch(line, palette, name);
+      assert.doesNotMatch(line, /Settings,\s*Plugins/i, `${name}: ${line.trim()}`);
     }
   }
 });
@@ -133,6 +132,11 @@ test('the check above finds the old name however it is written, and not the matr
 
 test('nothing on the page or in the worker can start the terminal app any more', () => {
   for (const { name, text } of [page, ...scripts, ...workerCode]) assert.doesNotMatch(text, /start-matrix|startMatrix|Start TheMatrix/i, name);
+});
+
+test('nothing on the page or in the worker names Orca, as the app is the only way to run it', () => {
+  const shipped = workerCode.filter(({ name }) => !/\.test\.|workerproc|testkit/.test(name));
+  for (const { name, text } of [page, ...scripts, ...shipped]) assert.doesNotMatch(text, /\bOrca\b/i, name);
 });
 
 test('every ui file compiles on its own', () => {

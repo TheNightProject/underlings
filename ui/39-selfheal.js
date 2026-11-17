@@ -81,7 +81,7 @@ function versionCheck(version) {
   if (pageChanged() && pageIdle() && mayReloadNow()) location.reload();
   if (!(version?.worker > version?.started)) return null;
   return el('span', { class: 'off changed', title: 'Only a change to worker.mjs needs this; everything else reloads in place' },
-    state.shell === 'app' ? 'The worker has changed. Quit the app and open it again.' : 'The worker has changed. In Orca, Settings, Plugins, turn ' + APP_NAME + ' off and on.');
+    'The worker has changed. Quit the app and open it again.');
 }
 
 function pageIdle() {

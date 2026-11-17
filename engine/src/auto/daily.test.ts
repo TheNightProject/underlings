@@ -8,7 +8,7 @@ const dir = mkdtempSync(join(tmpdir(), 'thematrix-daily-'));
 process.env['UNDERLINGS_STATE_DIR'] = dir;
 process.env['GITLAB_TOKEN'] = 'not-a-real-token';
 
-const { DAY_MS, moveAutomation, scheduleReReview, toggleWatch, unscheduleReReview } = await import('../actions/watch.js');
+const { DAY_MS, scheduleReReview, toggleWatch, unscheduleReReview } = await import('../actions/watch.js');
 const { backgroundPoll, fencedPorts } = await import('./driver.js');
 const { dailyReReviews } = await import('./daily.js');
 const { reviewLine } = await import('../agentprompts.js');
@@ -88,16 +88,4 @@ test('whichever front end holds the full auto turn fires it from its poll, and o
   assert.deepEqual((await backgroundPoll(input, fencedPorts(() => false, fake.ports))).reReviewed, []);
   const report = await backgroundPoll(input, fencedPorts(() => true, fake.ports));
   assert.deepEqual([report.reReviewed, fake.calls.launched.length], [[KEY], 1]);
-});
-
-test('an Orca automation an older build scheduled moves onto the schedule, and the move names it so it can be deleted in Orca', () => {
-  scheduled();
-  unscheduleReReview(KEY);
-  store.mutateState((state) => {
-    state.watches[KEY]!.automation = 're-review Engine!621';
-  });
-  assert.equal(moveAutomation(KEY, START), 're-review Engine!621');
-  assert.equal(watches()[KEY]?.automation, undefined);
-  assert.equal(watches()[KEY]?.daily?.nextAt, new Date(START + DAY_MS).toISOString());
-  assert.throws(() => moveAutomation(KEY), /has no daily re-review in Orca/);
 });

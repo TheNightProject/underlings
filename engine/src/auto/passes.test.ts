@@ -56,9 +56,9 @@ test('an agent list that failed launches nothing, captures nothing, and says why
   store.recordRun('acme/engine!7', { webUrl: '', status: 'working', terminal: 't1' });
   const fake = fakeWorld();
   const input = { mrs: fake.world.mrs, me: 'frank', terminals: [], claimBy: 'auto:t' };
-  const blind = await backgroundPoll({ ...input, terminalsError: 'orca is not running' }, fencedPorts(() => true, fake.ports));
+  const blind = await backgroundPoll({ ...input, terminalsError: 'the agents folder could not be read' }, fencedPorts(() => true, fake.ports));
   assert.deepEqual(fake.calls.launched, []);
-  assert.ok(blind.errors.includes('not launching: the agents could not be listed (orca is not running)'));
+  assert.ok(blind.errors.includes('not launching: the agents could not be listed (the agents folder could not be read)'));
   assert.equal(store.loadRuns()['acme/engine!7']?.status, 'working', 'a failed list is no sign the agent has gone');
   await backgroundPoll(input, fencedPorts(() => true, fake.ports));
   assert.equal(fake.calls.launched.length, 1, 'the same poll with a list launches');

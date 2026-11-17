@@ -1,12 +1,10 @@
 import assert from 'node:assert/strict';
-import childProcess, { execFileSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { after, afterEach, beforeEach, test } from 'node:test';
+import { after, afterEach, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
 import type { Discussion } from '../data/gitlab.js';
 import type { Mr } from '../types.js';
 
@@ -14,7 +12,7 @@ const root = realpathSync(mkdtempSync(join(tmpdir(), 'launch-claude-')));
 const fixtures = fileURLToPath(new URL('../fixtures/claude/', import.meta.url));
 chmodSync(join(fixtures, 'fake-claude.mjs'), 0o755);
 process.env['UNDERLINGS_STATE_DIR'] = join(root, 'state');
-process.env['ORCA_WORKSPACE_ROOT'] = root;
+process.env['UNDERLINGS_CODE_FOLDER'] = root;
 process.env['UNDERLINGS_CLAUDE_BIN'] = join(fixtures, 'fake-claude.mjs');
 process.env['FAKE_CLAUDE_FIRST'] = join(fixtures, 'question.jsonl');
 process.env['FAKE_CLAUDE_RESUME'] = join(fixtures, 'resume.jsonl');
@@ -26,22 +24,6 @@ for (const args of [['config', 'user.email', 't@example.com'], ['config', 'user.
   git('-C', 'engine', ...args);
 }
 
-// Orca must never be asked, and a call that reaches it is recorded and refused rather than run.
-const orcaCalls: string[][] = [];
-const realExecFile = promisify(childProcess.execFile);
-Object.assign(childProcess, {
-  execFile: Object.assign(() => undefined, {
-    [promisify.custom]: (file: string, args: string[], options?: object) => {
-      if (/(^|\/)orca$/.test(file)) {
-        orcaCalls.push(args);
-        return Promise.reject(new Error('Orca was asked'));
-      }
-      return realExecFile(file, args, options ?? {});
-    },
-  }),
-});
-syncBuiltinESMExports();
-
 const { fixRunAlive, kickoffPrompt, kickoffRunAlive, launchFix, launchKickoff, launchTicket } = await import('./launch.js');
 const { claudeAgents, claudeHost } = await import('../agents/claude.js');
 const { changeSettings, loadRuns } = await import('../data/store.js');
@@ -49,9 +31,6 @@ const { fixBrief } = await import('../fix.js');
 const { ticketPrompt } = await import('../config.js');
 
 after(() => rmSync(root, { recursive: true, force: true }));
-beforeEach(() => {
-  orcaCalls.length = 0;
-});
 afterEach(async () => {
   for (const agent of await claudeHost.agents()) await claudeHost.removeWorkspace(agent.handle);
   for (const line of git('-C', 'engine', 'worktree', 'list', '--porcelain').split('\n').filter((l) => l.startsWith('worktree ')).slice(1)) {
@@ -60,7 +39,6 @@ afterEach(async () => {
   const made = git('-C', 'engine', 'branch', '--format=%(refname:short)').split('\n').filter((b) => b && b !== 'main');
   if (made.length) git('-C', 'engine', 'branch', '-D', ...made);
   writeFileSync(join(root, 'state', 'runs.json'), '{}');
-  assert.deepEqual(orcaCalls, [], 'nothing was asked of Orca');
 });
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -88,7 +66,7 @@ const firstPrompt = (handle: string): string => {
   return sent.find((r) => r.host?.message?.message?.content)?.host?.message?.message?.content ?? '';
 };
 
-test('a fix starts as Claude Code in the workspace root, briefed to work in a git worktree of its branch cut beside the repos', async () => {
+test('a fix starts as Claude Code in the code folder, briefed to work in a git worktree of its branch cut beside the repos', async () => {
   const launched = await launchFix(mr(), THREADS, OPTS);
   const checkout = join(root, 'fix-Engine-88');
   assert.deepEqual([launched.how, launched.path, launched.name], ['claude', checkout, 'fix-Engine-88']);
@@ -116,7 +94,7 @@ test('a second fix waits while the last fix agent is still recorded, even one wh
   assert.equal(again.name, 'fix-Engine-88-2', 'the first checkout and its branch are still there, so the second gets a name of its own');
 });
 
-test('a kickoff starts Claude Code in the workspace root on the kickoff prompt, recorded as the ticket\'s run', async () => {
+test('a kickoff starts Claude Code in the code folder on the kickoff prompt, recorded as the ticket\'s run', async () => {
   const launched = await launchKickoff('ABC-1234', 'https://example.atlassian.net/browse/ABC-1234');
   const agent = agentFor(launched.handle);
   assert.deepEqual([launched.how, launched.name, agent?.kind, agent?.ticket, agent?.cwd, agent?.worktree], ['claude', 'kickoff-ABC-1234', 'kickoff', 'ABC-1234', root, null]);
@@ -140,7 +118,7 @@ test('a ticket from the terminal app cuts its checkout beside the repos and star
   assert.equal(firstPrompt(launched.handle ?? ''), ticketPrompt('ABC-12', 'Fix it', checkout));
 });
 
-test('a ticket finds its repo\'s checkout under the workspace root itself, and names the worktree with the ticket\'s own key', async () => {
+test('a ticket finds its repo\'s checkout under the code folder itself, and names the worktree with the ticket\'s own key', async () => {
   const ticket = { key: 'ABC-12', summary: 'Fix it', status: 'To Do', labels: [], url: '' };
   const launched = await launchTicket(ticket, { path: 'acme/engine', label: 'Engine' });
   const checkout = join(root, 'engine-abc-12');
@@ -150,16 +128,16 @@ test('a ticket finds its repo\'s checkout under the workspace root itself, and n
 
 test('a ticket or fix with no checkout to start from says where to clone it and which setting to change', async () => {
   const ticket = { key: 'ABC-13', summary: 'Fix it', status: 'To Do', labels: [], url: '' };
-  const said = new RegExp(`^Error: No checkout of acme/missing under ${root}\\. Clone it there as ${join(root, 'missing')}, or set Workspace root in Settings`);
+  const said = new RegExp(`^Error: No checkout of acme/missing under ${root}\\. Clone it there as ${join(root, 'missing')}, or set Code folder in Settings`);
   await assert.rejects(launchTicket(ticket, { path: 'acme/missing', label: 'Missing' }), said);
   await assert.rejects(launchFix({ ...mr(), projectPath: 'acme/missing' }, THREADS, OPTS), said);
 });
 
-test('a built-in kickoff with no checkouts under the workspace root starts nothing, and says what to set', async () => {
+test('a built-in kickoff with no checkouts under the code folder starts nothing, and says what to set', async () => {
   const empty = realpathSync(mkdtempSync(join(tmpdir(), 'launch-empty-')));
   changeSettings((s) => ({ ...s, workspaceRoot: empty }));
   try {
-    await assert.rejects(launchKickoff('ABC-77'), new RegExp(`^Error: No git checkouts under ${empty} to start a ticket in\\. Set Workspace root in Settings`));
+    await assert.rejects(launchKickoff('ABC-77'), new RegExp(`^Error: No git checkouts under ${empty} to start a ticket in\\. Set Code folder in Settings`));
     assert.equal(loadRuns()['ticket:ABC-77'], undefined, 'no run was recorded');
     changeSettings((s) => ({ ...s, agents: { ...s.agents, kickoffCommand: '/start' } }));
     const launched = await launchKickoff('ABC-77');

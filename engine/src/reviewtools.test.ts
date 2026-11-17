@@ -12,7 +12,7 @@ const root = realpathSync(mkdtempSync(join(tmpdir(), 'review-tools-')));
 const reviewer = fileURLToPath(new URL('./fixtures/claude/fake-reviewer.mjs', import.meta.url));
 chmodSync(reviewer, 0o755);
 process.env['UNDERLINGS_STATE_DIR'] = join(root, 'state');
-process.env['ORCA_WORKSPACE_ROOT'] = root;
+process.env['UNDERLINGS_CODE_FOLDER'] = root;
 process.env['UNDERLINGS_CLAUDE_BIN'] = reviewer;
 delete process.env['GITLAB_TOKEN'];
 const { answerLine, callReviewTool, REVIEW_TOOLS } = await import('./reviewtools.js');

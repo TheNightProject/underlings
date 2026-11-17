@@ -10,7 +10,7 @@ export interface RepoSpec {
   label: string;
   /** Open MRs seen at discovery, used to size each query. */
   openCount?: number;
-  /** Local checkout, relative to the workspace root, for ticket worktrees. */
+  /** Local checkout, relative to the code folder, for ticket worktrees. */
   dir?: string;
   /** Prefix for a new worktree directory, e.g. ce-cos3568. */
   prefix?: string;
@@ -34,11 +34,8 @@ export const restUrl = (): string => `${gitlabHost()}/api/v4`;
  * only as a last guess.
  */
 export function workspaceRoot(configured?: string): string {
-  return configured?.trim() || process.env['ORCA_WORKSPACE_ROOT'] || process.cwd();
+  return configured?.trim() || process.env['UNDERLINGS_CODE_FOLDER'] || process.cwd();
 }
-
-/** The Orca repo that holds the workspace, discovered at runtime when it is not set. */
-export const ORCA_WORKSPACE_REPO_ID = process.env['UNDERLINGS_ORCA_REPO_ID'];
 
 const STATE_DIR_SET = process.env['UNDERLINGS_STATE_DIR'];
 

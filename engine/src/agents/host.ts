@@ -1,5 +1,3 @@
-import { terminalIsWorking } from '../data/orca.js';
-
 export interface AgentTerminal {
   handle: string;
   title: string;
@@ -10,8 +8,7 @@ export interface AgentTerminal {
   worktreePath?: string;
   /** working, waiting, blocked or done. */
   state?: string;
-  /** Said by a host that knows; an Orca terminal's is read from its title. */
-  working?: boolean;
+  working: boolean;
 }
 
 export interface TerminalRead {
@@ -47,14 +44,12 @@ export interface AgentSpec {
   ticket?: string;
   /** The git worktree cut for it, when it does not work in cwd itself. */
   worktree?: string;
-  /** An MR web link for Orca to show on the workspace. */
-  link?: string;
   /** More claude arguments, on every start and resume; only the master and message agents take them. */
   args?: string[];
 }
 
 export interface StartedAgent {
-  how: 'worktree' | 'terminal' | 'claude';
+  how: 'claude';
   handle: string;
   path?: string | undefined;
   note?: string;
@@ -72,8 +67,4 @@ export interface AgentHost {
   workspaces(): Promise<Workspace[]>;
   workspaceAgents(): Promise<WorkspaceAgents[]>;
   removeWorkspace(id: string): Promise<void>;
-}
-
-export function agentWorking(t: AgentTerminal): boolean {
-  return t.working ?? terminalIsWorking(t.title);
 }
