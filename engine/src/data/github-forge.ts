@@ -40,7 +40,7 @@ export const githubForge: Forge = {
     todos: false,
     generalThreads: false,
     post: true,
-    agents: false,
+    agents: true,
     ownMr: true,
   },
   me: () => viewerLogin(),

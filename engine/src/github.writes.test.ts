@@ -11,7 +11,8 @@ const { forgeOf } = await import('./data/forge.js');
 const { resetGithubLimits, forgetGithubToken } = await import('./data/github.js');
 const { postAllFor, postOne } = await import('./actions/post.js');
 const { toggleWatch } = await import('./actions/watch.js');
-const { setApproved, setHeld } = await import('./commands.js');
+const { liftReviewHoldIfDone, setApproved, setHeld, startReview } = await import('./commands.js');
+const { callReviewTool } = await import('./reviewtools.js');
 const { decide, CHANGES_NOTE } = await import('./verdict.js');
 const { queueInput } = await import('./queueinput.js');
 const { mr: gitlabMr } = await import('./auto/testkit.js');
@@ -174,4 +175,29 @@ test('an agent\'s finding on a pull request link needs no project number and is 
   assert.equal(queueInput({ provider: 'github', projectPath: PATH, iid: 12, severity: 'MINOR', body: 'x' }, 0).provider, 'github');
   assert.throws(() => queueInput({ projectPath: 'acme/web', iid: 12, webUrl: 'https://gitlab.example/acme/web/-/merge_requests/12', severity: 'MINOR', body: 'x' }, 0), { message: 'queue item 0: missing projectId' });
   assert.equal('provider' in queueInput({ projectPath: 'acme/web', projectId: 3, iid: 12, severity: 'MINOR', body: 'x' }, 0), false);
+});
+
+test('a review started on a pull request holds it with a review that says why, once its agent is reading, and the last post lifts it', async () => {
+  const launched: string[] = [];
+  await startReview(await live(), async (_mr, prompt) => {
+    launched.push(prompt);
+    return { how: 'claude' as const };
+  });
+  assert.deepEqual(launched, ['/underlings:review https://github.com/acme-co/web/pull/12']);
+  assert.deepEqual(writes().map((r) => r.body), [{ event: 'REQUEST_CHANGES', body: HOLD_NOTE }]);
+  assert.ok(loadState().reviewHolds?.['acme-co/web#12']);
+  const item = finding();
+  await postOne(item);
+  h.fake.requests.length = 0;
+  assert.deepEqual(await liftReviewHoldIfDone(await live(), 'frank-gh'), { liftedHold: true });
+  assert.deepEqual(sent(), [`PUT /repos/acme-co/web/pulls/12/reviews/${pr12().reviews.find((r: { state: string }) => r.state === 'DISMISSED')!.id}/dismissals`]);
+});
+
+test('a review agent queues what it finds on a pull request with the link alone, and it goes on the line it named', async () => {
+  const said = callReviewTool('queue_findings', { findings: [{ projectPath: PATH, iid: 12, webUrl: 'https://github.com/acme-co/web/pull/12', severity: 'MINOR', body: 'MINOR: name the cache.', position: { new_path: 'src/token.ts', new_line: 11 } }] });
+  assert.equal(said.isError, undefined, said.content[0]!.text);
+  const [item] = loadQueue();
+  assert.deepEqual([item!.provider, item!.projectId, item!.createdBy], ['github', 0, 'review-agent']);
+  await postOne(item!);
+  assert.deepEqual([writes()[0]!.path, writes()[0]!.body.line], ['/repos/acme-co/web/pulls/12/comments', 11]);
 });

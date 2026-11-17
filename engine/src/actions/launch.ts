@@ -167,7 +167,7 @@ export interface FixOptions {
 function fixRefusal(mr: Mr, threads: Discussion[], { me, head, conflicts }: FixOptions): string | null {
   if (mr.author !== me) return `${refNumber(mr)} is ${mr.author}'s MR, so no agent changes it for you`;
   if (!mr.sha || mr.sha !== head) return `the head of ${refNumber(mr)} moved since you looked`;
-  if (conflicts && !mr.conflicts) return `GitLab reports no conflicts on ${refNumber(mr)}`;
+  if (conflicts && !mr.conflicts) return `${mr.provider === 'github' ? 'GitHub' : 'GitLab'} reports no conflicts on ${refNumber(mr)}`;
   if (!conflicts && threads.length === 0) return `nothing on ${refNumber(mr)} is left to fix`;
   if (!BRANCH_NAME.test(mr.sourceBranch)) return `${mr.sourceBranch} is not a branch an agent can start from`;
   if (launching.has(mrKey(mr))) return `a fix agent is already starting on ${refNumber(mr)}`;

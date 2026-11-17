@@ -54,6 +54,7 @@ export function fixBrief({ mr, targetBranch, threads, checkout }: FixBriefInput)
     `   Push <n> commits to ${branch} and post <m> replies on ${refNumber(mr)}? (yes/no)`,
     '   List under it each reply you will post.',
     `6. Only after a yes: git push origin HEAD:${branch}. Reply on each thread with "Fixed in <sha>." or "Raised ${project ? `${project}-NNNN` : '<its key>'} for this.", plus at most one sentence: two or three sentences in all, no headings, no quoting back. Resolve each thread you handled, then ask the reviewers who requested changes to look again.`,
+    ...githubWay(mr),
     '',
     `Never merge, never force-push, never touch any other thread. ${rules()}`,
   ].join('\n');
@@ -78,6 +79,14 @@ export function conflictBrief({ mr, targetBranch, checkout }: Omit<FixBriefInput
     '',
     `Never merge, never force-push, never post on the MR. ${rules()}`,
   ].join('\n');
+}
+
+// The thread ids are GitHub's GraphQL ids, which gh's REST commands do not take.
+function githubWay(mr: Mr): string[] {
+  if (mr.provider !== 'github') return [];
+  return [
+    `   This is a GitHub pull request: use gh. Reply with gh api graphql and addPullRequestReviewThreadReply, resolve with resolveReviewThread, each on the thread id above, and ask again with gh pr edit ${mr.iid} --repo ${mr.projectPath} --add-reviewer <login>.`,
+  ];
 }
 
 function selfReviewStep(target: string): string {

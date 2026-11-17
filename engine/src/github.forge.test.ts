@@ -25,12 +25,12 @@ beforeEach(() => {
   changeSettings((s) => ({ ...s, github: { ...DEFAULT_GITHUB, on: true } }));
 });
 
-test('GitHub says by flag what it cannot do yet: no log or retry for another app\'s check, no to-dos, no resolving a plain comment, and no agents yet', () => {
+test('GitHub says by flag what it cannot do: no log or retry for another app\'s check, no to-dos, and no resolving a plain comment', () => {
   assert.deepEqual(githubForge.caps, {
-    hold: true, withdrawApproval: true, rebase: true, autoMerge: true, jobLogs: 'actions', retry: 'actions', todos: false, generalThreads: false, post: true, agents: false, ownMr: true,
+    hold: true, withdrawApproval: true, rebase: true, autoMerge: true, jobLogs: 'actions', retry: 'actions', todos: false, generalThreads: false, post: true, agents: true, ownMr: true,
   });
-  assert.throws(() => needs(githubForge, 'agents', 'launch an agent on it from here yet'), { message: 'GitHub has no way to launch an agent on it from here yet' });
-  for (const cap of ['hold', 'ownMr', 'jobLogs', 'retry'] as const) assert.doesNotThrow(() => needs(githubForge, cap, 'do it'));
+  assert.throws(() => needs(githubForge, 'todos', 'read to-dos'), { message: 'GitHub has no way to read to-dos' });
+  for (const cap of ['hold', 'ownMr', 'agents', 'jobLogs', 'retry'] as const) assert.doesNotThrow(() => needs(githubForge, cap, 'do it'));
 });
 
 test('a flag GitLab leaves out is one it can do, so the flags it always had read as they did', () => {

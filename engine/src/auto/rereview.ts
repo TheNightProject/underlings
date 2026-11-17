@@ -149,7 +149,7 @@ async function worthLaunching(watch: Watch, mr: Mr, me: string, ports: AutoPorts
 
 async function launch(mr: Mr, before: Baseline, me: string, ports: AutoPorts, report: ReReviewReport): Promise<void> {
   try {
-    await ports.launch(mr, reReviewPrompt({ webUrl: mr.webUrl, me, since: before.seen.sha, head: mr.sha }));
+    await ports.launch(mr, reReviewPrompt({ webUrl: mr.webUrl, me, since: before.seen.sha, head: mr.sha, ...(mr.provider ? { provider: mr.provider } : {}) }));
     report.reReviewed.push(mrKey(mr));
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);

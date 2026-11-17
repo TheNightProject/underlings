@@ -124,7 +124,7 @@ async function startPass(mr: Mr, trigger: AutoTrigger, me: string, ctx: AutoCont
   updateAutoMemory(key, (m) => ({ ...m, pass, notesSeen: mr.notes }));
   const since = trigger === 'new' ? null : pass.previousSha;
   try {
-    await ports.launch(mr, autoReviewPrompt({ webUrl: mr.webUrl, passId: pass.id, me, since }));
+    await ports.launch(mr, autoReviewPrompt({ webUrl: mr.webUrl, passId: pass.id, me, since, ...(mr.provider ? { provider: mr.provider } : {}) }));
     return null;
   } catch (e) {
     settle(key, 'failed');
