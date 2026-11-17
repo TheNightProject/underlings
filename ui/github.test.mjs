@@ -257,6 +257,18 @@ test('Setup offers GitHub as a switch that is off until it is turned on here, an
   assert.deepEqual(page.posts, [['/api/matrix/settings', { patch: { 'github.on': true } }]]);
 });
 
+test('Setup offers GitLab as a switch too: off asks for no token, and on keeps the token and host beside the switch', async () => {
+  const off = await setupPage({ id: 'gitlab', state: 'off', optional: true, title: 'GitLab', detail: 'Off, so nothing is asked of GitLab, not even a token. Switch it on to read your merge requests.', on: false });
+  const sw = off.$('#setup-gitlab-on');
+  assert.deepEqual([sw.getAttribute('aria-checked'), sw.textContent, off.$('#setup-token')], ['false', 'Off', null]);
+  sw.click();
+  await off.settle();
+  assert.deepEqual(off.posts, [['/api/matrix/settings', { patch: { 'gitlab.on': true } }]]);
+  const on = await setupPage({ id: 'gitlab', state: 'fail', title: 'GitLab token', detail: 'No token yet.', on: true, scope: 'api', link: 'https://gitlab.com/-/user_settings/personal_access_tokens?scopes=api', token: true, host: 'https://gitlab.com', defaultHost: 'https://gitlab.com' });
+  assert.equal(on.$('#setup-gitlab-on').getAttribute('aria-checked'), 'true');
+  assert.ok(on.$('#setup-token'));
+});
+
 test('Setup with GitHub on says which token is in use, who you are and what scopes it has', async () => {
   const page = await setupPage(SETUP_ON);
   const facts = page.$$('.setup-facts dt, .setup-facts dd').map((n) => n.textContent);

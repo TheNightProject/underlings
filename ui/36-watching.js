@@ -1,5 +1,5 @@
 const SETTING_GROUPS = [
-  ['GitLab', ['gitlab.host']],
+  ['GitLab', ['gitlab.on', 'gitlab.host']],
   ['GitHub', ['github.on', 'github.scope', 'github.repos', 'github.host']],
   ['Repos', ['repoFilter']],
   ['Reviewing', ['holdWhileReviewing', 'closeWorkspaceWhenDone', 'reReviewOnChange']],

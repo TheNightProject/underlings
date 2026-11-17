@@ -31,7 +31,7 @@ const { fetchInbox, inboxRows, meFor } = await import('./inbox.js');
 const { changeSettings, saveRepoCache } = await import('./data/store.js');
 const { forgeOf, forges, forgeView } = await import('./data/forge.js');
 const { resetGithubLimits, forgetGithubToken } = await import('./data/github.js');
-const { DEFAULT_GITHUB } = await import('./settings.js');
+const { DEFAULT_GITHUB, DEFAULT_GITLAB } = await import('./settings.js');
 
 const github = (over: Record<string, unknown> = {}) => changeSettings((s) => ({ ...s, github: { ...DEFAULT_GITHUB, on: true, ...over } }));
 const mine = (rows: ReturnType<typeof inboxRows>, key: string) => rows.find((r) => r.key === key)!.flags.mine;
@@ -47,7 +47,7 @@ beforeEach(() => {
   resetGithubLimits();
   forgetGithubToken();
   saveRepoCache([{ path: 'acme/engine', label: 'Engine', openCount: 3 }, { path: 'acme/web', label: 'Web', openCount: 3 }, { path: 'acme/tools/cli', label: 'Cli', openCount: 1 }]);
-  changeSettings((s) => ({ ...s, github: DEFAULT_GITHUB }));
+  changeSettings((s) => ({ ...s, gitlab: DEFAULT_GITLAB, github: DEFAULT_GITHUB }));
 });
 
 test('with GitHub off nothing is asked of it, whatever token is in the environment or gh holds, and the inbox has the shape it always had', async () => {
@@ -59,6 +59,33 @@ test('with GitHub off nothing is asked of it, whatever token is in the environme
   assert.deepEqual(forgeView().github.on, false);
   for (const left of ['accounts', 'errors', 'answeredAt']) assert.equal(left in inbox, false, left);
   assert.deepEqual([inbox.me, inbox.repoCount, inbox.mrs.some((m) => m.provider)], ['frank', 3, false]);
+});
+
+const gitlabOff = () => changeSettings((s) => ({ ...s, gitlab: { ...DEFAULT_GITLAB, on: false } }));
+
+test('with GitLab off only GitHub is read, and GitLab is asked nothing, not even with no token for it', async () => {
+  github();
+  gitlabOff();
+  const token = process.env['GITLAB_TOKEN'];
+  delete process.env['GITLAB_TOKEN'];
+  try {
+    const inbox = await fetchInbox();
+    assert.deepEqual(new Set(seen), new Set(['https://api.github.com']));
+    assert.equal(gitlab.requests.length, 0);
+    assert.deepEqual(forges().map((f) => f.id), ['github']);
+    assert.throws(() => forgeOf({}), { message: 'GitLab is switched off, so nothing is asked of it. Turn it on in Settings' });
+    assert.equal(forgeView().gitlab.on, false);
+    assert.ok(inbox.mrs.length > 0 && inbox.mrs.every((m) => m.provider === 'github'));
+    assert.deepEqual(inbox.errors, {});
+  } finally {
+    process.env['GITLAB_TOKEN'] = token;
+  }
+});
+
+test('with every forge off the inbox is empty, not an error', async () => {
+  gitlabOff();
+  const inbox = await fetchInbox();
+  assert.deepEqual([inbox.mrs, inbox.repoCount, seen], [[], 0, []]);
 });
 
 test('GitLab and GitHub are read together into one list, each with its own me, and the repos of both counted', async () => {

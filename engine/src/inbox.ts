@@ -197,7 +197,7 @@ function labelled(mrs: Mr[]): Mr[] {
 export async function fetchInbox(previous?: InboxData | null): Promise<InboxData> {
   const [listed, ...settled] = await Promise.all([listTerminalsOrError(), ...forges().map((f) => (f.id === 'gitlab' ? readGitlab(f) : readGithub(f)).then((read) => ({ read }), (error: unknown) => ({ provider: f.id, error })))]);
   const failed = settled.flatMap((s) => ('error' in s ? [s] : []));
-  if (failed.length === settled.length) throw everyFailed(failed);
+  if (failed.length && failed.length === settled.length) throw everyFailed(failed);
   const reads = settled.flatMap((s) => ('read' in s ? [s.read] : []));
   const accounts: Accounts = Object.fromEntries([...Object.entries(previous?.accounts ?? {}), ...reads.map((r) => [r.provider, r.me])]);
   const errors: Accounts = Object.fromEntries(failed.map((f) => [f.provider, reason(f.error)]));

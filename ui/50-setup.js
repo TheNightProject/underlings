@@ -106,13 +106,22 @@ function setupGitlabHost(c) {
     el('p', { class: 'hint' }, 'Blank for gitlab.com, or where your own GitLab lives.')];
 }
 
+function setupSwitch(key, on) {
+  const busyId = 'setup-' + key;
+  const flip = async () => setupSaved(await matrixAct('settings', { patch: { [key]: !on } }, busyId), busyId);
+  return el('button', { id: busyId.replace('.', '-'), class: 'switch', role: 'switch', 'aria-checked': String(Boolean(on)), 'aria-disabled': ui.busy.has(busyId) ? 'true' : null, onclick: flip },
+    el('span', { class: 'knob' }), on ? 'On' : 'Off');
+}
+
 function setupGitlabFix(c) {
-  if (c.state === 'pass') return el('div', { class: 'setup-fix' }, outside(c.link, 'Make another token'), setupGitlabHost(c));
+  if (c.state === 'off') return el('div', { class: 'setup-fix' }, setupSwitch('gitlab.on', false));
+  if (c.state === 'pass') return el('div', { class: 'setup-fix' }, setupSwitch('gitlab.on', true), outside(c.link, 'Make another token'), setupGitlabHost(c));
   const save = async (token) => {
     if (!String(token).trim()) return toast('Paste a token first.', true);
     setupSaved(await busyAct('/api/gitlab/token', { token: String(token).trim() }, 'setup-token'), 'setup-token');
   };
   return el('div', { class: 'setup-fix' },
+    setupSwitch('gitlab.on', true),
     outside(c.link, 'Make a token with the ' + c.scope + ' scope', true),
     setupField('setup-token', 'GitLab personal access token', '', 'Paste the token', save, 'setup-token'),
     el('p', { class: 'hint' }, 'Kept in ~/.config/' + APP_FOLDER + '/gitlab-token, readable only by you.'),
@@ -121,11 +130,8 @@ function setupGitlabFix(c) {
 
 // Opt in only: the switch is the one way on, whatever gh says.
 function setupGithubFix(c) {
-  const busy = ui.busy.has('setup-github.on');
-  const flip = async () => setupSaved(await matrixAct('settings', { patch: { 'github.on': !c.on } }, 'setup-github.on'), 'setup-github-on');
   return el('div', { class: 'setup-fix setup-github' },
-    el('button', { id: 'setup-github-on', class: 'switch', role: 'switch', 'aria-checked': String(Boolean(c.on)), 'aria-disabled': busy ? 'true' : null, onclick: flip },
-      el('span', { class: 'knob' }), c.on ? 'On' : 'Off'),
+    setupSwitch('github.on', c.on),
     c.on ? githubTokenFacts(c) : null,
     c.on && c.state !== 'pass' ? githubTokenFix(c) : null);
 }

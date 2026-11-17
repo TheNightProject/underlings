@@ -85,6 +85,8 @@ export interface JiraSettings {
 }
 
 export interface GitlabSettings {
+  /** Off asks GitLab nothing, for a workspace that has none. */
+  on: boolean;
   host: string;
 }
 
@@ -106,7 +108,7 @@ export const DEFAULT_GITLAB_HOST = 'https://gitlab.com';
 export const DEFAULT_GITHUB_API = 'https://api.github.com';
 
 export const DEFAULT_JIRA: JiraSettings = { projects: '', defaultProject: '', statuses: '', doneStatuses: '', issueType: 'Task', ticketTemplate: '' };
-export const DEFAULT_GITLAB: GitlabSettings = { host: DEFAULT_GITLAB_HOST };
+export const DEFAULT_GITLAB: GitlabSettings = { on: true, host: DEFAULT_GITLAB_HOST };
 export const DEFAULT_GITHUB: GithubSettings = { on: false, scope: 'involved', repos: '', host: DEFAULT_GITHUB_API };
 export const DEFAULT_TICKETS: TicketSettings = { noQaPaths: '' };
 
@@ -155,6 +157,8 @@ export const DEFAULT_SETTINGS: Settings = {
 export function listOf(text: string | null | undefined): string[] {
   return [...new Set(String(text ?? '').split(',').map((item) => item.trim()).filter(Boolean))];
 }
+
+export const gitlabOnIn = (settings: Partial<Settings>): boolean => settings.gitlab?.on !== false;
 
 export function gitlabHostOf(settings: Partial<Settings>): string {
   return tidyHost(settings.gitlab?.host ?? '') ?? DEFAULT_GITLAB_HOST;
@@ -329,6 +333,12 @@ export const NESTED_ROWS: NestedRow[] = [
     hint: 'repo paths, comma separated, such as acme/tooling. A ticket whose MRs all merged under one of them is suggested straight to finished rather than to QA.',
     kind: 'text',
     tidy: tidyList,
+  },
+  {
+    key: 'gitlab.on',
+    label: 'GitLab',
+    hint: 'reads your merge requests. Switch it off for a workspace with no GitLab, and nothing is asked of it, not even a token.',
+    kind: 'toggle',
   },
   {
     key: 'gitlab.host',

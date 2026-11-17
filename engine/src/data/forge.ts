@@ -27,6 +27,8 @@ import { githubForge } from './github-forge.js';
 import { githubOn } from './github.js';
 import { gitlabForge } from './gitlab-forge.js';
 import { TOO_BIG } from './shared.js';
+import { loadSettings } from './store.js';
+import { gitlabOnIn } from '../settings.js';
 
 export { changesRequestedBy, heldByMe, isHeld } from './gitlab.js';
 export type {
@@ -140,7 +142,7 @@ export const GITLAB: Pick<MrRef, 'provider'> = { provider: 'gitlab' };
 
 const FORGES: Record<Provider, Forge> = { gitlab: gitlabForge, github: githubForge };
 
-const enabled = (provider: Provider): boolean => provider === 'gitlab' || githubOn();
+const enabled = (provider: Provider): boolean => (provider === 'gitlab' ? gitlabOnIn(loadSettings()) : githubOn());
 
 export function needs(forge: Forge, cap: keyof Caps, what: string): void {
   if (forge.caps[cap] === false) throw new Error(`${forge.name} has no way to ${what}`);

@@ -105,7 +105,7 @@ every check once more.
 | Check | Passes when | The fix |
 | --- | --- | --- |
 | Claude Code | `claude auth status` says signed in | a link to install it, or `claude auth login` to copy |
-| GitLab token | GitLab, at gitlab.com or your **GitLab host**, knows the token and it has the `api` scope | a link that makes one with `api` ticked, a field to paste it, and the host field |
+| GitLab token | on by default: GitLab, at gitlab.com or your **GitLab host**, knows the token and it has the `api` scope. Switched off, it is optional and asks nothing | the switch, a link that makes one with `api` ticked, a field to paste it, and the host field |
 | GitHub | optional, and off until you switch it on here: the token in use is known to GitHub, with `repo` and `read:org` | the switch, a link that makes a token, a field to paste one, and `gh auth refresh -s` for a token gh holds |
 | Jira | optional: a site is set, `acli` is on the PATH and `acli jira auth status` says signed in | the site field, a link to install `acli`, or `acli jira auth login --web` to copy |
 | Code folder | the folder exists and has at least one git checkout in it, counted | the folder field |
@@ -116,6 +116,10 @@ every check once more.
 The app opens and reads your MRs with GitLab alone. The GitLab banner shows the token field on
 its first error about the token, with a link here, rather than after a failed Retry. The checks
 ask GitLab, Claude Code and `acli` only when Setup is open, never on a timer.
+
+With **GitLab** switched off, in Setup or under Settings, nothing at all is asked of GitLab and no
+token is needed. The list then has only your GitHub pull requests, and full auto, which reviews
+only GitLab merge requests so far, stops and says why.
 
 ## GitHub
 
