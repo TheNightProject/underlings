@@ -5,7 +5,7 @@ import { passComments, threadCapReason } from './guards.js';
 import { sendAt } from './hold.js';
 import { handBack, keyOf, passIdOf } from './ledger.js';
 import { levelFor, levelForMr } from './people.js';
-import type { AutoContext, AutoPorts } from './ports.js';
+import { meOn, type AutoContext, type AutoPorts } from './ports.js';
 
 /** Replies first, because closing your threads is worth more than opening new ones. */
 function adoptionOrder(items: QueuedComment[]): QueuedComment[] {
@@ -38,7 +38,7 @@ function staleReason(item: QueuedComment, memory: AutoMemory | undefined): strin
 function levelOf(memory: AutoMemory | undefined, ctx: AutoContext): AutoLevel | null {
   if (!memory?.pass) return null;
   const mr = ctx.mrs.find((m) => mrKey(m) === memory.key);
-  return mr ? levelForMr(mr, ctx.me, ctx.config) : levelFor(memory.pass.author, ctx.config.people);
+  return mr ? levelForMr(mr, meOn(ctx, mr), ctx.config) : levelFor(memory.pass.author, ctx.config.people);
 }
 
 function patchFor(item: QueuedComment, memory: AutoMemory | undefined, queue: QueuedComment[], ctx: AutoContext, now: number): Partial<QueuedComment> {

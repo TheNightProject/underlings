@@ -118,8 +118,8 @@ its first error about the token, with a link here, rather than after a failed Re
 ask GitLab, Claude Code and `acli` only when Setup is open, never on a timer.
 
 With **GitLab** switched off, in Setup or under Settings, nothing at all is asked of GitLab and no
-token is needed. The list then has only your GitHub pull requests, and full auto, which reviews
-only GitLab merge requests so far, stops and says why.
+token is needed. The list then has only your GitHub pull requests, and full auto reviews those.
+With GitHub off too, full auto has nothing to review, and says so.
 
 ## GitHub
 

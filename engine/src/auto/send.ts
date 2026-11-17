@@ -17,7 +17,7 @@ import { dueItems } from './hold.js';
 import { foundBy, handBack, holdItem, keyOf, supersedePass } from './ledger.js';
 import { HEAD_MOVED } from './passes.js';
 import { atLeast, levelForMr } from './people.js';
-import type { AutoContext, AutoPorts } from './ports.js';
+import { meOn, type AutoContext, type AutoPorts } from './ports.js';
 
 interface Ready {
   mr: Mr;
@@ -175,12 +175,12 @@ async function sendGroup(items: QueuedComment[], me: string, ctx: AutoContext, p
 
 export async function sendDue(ctx: AutoContext, ports: AutoPorts): Promise<SendReport> {
   const report: SendReport = { sent: 0, held: 0 };
-  const me = ctx.me;
-  if (!me) return report;
+  if (!ctx.me && !ctx.accounts?.gitlab && !ctx.accounts?.github) return report;
   handBackClaims(ctx, ports, report);
   for (const group of byMr(dueItems(loadQueue(), ports.now()))) {
     if (ports.paused()) break;
-    await sendGroup(group, me, ctx, ports, report);
+    const me = group[0] && meOn(ctx, group[0]);
+    if (me) await sendGroup(group, me, ctx, ports, report);
   }
   return report;
 }

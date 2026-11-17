@@ -67,9 +67,8 @@ export function peopleRules(text: string): PeopleRules {
   };
 }
 
-/** A person's own row wins; failing that, an MR that asks you is reviewed at the on-request level. Full auto works on GitLab MRs for now. */
+/** A person's own row wins; failing that, an MR that asks you is reviewed at the on-request level. */
 export function levelForMr(mr: Mr, me: string | undefined, rules: PeopleRules): AutoLevel | null {
-  if (mr.provider === 'github') return null;
   const author = mr.author.toLowerCase();
   const own = levelFor(author, rules.people);
   if (own) return own;

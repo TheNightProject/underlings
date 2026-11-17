@@ -5,11 +5,11 @@ import { isOpen, mrKey, type Mr, type Watch } from '../types.js';
 import { MAX_LAUNCHES_PER_POLL } from './config.js';
 import { levelForMr } from './people.js';
 import { giveBack, takeChange, type ReReviewReport } from './rereview.js';
-import type { AutoContext, AutoPorts } from './ports.js';
+import { meOn, type AutoContext, type AutoPorts } from './ports.js';
 
 // Full auto already reviews its authors' moves, and a second agent on one MR would queue the same findings twice.
 function waits(mr: Mr, ctx: AutoContext): boolean {
-  return Boolean(levelForMr(mr, ctx.me, ctx.config)) || Boolean(ctx.agentOn?.(mr));
+  return Boolean(levelForMr(mr, meOn(ctx, mr), ctx.config)) || Boolean(ctx.agentOn?.(mr));
 }
 
 /** Claimed under the state lock against the slot it was due in, so a day's look happens once whichever front end drives. */

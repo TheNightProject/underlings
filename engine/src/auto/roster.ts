@@ -1,6 +1,8 @@
 import { looksAutomated } from '../leaderboard.js';
 import type { AutoLevel, Mr } from '../types.js';
+import type { Accounts } from '../inbox.js';
 import type { AutoPerson } from './people.js';
+import { meOn } from './ports.js';
 
 export interface RosterRow {
   username: string;
@@ -20,21 +22,24 @@ function blank(username: string): RosterRow {
   return { username, level: null, askingYou: 0, open: 0, reviewing: 0 };
 }
 
-function counted(mrs: Mr[], me: string | undefined): Map<string, RosterRow> {
+// Your name on either forge is yours, so neither lists you as someone to review.
+function counted(mrs: Mr[], me: string | undefined, accounts?: Accounts): Map<string, RosterRow> {
   const rows = new Map<string, RosterRow>();
-  const mine = me?.toLowerCase();
+  const mine = new Set([me, accounts?.gitlab, accounts?.github].flatMap((name) => (name ? [name.toLowerCase()] : [])));
   const rowFor = (name: string): RosterRow | null => {
     const username = name.toLowerCase();
-    if (username === mine || looksAutomated(username)) return null;
+    if (mine.has(username) || looksAutomated(username)) return null;
     const row = rows.get(username) ?? blank(username);
     rows.set(username, row);
     return row;
   };
+  const ctx = { me, ...(accounts ? { accounts } : {}) };
   for (const mr of mrs) {
+    const you = meOn(ctx, mr);
     const author = rowFor(mr.author);
     if (author) {
       author.open += 1;
-      if (me && !mr.draft && mr.reviewers.includes(me)) author.askingYou += 1;
+      if (you && !mr.draft && mr.reviewers.includes(you)) author.askingYou += 1;
     }
     const engaged = new Set([...mr.reviewers, ...mr.approvedBy].filter((name) => name !== mr.author));
     for (const name of engaged) {
@@ -46,8 +51,8 @@ function counted(mrs: Mr[], me: string | undefined): Map<string, RosterRow> {
 }
 
 /** Ordered by merge requests, never by level, so changing a level leaves the cursor on that person. */
-export function roster(mrs: Mr[], me: string | undefined, people: AutoPerson[]): RosterRow[] {
-  const rows = counted(mrs, me);
+export function roster(mrs: Mr[], me: string | undefined, people: AutoPerson[], accounts?: Accounts): RosterRow[] {
+  const rows = counted(mrs, me, accounts);
   for (const p of people) if (!rows.has(p.username)) rows.set(p.username, blank(p.username));
   return [...rows.values()]
     .map((row) => ({ ...row, level: people.find((p) => p.username === row.username)?.level ?? null }))

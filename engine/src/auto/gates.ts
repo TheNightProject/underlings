@@ -73,7 +73,7 @@ const GATES: Gate[] = [
   (f) => (f.blocking ? 'the pass found something blocking' : null),
   (f) => (f.mr.sha !== null && f.mr.sha === f.passSha ? null : 'the head is not the commit the pass reviewed'),
   (f) => (f.mr.draft ? 'it is a draft' : null),
-  (f) => (f.diff.complete ? null : 'GitLab did not return the whole diff'),
+  (f) => (f.diff.complete ? null : `${f.mr.provider === 'github' ? 'GitHub' : 'GitLab'} did not return the whole diff`),
   (f, l) => (f.diff.changedLines <= l.maxDiffLines ? null : `${f.diff.changedLines} changed lines, over ${l.maxDiffLines}`),
   (f, l) => {
     const hits = sensitiveHits(f.diff.paths, l.sensitive);

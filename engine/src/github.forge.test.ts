@@ -62,12 +62,12 @@ test('who you are on GitHub is the login and the name the token belongs to', asy
   assert.equal(await githubForge.myName?.(), 'Frank Foster');
 });
 
-test('full auto never takes a GitHub pull request, whoever wrote it and whatever the default row says', () => {
+test('full auto takes a GitHub pull request by its author\'s row, or the default row when it asks for you', () => {
   const rules = peopleRules('*:shadow, ivan:comments');
-  assert.equal(levelForMr(mr({ author: 'ivan' }), 'frank', rules), 'comments');
-  assert.equal(levelForMr(mr({ author: 'judy' }), 'frank', rules), 'shadow');
-  assert.equal(levelForMr({ ...mr({ author: 'ivan' }), provider: 'github' }, 'frank', rules), null);
-  assert.equal(levelForMr({ ...mr({ author: 'judy' }), provider: 'github' }, 'frank', rules), null);
+  const pr = (author: string) => ({ ...mr({ author, reviewers: ['frank-gh'] }), provider: 'github' as const });
+  assert.equal(levelForMr(pr('ivan'), 'frank-gh', rules), 'comments');
+  assert.equal(levelForMr(pr('judy'), 'frank-gh', rules), 'shadow');
+  assert.equal(levelForMr(pr('judy'), 'frank', rules), null, 'one that asks someone else is not reviewed on request');
 });
 
 test('a watched GitHub pull request remembers it is one, so whether it has closed is asked of GitHub, and a GitLab watch is stored as it was', async () => {

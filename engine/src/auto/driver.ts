@@ -1,4 +1,5 @@
 import type { AgentTerminal } from '../agents/host.js';
+import type { Accounts } from '../inbox.js';
 import { loadRuns, loadSettings, loadState } from '../data/store.js';
 import { captureReviewOutput } from '../runs.js';
 import { mrKey, type Mr, type ReviewRun, type Watch } from '../types.js';
@@ -12,6 +13,7 @@ import { autoReReview } from './rereview.js';
 export interface BackgroundInput {
   mrs: Mr[];
   me: string | undefined;
+  accounts?: Accounts | undefined;
   terminals: AgentTerminal[];
   terminalsError?: string | undefined;
   /** When the hosts were asked for their agents; the poll's own start if not given. */
@@ -70,6 +72,7 @@ function contextFor(input: BackgroundInput, listedAt: number | undefined): AutoC
   return {
     mrs: input.mrs,
     me: input.me,
+    ...(input.accounts ? { accounts: input.accounts } : {}),
     config: autoConfig(loadSettings()),
     agentOn: agentOnNow(input.terminals, listedAt),
     claimBy: input.claimBy,

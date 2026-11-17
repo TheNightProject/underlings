@@ -2,6 +2,7 @@ import type { PostOutcome } from '../actions/post.js';
 import type { SendHow } from '../comment.js';
 import type { Discussion, ForgeRef } from '../data/forge.js';
 import type { TerminalRead } from '../agents/host.js';
+import type { Accounts } from '../inbox.js';
 import type { MrRef } from '../refs.js';
 import type { Mr, QueuedComment } from '../types.js';
 import type { AutoConfig } from './config.js';
@@ -25,11 +26,18 @@ export interface AutoPorts {
 
 export interface AutoContext {
   mrs: Mr[];
+  /** GitLab's name, as it always was; accounts says who you are on each forge. */
   me: string | undefined;
+  accounts?: Accounts;
   config: AutoConfig;
   agentOn?: (mr: Mr) => boolean;
   isEditing?: (id: string) => boolean;
   /** `auto:<token>`: the send claim this driver takes, and the one claim it never hands back. */
   claimBy?: string;
   noLaunch?: string;
+}
+
+/** Who you are on the forge of this merge request; a name on one is never taken for you on the other. */
+export function meOn(ctx: Pick<AutoContext, 'me' | 'accounts'>, mr: Pick<Mr, 'provider'>): string | undefined {
+  return mr.provider === 'github' ? ctx.accounts?.github : (ctx.accounts?.gitlab ?? ctx.me);
 }
