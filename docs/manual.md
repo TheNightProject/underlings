@@ -173,16 +173,27 @@ the window and the shortcuts.
   The menu bar count adds up every workspace, and **Pause full auto** there pauses them all.
 - Only Default checks for updates on its own.
 
-Until the switcher comes, workspaces are listed by hand in `~/.config/underlings/workspaces.json`,
-read when the app starts:
+**Workspaces**, under Reviews in the rail, lists them all. Make one there with a name, a cswap
+account and a colour, starting fresh or copying another's settings: a copy takes how it reads and
+shows things, never its tokens, its Setup or its history. Rename, recolour or change the account of
+any of them; a new account starts its worker again. **Remove** asks to be sure, is refused while the
+workspace has agents running, and never offers Default. A removed workspace's folders stay until
+you delete them.
+
+With two or more, the **switcher** at the top of the rail names the one you are in and counts what
+waits in the others; pick one to bring its page to the window. They are in Jump to as **Switch to**,
+and in the menu bar menu with each one's count. Each workspace has its own Claude Code in the
+terminal, running as its account, and switching keeps the others running.
+
+They are kept in `~/.config/underlings/workspaces.json`, read when the app starts:
 
 ```json
-{ "workspaces": [{ "id": "side-project", "name": "Side project", "port": 47322, "account": "2" }] }
+{ "workspaces": [{ "id": "side-project", "name": "Side project", "port": 47322, "account": "2", "colour": "rose" }] }
 ```
 
 An id is lower case letters, digits and dashes, and each port is the workspace's own. An entry
-with the id `default` names Default and gives it an account. One that cannot run as written is
-left out, and the log says why.
+with the id `default` names Default and gives it an account and a colour. One that cannot run as
+written is left out, and the log says why.
 
 ## Keys
 

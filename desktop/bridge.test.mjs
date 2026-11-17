@@ -115,6 +115,11 @@ test('the real worker starts across the bridge: its page is shown, its banners c
     focus: () => {},
     notify: (banner) => (banners.push(banner), { delivered: true }),
     openExternal: async () => ({ ok: true }),
+    workspaces: () => ({ workspaces: [{ id: 'default', name: 'Work', here: true }, { id: 'side', name: 'Side', here: false }] }),
+    switchWorkspace: ({ id }) => {
+      if (id === 'starting') throw Object.assign(new Error('Starting has not started yet'), { status: 409 });
+      return { ok: true, text: `Switched to ${id}` };
+    },
   };
   const { served, ctx, logged } = connected(desktop);
   worker = await import('../worker.mjs');
@@ -134,4 +139,12 @@ test('the real worker starts across the bridge: its page is shown, its banners c
   served.run('goto', 'tickets');
   await settle();
   assert.equal(new URL(shown.at(-1)).hash, '#tickets');
+
+  const headers = { 'content-type': 'application/json', 'x-cc-token': page.searchParams.get('t'), origin: page.origin };
+  const state = await (await fetch(page.origin + '/api/state', { headers })).json();
+  assert.deepEqual(state.workspaces.workspaces.map((w) => w.id), ['default', 'side'], 'the page is told every workspace');
+  const switched = await fetch(page.origin + '/api/workspaces/switch', { method: 'POST', headers, body: JSON.stringify({ id: 'side' }) });
+  assert.equal((await switched.json()).text, 'Switched to side');
+  const refused = await fetch(page.origin + '/api/workspaces/switch', { method: 'POST', headers, body: JSON.stringify({ id: 'starting' }) });
+  assert.deepEqual([refused.status, await refused.text()], [409, 'Starting has not started yet']);
 });

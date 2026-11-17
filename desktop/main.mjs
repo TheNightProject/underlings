@@ -5,13 +5,14 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startHelper } from '../lib/apphelper.mjs';
-import { logsDir, migrateHome, OLD_APP_NAME, sharedConfigDir } from '../lib/home.mjs';
+import { configDirOf, engineStateDirOf, logsDir, migrateHome, OLD_APP_NAME, sharedConfigDir } from '../lib/home.mjs';
 import { APP_ID, APP_NAME, FOLDER } from '../lib/product.mjs';
-import { DEFAULT_ID, DEFAULT_PORT, readWorkspaces } from '../lib/workspaces.mjs';
-import { COMMANDS, createHost, heldByOurWorker, logTo, nextFreePort, readConfig } from './host.mjs';
+import { DEFAULT_ID, DEFAULT_PORT, readWorkspaces, workspacesFile } from '../lib/workspaces.mjs';
+import { COMMANDS, createHost, heldByOurWorker, isFree, logTo, nextFreePort, readConfig } from './host.mjs';
 import { keptBounds } from './bounds.mjs';
 import { createOverlay } from './overlay.mjs';
 import { createSupervisor } from './supervisor.mjs';
+import { createWorkspaceAdmin } from './workspaceadmin.mjs';
 import { bundleOf, moveFor, moveJob, tidyAfterMove } from './relocate.mjs';
 import { bridgeView, createTerminal } from './terminal.mjs';
 import { createViewer } from './viewer.mjs';
@@ -48,6 +49,8 @@ let workspaces = [];
 // The workspace whose page the window shows, and the page each worker gave when it started.
 let active = DEFAULT_ID;
 const pages = new Map();
+const counts = new Map();
+let admin;
 let win = null;
 let termWin = null;
 let claudeOnTop = true;
@@ -56,14 +59,8 @@ let tray = null;
 let trayState = '';
 let quitting = false;
 let startHidden = false;
-const typedListeners = new Set();
-// Loaded when Claude Code first starts, so a native module that will not load leaves the rest of the app working.
-const terminal = createTerminal({
-  spawn: (...args) => require('node-pty').spawn(...args),
-  log: (text) => host?.ctx.log(text),
-  onTyped: () => typedListeners.forEach((fn) => fn()),
-  onWake: () => host?.run('claude'),
-});
+// One Claude Code per workspace, each running as that workspace's account; the windows show the one whose page is in front.
+const terminals = new Map();
 
 if (!app.requestSingleInstanceLock()) app.exit(0);
 app.on('second-instance', reveal);
@@ -74,7 +71,7 @@ app.on('before-quit', () => {
 app.on('will-quit', (event) => {
   event.preventDefault();
   globalShortcut.unregisterAll();
-  terminal.end();
+  for (const { terminal } of terminals.values()) terminal.end();
   const stopping = supervisor?.stop() ?? Promise.resolve();
   Promise.race([stopping, new Promise((resolve) => setTimeout(resolve, QUIT_WAIT_MS))]).finally(() => app.exit(0));
 });
@@ -91,7 +88,7 @@ async function start() {
   const viewer = artifactViewer();
   const overlay = meetingOverlay();
   const windows = {
-    showPage, focus: reveal, quit: () => app.quit(), popOut, dockClaude, claudeOnTop: keepClaudeOnTop, claudeState, openTerminal, restartTerminal, pasteTerminal: terminal.paste, onTerminalTyped, terminalAssets: terminalAssets(),
+    showPage, focus: reveal, quit: () => app.quit(), popOut, dockClaude, claudeOnTop: keepClaudeOnTop, claudeState, openTerminal: () => {}, restartTerminal: () => {}, pasteTerminal: () => {}, onTerminalTyped: () => () => {}, terminalAssets: terminalAssets(),
     openArtifact: viewer.open, openArtifactCopy: (spec) => openArtifactCopy(viewer, spec), showOverlay: () => overlay.show(windowUrl('meeting')), closeOverlay: overlay.close,
   };
   host = createHost({ Notification, openExternal: (url) => shell.openExternal(url), window: windows, logDir: LOG_DIR });
@@ -99,6 +96,7 @@ async function start() {
   if (MOVE_FAILED) host.ctx.log(`could not move ${MOVE.from} to ${MOVE.to}, so it runs where it is: ${MOVE_FAILED}`);
   workspaces = readWorkspaces({ defaultPort: readConfig(CONFIG_FILE).port ?? DEFAULT_PORT, log: host.ctx.log });
   supervisor = createSupervisor({ fork: (...args) => utilityProcess.fork(...args), entry: join(APP_DIR, 'workspace.mjs'), workerDir: WORKER_DIR, desktopFor, logFor });
+  admin = createWorkspaceAdmin({ workspaces, file: workspacesFile(), supervisor, folders: { config: configDirOf, engine: engineStateDirOf }, isFree, agentsRunning, onChange: workspacesChanged });
   for (const id of [...Object.keys(COMMANDS), 'goto']) host.ctx.commands.register(id, (...args) => supervisor.get(active)?.bridge.run(id, ...args));
   if (!(await startDefault())) return app.exit(0);
   for (const workspace of workspaces.slice(1)) supervisor.start(workspace);
@@ -149,7 +147,62 @@ function desktopFor(workspace) {
     port: own ? workspace.port : undefined,
     showPage: (url) => showPageOf(workspace, url),
     notify: (banner) => host.ctx.desktop.notify(workspaces.length > 1 ? { ...banner, title: `${workspace.name}: ${banner.title}` } : banner),
+    openTerminal: (spec) => openTerminal(workspace, spec),
+    restartTerminal: (spec) => restartTerminal(workspace, spec),
+    pasteTerminal: (text) => terminalOf(workspace.id).terminal.paste(text),
+    onTerminalTyped: (fn) => onTerminalTyped(workspace, fn),
+    workspaces: () => workspacesView(workspace.id),
+    switchWorkspace: ({ id } = {}) => switchToId(id),
+    createWorkspace: (body) => admin.create(body),
+    updateWorkspace: (body) => admin.update(body),
+    removeWorkspace: (body) => removeWorkspace(body),
   };
+}
+
+// Every workspace, as the one asking sees it: which is in front, which is its own, and what each needs.
+function workspacesView(asking) {
+  return {
+    workspaces: workspaces.map(({ id, name, colour, account, port }) => ({
+      id, name, colour, account, port, count: counts.get(id) ?? 0, state: supervisor.get(id)?.state ?? 'stopped', active: id === active, here: id === asking,
+    })),
+  };
+}
+
+function switchToId(id) {
+  const workspace = workspaces.find((w) => w.id === id);
+  if (!workspace) throw Object.assign(new Error(`there is no workspace ${id}`), { status: 404 });
+  if (id === active) {
+    reveal();
+    return { ok: true, text: `${workspace.name} is in front` };
+  }
+  const at = pages.get(id);
+  if (!at) throw Object.assign(new Error(`${workspace.name} has not started yet`), { status: 409 });
+  switchTo(workspace, at.origin + at.pathname + at.search);
+  return { ok: true, text: `Switched to ${workspace.name}` };
+}
+
+async function removeWorkspace(body) {
+  const answer = await admin.remove(body);
+  pages.delete(body.id);
+  counts.delete(body.id);
+  terminals.get(body.id)?.terminal.end();
+  terminals.delete(body.id);
+  if (active === body.id) switchToId(DEFAULT_ID);
+  return answer;
+}
+
+async function agentsRunning(id) {
+  const at = pages.get(id);
+  if (!at) return 0;
+  const state = await askWorker(at, 'GET', '/api/state');
+  return (state.agents ?? []).filter((a) => a.alive).length;
+}
+
+// Each page lists every workspace, so each worker is told to tell its pages when one changes.
+function workspacesChanged() {
+  for (const worker of supervisor.all()) if (worker.state === 'running') worker.bridge.run('changed', 'workspaces');
+  trayState = '';
+  refreshTray();
 }
 
 function logFor(workspace) {
@@ -170,7 +223,7 @@ function showPageOf(workspace, url) {
 function switchTo(workspace, url) {
   active = workspace.id;
   page = new URL(url);
-  terminal.end();
+  for (const { terminal } of terminals.values()) ['panel', 'window'].forEach((id) => terminal.detach(id));
   if (termWin) {
     termWin.destroy();
     termWin = null;
@@ -300,21 +353,39 @@ function shareClaudeState() {
 }
 
 // The pty lives here, not in either view, so hiding or closing one leaves Claude Code running.
-function openTerminal(spec) {
+// Loaded when Claude Code first starts, so a native module that will not load leaves the rest of the app working.
+function terminalOf(id) {
+  if (!terminals.has(id)) {
+    const typed = new Set();
+    const workspace = workspaces.find((w) => w.id === id);
+    const terminal = createTerminal({
+      spawn: (...args) => require('node-pty').spawn(...args),
+      log: (text) => (workspace ? logFor(workspace) : host.ctx.log)(text),
+      onTyped: () => typed.forEach((fn) => fn()),
+      onWake: () => supervisor.get(id)?.bridge.run('claude'),
+    });
+    terminals.set(id, { terminal, typed });
+  }
+  return terminals.get(id);
+}
+
+function openTerminal(workspace, spec) {
   if (!page) throw new Error('the worker has not shown its page yet');
-  terminal.start(spec);
+  if (workspace.id !== active) switchToId(workspace.id);
+  terminalOf(workspace.id).terminal.start(spec);
   if (!termWin?.isVisible()) return reveal();
   termWin.focus();
   app.focus({ steal: true });
 }
 
-function restartTerminal(spec) {
-  terminal.restart(spec);
+function restartTerminal(workspace, spec) {
+  terminalOf(workspace.id).terminal.restart(spec);
 }
 
-function onTerminalTyped(fn) {
-  typedListeners.add(fn);
-  return () => typedListeners.delete(fn);
+function onTerminalTyped(workspace, fn) {
+  const { typed } = terminalOf(workspace.id);
+  typed.add(fn);
+  return () => typed.delete(fn);
 }
 
 function createTerminalWindow() {
@@ -323,7 +394,7 @@ function createTerminalWindow() {
   keepOnPage(w, TERMINAL_FILE);
   w.on('page-title-updated', (event) => event.preventDefault());
   w.on('closed', () => {
-    terminal.detach('window');
+    terminals.get(active)?.terminal.detach('window');
     termWin = null;
     shareClaudeState();
   });
@@ -364,10 +435,10 @@ function listenToTerminal() {
   const sendTo = (contents) => (data) => !contents.isDestroyed() && contents.send('terminal:data', data);
   ipcMain.on('terminal:attach', (event, cols, rows) => {
     const id = viewOf(event);
-    if (id) terminal.attach(id, sendTo(event.sender), cols, rows);
+    if (id) terminalOf(active).terminal.attach(id, sendTo(event.sender), cols, rows);
   });
-  ipcMain.on('terminal:write', (event, data) => terminal.write(viewOf(event), data));
-  ipcMain.on('terminal:resize', (event, cols, rows) => terminal.resize(viewOf(event), cols, rows));
+  ipcMain.on('terminal:write', (event, data) => terminalOf(active).terminal.write(viewOf(event), data));
+  ipcMain.on('terminal:resize', (event, cols, rows) => terminalOf(active).terminal.resize(viewOf(event), cols, rows));
 }
 
 function artifactViewer() {
@@ -401,7 +472,11 @@ function appMenu() {
 
 // One count for every workspace, and full auto paused only when it is paused in all of them.
 async function badges() {
-  return Promise.all([...pages.values()].map((at) => askWorker(at, 'GET', '/api/badge').catch(() => ({ count: 0, paused: null }))));
+  const each = await Promise.all([...pages].map(([id, at]) => askWorker(at, 'GET', '/api/badge').then((b) => ({ id, ...b }), () => ({ id, count: 0, paused: null }))));
+  const moved = each.some((b) => (counts.get(b.id) ?? 0) !== (b.count ?? 0));
+  for (const b of each) counts.set(b.id, b.count ?? 0);
+  if (moved && workspaces.length > 1) for (const worker of supervisor.all()) if (worker.state === 'running') worker.bridge.run('changed', 'workspaces');
+  return each;
 }
 
 async function refreshTray() {
@@ -410,7 +485,7 @@ async function refreshTray() {
   const known = each.filter((b) => b.paused !== null);
   const badge = { count: each.reduce((n, b) => n + (b.count ?? 0), 0), paused: known.length ? known.every((b) => b.paused) : null };
   const openAtLogin = app.getLoginItemSettings().openAtLogin;
-  const state = JSON.stringify({ ...badge, openAtLogin });
+  const state = JSON.stringify({ ...badge, openAtLogin, active, workspaces: workspaces.map((w) => [w.id, w.name, counts.get(w.id) ?? 0]) });
   if (state === trayState) return;
   trayState = state;
   tray.setTitle(badge.count ? String(badge.count) : '');
@@ -422,12 +497,28 @@ function trayMenu(paused, openAtLogin) {
   return Menu.buildFromTemplate([
     ...host.menuItems(),
     ...host.shortcutNote(),
+    ...trayWorkspaces(),
     { type: 'separator' },
     { label: 'Pause full auto', type: 'checkbox', checked: paused === true, enabled: paused !== null, click: togglePause },
     { label: 'Launch at login', type: 'checkbox', checked: openAtLogin, enabled: app.isPackaged, click: (item) => app.setLoginItemSettings({ openAtLogin: item.checked }) },
     { type: 'separator' },
     { label: `Quit ${APP_NAME}`, role: 'quit' },
   ]);
+}
+
+function trayWorkspaces() {
+  if (workspaces.length < 2) return [];
+  const switchTo = (id) => {
+    try {
+      switchToId(id);
+    } catch (err) {
+      host.ctx.log(`could not switch workspace: ${err.message}`);
+    }
+  };
+  return [
+    { type: 'separator' },
+    ...workspaces.map((w) => ({ label: counts.get(w.id) ? `${w.name} (${counts.get(w.id)})` : w.name, type: 'radio', checked: w.id === active, click: () => switchTo(w.id) })),
+  ];
 }
 
 // The page's pause flips one workspace; the menu bar's pauses or resumes them all, so each one not already there is flipped.

@@ -168,7 +168,7 @@ export async function nextFreePort(taken) {
   return null;
 }
 
-function isFree(port) {
+export function isFree(port) {
   return new Promise((resolve) => {
     const probe = net.createServer().once('error', () => resolve(false));
     probe.listen(port, '127.0.0.1', () => probe.close(() => resolve(true)));

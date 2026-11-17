@@ -34,7 +34,7 @@
     "asar": false,
     "buildDependenciesFromSource": true,
     "files": [
-      "main.mjs", "host.mjs", "bridge.mjs", "supervisor.mjs", "workspace.mjs", "relocate.mjs", "bounds.mjs", "overlay.mjs", "terminal.mjs", "terminal-preload.cjs", "viewer.mjs", "viewer.html", "viewer.js", "viewer-preload.cjs", "assets/**",
+      "main.mjs", "host.mjs", "bridge.mjs", "supervisor.mjs", "workspace.mjs", "workspaceadmin.mjs", "relocate.mjs", "bounds.mjs", "overlay.mjs", "terminal.mjs", "terminal-preload.cjs", "viewer.mjs", "viewer.html", "viewer.js", "viewer-preload.cjs", "assets/**",
       "!node_modules/node-addon-api${/*}", "!node_modules/node-pty/{binding.gyp,bin,deps,node-addon-api,src,scripts,third_party,typings,prebuilds}${/*}",
       "!node_modules/node-pty/build/{Makefile,config.gypi,gyp-mac-tool,*.mk,Release/.deps,Release/obj.target,Release/node-addon-api,Release/.forge-meta}${/*}",
       "!node_modules/node-pty/lib/**/*.{map,test.js}", "!node_modules/@xterm/*/{src,typings}${/*}", "!node_modules/@xterm/*/lib/*.{map,mjs}", "!node_modules/@xterm/headless/lib-headless/*.{map,mjs}"

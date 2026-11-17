@@ -4,7 +4,7 @@ const APP_FOLDER = document.querySelector('meta[name="app-folder"]')?.getAttribu
 const VIEWS = {
   overview: 'viewOverview', 'needs-you': 'viewNeeds', agents: 'viewAgents', artifacts: 'viewArtifacts',
   'merge-requests': 'viewMergeRequests', 'review-queue': 'viewQueue', 'full-auto': 'viewFullAuto', 'review-runs': 'viewRuns',
-  tickets: 'viewTickets', standup: 'viewStandup', calendar: 'viewCalendar', email: 'viewEmail', slack: 'viewSlack', qa: 'viewQa', scheduled: 'viewScheduled', watching: 'viewWatching', leaderboard: 'viewLeaderboard', settings: 'viewSettings',
+  tickets: 'viewTickets', standup: 'viewStandup', calendar: 'viewCalendar', email: 'viewEmail', slack: 'viewSlack', qa: 'viewQa', scheduled: 'viewScheduled', watching: 'viewWatching', workspaces: 'viewWorkspaces', leaderboard: 'viewLeaderboard', settings: 'viewSettings',
   'whats-new': 'viewWhatsNew', game: 'viewGame', setup: 'viewSetup',
 };
 const ui = {
@@ -100,6 +100,7 @@ const ICONS = {
   star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
   award: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
   'scroll-text': '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  layers: '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
   github: '<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>',
 };
 
@@ -345,13 +346,14 @@ function renderRail(d) {
     if (a.getAttribute('href') === '#' + view()) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
     const feature = featureOf(a.getAttribute('href').slice(1));
-    a.hidden = Boolean(feature && !featureOn(feature));
+    a.hidden = Boolean(feature && !featureOn(feature)) || (a.getAttribute('href') === '#workspaces' && !state.workspaces);
   }
+  slot('renderSwitcher');
   const g = d.m.inbox ?? {};
   document.getElementById('health').replaceChildren(...[
     slot('matrixHealth', state.matrix),
     slot('railRebuild', state.matrix),
-    el('span', { class: g.error ? 'off' : g.fetchedAt ? '' : 'idle' }, g.error ? 'GitLab: ' + g.error : g.fetchedAt ? 'GitLab ' + ago(g.fetchedAt) + (g.loading ? ', refreshing' : '') : 'GitLab loading'),
+    d.m.providers?.gitlab?.on === false ? null : el('span', { class: g.error ? 'off' : g.fetchedAt ? '' : 'idle' }, g.error ? 'GitLab: ' + g.error : g.fetchedAt ? 'GitLab ' + ago(g.fetchedAt) + (g.loading ? ', refreshing' : '') : 'GitLab loading'),
     githubHealth(d.m.providers?.github, g),
     el('span', { class: 'idle' }, 'Updated ' + timeText(state.generatedAt, true)),
     pageChanged() ? el('span', { class: 'off changed' }, 'The page has changed') : null,
@@ -402,7 +404,7 @@ async function reloadCode() {
 const VIEW_ICONS = {
   overview: 'dashboard', 'needs-you': 'bell', agents: 'bot', artifacts: 'sparkles', 'merge-requests': 'merge', 'review-queue': 'inbox',
   'full-auto': 'zap', 'review-runs': 'activity', tickets: 'ticket', standup: 'clipboard', calendar: 'calendar', email: 'mail', slack: 'hash', qa: 'flask', scheduled: 'clock', watching: 'eye', leaderboard: 'trophy', settings: 'settings',
-  'whats-new': 'scroll-text', game: 'gamepad', setup: 'list-checks',
+  'whats-new': 'scroll-text', game: 'gamepad', setup: 'list-checks', workspaces: 'layers',
 };
 
 function header(title, sub, ...tools) {

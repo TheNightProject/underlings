@@ -59,6 +59,20 @@ export function createSupervisor({ fork, entry, workerDir, desktopFor, logFor, e
     }, wait);
   }
 
+  // Out of the running list first, so its exit is not taken for a crash.
+  async function retire(id) {
+    const worker = running.get(id);
+    if (!worker) return null;
+    running.delete(id);
+    await stopOne(worker);
+    return worker;
+  }
+
+  async function restart(id) {
+    const worker = await retire(id);
+    return worker ? start(worker.workspace, { port: worker.desktop.port }) : null;
+  }
+
   async function stop() {
     stopping = true;
     await Promise.all([...running.values()].map((worker) => stopOne(worker)));
@@ -83,6 +97,8 @@ export function createSupervisor({ fork, entry, workerDir, desktopFor, logFor, e
   return {
     start,
     stop,
+    retire,
+    restart,
     get: (id) => running.get(id) ?? null,
     all: () => [...running.values()],
     keep: (key, value) => running.forEach((worker) => worker.state !== 'exited' && worker.bridge.keep(key, value)),
