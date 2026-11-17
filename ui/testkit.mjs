@@ -315,7 +315,7 @@ function parseInto(doc, html) {
 
 function timers() {
   const unref = (t) => { t?.unref?.(); return t; };
-  return { setTimeout: (fn, ms) => unref(setTimeout(fn, ms)), clearTimeout, setInterval: () => 0, clearInterval() {} };
+  return { setTimeout: (fn, ms) => unref(setTimeout(fn, ms)), clearTimeout, setInterval: () => 0, clearInterval() {}, queueMicrotask };
 }
 
 // Each file runs on its own, like the page's one tag per file, so one that throws leaves the others loaded.

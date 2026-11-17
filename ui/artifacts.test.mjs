@@ -88,10 +88,12 @@ test('a republish that lands while the kept frame is being moved across leaves n
   proto.moveBefore = function (node) { this.append(node); };
   try {
     press(rowFor(page, 'Sprint review'), 'Preview');
-    page.run(`render(); state.artifacts[0].at = '2026-11-06T09:36:09Z'; render();`);
+    page.run('render();');
+    page.show(snapshot([{ ...COPIED, at: '2026-11-06T09:36:09Z' }], 'plugin'), 'artifacts');
     await page.settle(0);
     assert.deepEqual(page.$$('iframe').map((f) => f.getAttribute('src')), ['/preview/Copied1/pv-1/index.html?v=2026-11-06T09%3A36%3A09Z']);
     assert.ok(page.$('.preview iframe'));
+    assert.deepEqual(page.errors, []);
   } finally {
     delete proto.moveBefore;
   }
