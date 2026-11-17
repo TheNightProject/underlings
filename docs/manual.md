@@ -4,31 +4,12 @@ The full manual for Underlings. The README covers what it is, how to install it,
 machine and what it costs; this goes through every part of the page.
 
 Your review, fix and kickoff agents, your merge requests and tickets, and every artifact you have
-published, on one page. Every agent runs as Claude Code in the background, and nothing about
-agents, workspaces or schedules asks Orca anything. It runs as a macOS app of its own, or as an
-Orca plugin until you switch to the app. The review engine it runs lives in `engine/`; see The
-review engine.
+published, on one page. Underlings is a macOS app, and every agent runs as Claude Code in the
+background. The review engine it runs lives in `engine/`; see The review engine.
 
-As a plugin: Orca's plugin panels have no network access and cannot talk to the plugin's own
-code, so the page is served by the plugin's worker on `127.0.0.1`, which opens it as an Orca
-browser tab when the plugin starts. The sidebar panel only says so.
-
-## Set up the plugin
-
-Build the review engine first, from this folder: `npm run setup && npm run build`. Then:
-
-1. Orca, Settings, Plugins: turn on **Plugin system**.
-2. Under **Development**, **Add path**: the folder you cloned Underlings into.
-3. Approve the plugin when Orca asks. It asks for `storage` (used only to keep the worker
-   alive) and `notifications:show` (desktop banners, see Needs you and notifications). It no
-   longer asks for `events:subscribe`, so Orca may ask you to approve it again once.
-4. The page opens itself as a tab in the workspace root. A tab left over with an old link is
-   pointed at the current one, so the worker opens no second tab.
-
-`~/.config/underlings/config.json` holds the port and, for an Orca profile other than the one
-the plugin runs in, its path (`orcaUserDataPath`, the value of `ORCA_USER_DATA_PATH` in an Orca
-terminal). Left out, the `orca` CLI is given the profile Orca started the plugin with, or its own default.
-Tabs open in the workspace root from the review engine's settings unless `workspaceRoot` is set there too.
+`~/.config/underlings/config.json` holds the port and the app's global shortcuts (see The macOS
+app). `workspaceRoot` there sets the Code folder, the folder your clones live in and agents start
+in, when the review engine's own setting is blank.
 
 ### Where it keeps things
 
@@ -41,10 +22,8 @@ Tabs open in the workspace root from the review engine's settings unless `worksp
 
 ## The macOS app
 
-`desktop/` is the same Underlings as an app of its own, so it runs without Orca's plugin
-system. Its Electron main process starts `worker.mjs` with a host of its own in place of Orca's,
-and the page is the same page, loaded in one window from the worker's `127.0.0.1` link with no
-Node in the page.
+`desktop/` is the app. Its Electron main process starts `worker.mjs`, and the page is loaded in
+one window from the worker's `127.0.0.1` link, with no Node in the page.
 
 Quit the app if it is running, then build and install it:
 
@@ -60,14 +39,14 @@ signed ad hoc as `com.thenightproject.underlings` so macOS can list it under Not
 from listing the build as a second app. The app carries its own copy of `worker.mjs`, `lib/`, `ui/`
 and the engine build (`engine/dist` without the command line), and loads that copy rather than a
 checkout's, so a change to any of them needs `npm run install-app` again and the app quit and opened again. `npm start` in `desktop/` runs the app on this checkout instead, where
-**Reload** picks up a change to `lib/` and `ui/` as it does in Orca.
+**Reload** picks up a change to `lib/` and `ui/` without a restart.
 
-**Turn the plugin off in Orca (Settings, Plugins) while you use the app.** Both read the same
-`config.json`, token and state, and a second copy only adds a second set of Orca and GitLab reads.
-If the plugin still holds the port, the app says so and offers the next free port for this run;
-full auto's lock stops the two driving at once meanwhile, and only the older one sends banners.
+**Run one copy at a time.** Two copies, say the installed app and `npm start` on a checkout,
+read the same `config.json`, token and state. If the other copy holds the port, the app says so
+and offers the next free port for this run; full auto's lock stops the two driving at once
+meanwhile, and only the older one sends banners.
 
-What the app does in place of Orca:
+What the app gives you:
 
 - **The window** remembers its size and position. Closing it hides it; the app keeps running in
   the menu bar until you quit it.
@@ -92,10 +71,6 @@ What the app does in place of Orca:
   default browser, and only an http or https link opens.
 - **Artifacts** open in a window of their own rather than your browser (see Recording artifacts).
 - **Logs** go to `~/Library/Logs/Underlings/underlings.log`.
-
-The app needs nothing of Orca. The plugin still asks Orca for what a plugin needs to show itself:
-its page as an Orca tab, its banners, and the unread dot on its workspace when a banner is
-refused.
 
 ## The review engine
 
@@ -133,7 +108,7 @@ every check once more.
 | GitLab token | GitLab, at gitlab.com or your **GitLab host**, knows the token and it has the `api` scope | a link that makes one with `api` ticked, a field to paste it, and the host field |
 | GitHub | optional, and off until you switch it on here: the token in use is known to GitHub, with `repo` and `read:org` | the switch, a link that makes a token, a field to paste one, and `gh auth refresh -s` for a token gh holds |
 | Jira | optional: a site is set, `acli` is on the PATH and `acli jira auth status` says signed in | the site field, a link to install `acli`, or `acli jira auth login --web` to copy |
-| Workspace root | the folder exists and has at least one git checkout in it, counted | the folder field |
+| Code folder | the folder exists and has at least one git checkout in it, counted | the folder field |
 | Agent commands | always: each is the Underlings skill or your own | a field for each, see Agent skills |
 | Underlings skills | optional: the plugin is installed in your own Claude Code, at the version this app ships | the two commands it will run, shown first, with **Install the skills**, **Update the skills** or **Remove them**, see Agent skills |
 | Artifact hook | a `PostToolUse` hook in `~/.claude/settings.json` runs `record-artifact.mjs` | **Install the hook**, see Recording artifacts |
@@ -248,29 +223,12 @@ repeats a banner nor lifts a mute; **Mute until it merges** ends once GitLab say
   Notifications, sends nothing.
 - Only the oldest live worker sends, so a second worker, or the one holding the full auto turn,
   neither doubles nor silences a banner.
-- In the plugin, a banner Orca refuses marks the dashboard's workspace unread (`orca worktree set --unread`,
-  never `--comment`), and Needs you says why.
+- A banner macOS refuses is said at the top of Needs you, with the reason.
 
-In the plugin, clicking an Orca banner only brings Orca forward, so **Cmd+J, Underlings: Open
-what needs me** opens what the latest banner named, in the tab already open, or Needs you after a
-digest. With **clickable banners** on, the page shows the banner itself while a tab is open, and a
-click opens that MR's drawer tab; one the page does not confirm within 10 s goes out as Orca's
-banner. The app's banners open their item themselves, so the app has neither.
-
-Once, in the plugin, after this update:
-
-1. Orca puts the plugin back to pending, as it now asks for a new permission. In Orca's Settings,
-   Plugins, Underlings, approve "Show desktop notifications labeled with the plugin name". Until
-   then the plugin does not run at all, full auto included.
-2. `worker.mjs` changed, so turn the plugin off and on once.
-3. In macOS System Settings, Notifications, Orca, allow notifications and choose Banners, or Alerts
-   to keep them on screen.
-4. Optional: in Orca's Settings, Keybindings, Plugins, bind "Underlings: Open what needs me".
-   The chord fires only from Orca's own UI; Cmd+J works from everywhere.
-5. Optional: Settings, Notifications, **Turn on clickable banners**, then Allow on the tab's prompt.
-
-Needs you repeats these steps in a banner until you press Done. In the app it asks only for
-step 3, for Underlings rather than Orca.
+Clicking a banner opens the MR drawer tab it named, or Needs you after a digest. **Cmd+Shift+J**
+opens what the latest banner named from any app. Until you press Done, Needs you asks you once to
+allow Underlings in macOS System Settings, Notifications, choosing Banners, or Alerts to keep them
+on screen.
 
 ## Reviewing on request and re-reviewing
 
@@ -294,11 +252,6 @@ tried again, three times a head.
 whichever front end drives full auto takes each day's look from its poll: an MR that moved since it
 was last seen gets the review command, and either way the next look is a day later. **Stop the
 daily re-review** removes the slot, and unwatching takes it along.
-
-Daily re-reviews an older build scheduled as Orca automations are listed once, at the top of
-Watching, each with a two-click **Move to the schedule here**. The automation is never
-deleted from here, so the move says which one to delete from Orca's automations, or it runs there
-too.
 
 ## Agents
 
@@ -331,8 +284,7 @@ not running: it removes its git worktree, if it has one, with `git worktree remo
 The worker watches each agent's own log, which its runner writes, and refreshes the page and Needs
 you whenever an agent's state moves. An agent that asks sends a banner, as a fix agent always has.
 
-**Settings**, **Running agents** says how they run. **Agents run in** is Claude Code, or Orca terminals as a
-fallback; this page does not show Orca's agents, so answer those in Orca. **Agent permissions** is
+**Settings**, **Running agents** says how they run. **Agent permissions** is
 **Ask me** on a new install: an agent stops at each action your allow list does not cover until you
 answer it in Needs you. **Auto** hands that to Claude Code's auto mode, so an agent edits files, runs
 commands and uses its tools without asking you, and stops only for what auto mode judges risky.
@@ -463,8 +415,7 @@ claude plugin install underlings@underlings --scope user
 **Update the skills** appears when the version in your Claude Code differs from the app's, and
 **Remove them** runs `claude plugin uninstall underlings@underlings --scope user` and
 `claude plugin marketplace remove underlings --scope user`. It never touches another plugin or any
-other file of your Claude Code. Agents run by Orca start their own Claude Code, so they find the
-skills only once they are installed here.
+other file of your Claude Code.
 
 Every review agent, on any of these, gets a small MCP server of its own, `underlings`,
 from the engine build (`dist/reviewserver.js`), allowed without asking. It has two tools and
@@ -472,8 +423,7 @@ nothing that reaches GitLab: `queue_findings`, which takes the same items `under
 --json` reads and leaves each waiting in the review queue, and `finish_review`, which a full-auto
 pass calls when it is done. A review command of your own may still call `underlings queue add`: the
 app does not ship the command line, so link `engine/dist/cli.js` onto your PATH as The review
-engine says, or switch the command to `queue_findings`. An agent run in Orca, the fallback host,
-gets no such server, so the review lists what it finds in chat and stops.
+engine says, or switch the command to `queue_findings`.
 
 ## The game
 
@@ -553,10 +503,10 @@ Rewards come only from what the worker reads itself, and the page cannot add any
 
 ## The Claude panel
 
-In the plugin, **Ask Claude** in the rail, **c**, or Ask Claude in Jump to opens a floating panel
-with one long-lived Claude Code session; in the app the same panel is Claude Code itself (see Claude
-Code in the app). In the plugin it is a master agent, run like the others in auto mode, in the
-workspace root, so it has that folder's CLAUDE.md, skills and memory. Drag it by its title,
+**Ask Claude** in the rail, **c**, or Ask Claude in Jump to opens Claude Code itself (see Claude
+Code in the app). Only where the app's terminal is missing does it open a floating panel instead,
+with one long-lived Claude Code session: a master agent, run like the others in auto mode, in the
+Code folder, so it has that folder's CLAUDE.md, skills and memory. Drag it by its title,
 resize it from its corner; where it sits and whether it is open are kept for each browser, and on
 a phone it is a sheet at the foot of the page. Enter sends and Shift+Enter starts a new line.
 Replies stream in as markdown, each run of tool calls folds into one line, and Stop ends a turn.
@@ -607,7 +557,7 @@ to, Ctrl+Option+Cmd+C, and its Needs you card and banners all open it.
   copied there first, never moved. From then on the headless chat is not used in the app: a draft
   from Email or Slack lands in Claude Code's prompt for you to read and send, and waits while
   Claude Code asks you something.
-- **The session** starts in the workspace root, with the login shell's `PATH` and the agents'
+- **The session** starts in the Code folder, with the login shell's `PATH` and the agents'
   environment, so nothing left by Orca or a parent Claude Code session comes with it. It has the
   Underlings tools (`--mcp-config`) and its own settings file (`--settings`,
   `~/.local/state/underlings/claude/terminal-settings.json`) with the same allow, ask and deny
@@ -672,7 +622,7 @@ not a tab is open: full auto (adopting, settling, launching and sending), auto r
 capturing what each review agent has on screen.
 
 - **One driver.** `auto.lock` in the engine's state folder says who drives, and each worker, the
-  app's or the plugin's, keeps a presence record in `frontends/`. The worker takes a turn every 5 s, beating the lock while it
+  each copy of the app, keeps a presence record in `frontends/`. The worker takes a turn every 5 s, beating the lock while it
   holds it, and runs a step only while it holds it. A lock left by a worker that died is taken at
   once; any other stale lock only on a second sighting 5 s later.
 - **Nothing goes twice.** Every send is claimed in `queue.json` first, so two drivers, a manual
@@ -680,12 +630,12 @@ capturing what each review agent has on screen.
   by a crash comes back to you instead. An item open in an editor carries a 90 s mark, renewed
   every 30 s, and no worker sends it meanwhile.
 - **Pause** stops launches, sends and auto re-review at the next item. Run output is still read.
-- **Readiness.** It drives only with an engine build that has the lock, a workspace root to launch
+- **Readiness.** It drives only with an engine build that has the lock, a Code folder to launch
   into, and `GITLAB_TOKEN`. The strip at the foot of the rail says which is missing, and the Full
   auto view offers the fix. `UNDERLINGS_STATE_DIR` and `GITLAB_TOKEN` are read from your shell profile
-  before the engine loads, so the app and the plugin share one state folder.
+  before the engine loads, so every copy of the app shares one state folder.
 - **Reload and deactivate.** A code reload hands the same seat to the new code, so the lock never
-  looks free. Turning the plugin off waits up to 1.5 s for a step to finish before it gives the
+  looks free. Quitting waits up to 1.5 s for a step to finish before it gives the
   lock up; a step still running then keeps it until it goes stale.
 
 The Activity list on the Full auto view lives in the worker's memory: it survives a code reload and
@@ -770,9 +720,9 @@ status, epic, the description as text, its MRs, and on your own tickets two acti
 - **Start with an agent** ("Start ABC-1234 with an agent?") starts Claude Code in the workspace
   folder, as `kickoff-ABC-1234`, on the `/underlings:kickoff` skill or your kickoff command (see Agent
   skills), told to stop and ask you before any push, MR, Jira transition or comment. The skill
-  is handed the checkouts found under the workspace root, so the agent picks the repo and cuts
+  is handed the checkouts found under the Code folder, so the agent picks the repo and cuts
   its worktree there as `<checkout>-abc-1234`; with none found it starts nothing and says to set
-  the workspace root. It is recorded as the run `ticket:ABC-1234`, so it
+  the Code folder. It is recorded as the run `ticket:ABC-1234`, so it
   shows under Review runs and in the drawer's Agent tab, where you answer it. A second start waits
   until that agent is removed. While it waits on you, or once its turn ends on a
   question, it counts under Needs you.
@@ -876,8 +826,7 @@ says why with the address taken out of it.
   second it is due; `desktop/overlay.mjs` puts a frameless `panel` window on each display at the
   `screen-saver` level, visible on every Space and over full-screen apps, blurred behind by the
   system and loading the page as `?window=meeting`. A panel is what stays over another app's
-  full-screen Space without making the app active; a plain window moves you off that Space. In the
-  Orca plugin there is no app to cover the screen, so the banner is the reminder, and Settings says so.
+  full-screen Space without making the app active; a plain window moves you off that Space.
 
 It is read only: answering an invite would need the Google Calendar connector and its ask rules,
 so it is done in Google Calendar.
@@ -991,7 +940,7 @@ that message. It is never logged, and a read that fails says why in its own word
 starts a Claude Code agent that works out what the message asks of you and does it, asking before
 anything that writes, then proposes your reply. One click starts it, since starting writes nothing.
 
-- **The agent** is a `message` agent, run in the background like the others, in the workspace root
+- **The agent** is a `message` agent, run in the background like the others, in the Code folder
   on the account the agents use. It has the Claude panel's Underlings tools (`--mcp-config`) and
   a settings file of its own, `~/.local/state/underlings/claude/message-settings.json`: the
   panel's allow and ask rules and signing hook, with `slack_send_message`, `slack_schedule_message`
@@ -1062,8 +1011,7 @@ keeps **Copy link** and **Open in your browser**. A publish from an Artifact typ
 
 In the app, **Open** on the Artifacts page, or picking an artifact in Jump to, loads the live
 artifact in the app's artifact window instead, and **Open copy in a window** shows the kept copy
-there at full size, with no sign-in. Jump to's Tab still offers **Show in Artifacts**. The plugin
-opens the live artifact in your browser, as before.
+there at full size, with no sign-in. Jump to's Tab still offers **Show in Artifacts**.
 
 - **One window** is reused for every artifact you open. It remembers its size and place, and its
   toolbar has the title, Back, Forward, Reload, Copy link, Open in browser (both use the
@@ -1119,14 +1067,14 @@ also checks the target branch and sends that head, so GitLab refuses one that mo
 Only one of a rebase, a merge and a fix agent is under way on an MR at a time.
 
 **Fix N comments with an agent**, in the row's menu or on the Threads tab, and **Fix this with an
-agent** on one thread, cut a checkout of the MR's branch beside the repos under the workspace root
+agent** on one thread, cut a checkout of the MR's branch beside the repos under the Code folder
 and start Claude Code in the workspace folder, told to work in that checkout. Its brief is built from the live
 threads; threads a bot started are left out unless you fix one on its own. The agent changes the
 code, raises tickets for what it leaves for later, reviews its own change against the MR's target
 branch (`/underlings:pre-mr-review`, or your self-review command, see Agent skills), then stops to ask
 whether to push and reply. It then shows as asking you, under Needs you
 and in the drawer's Agent tab, where you answer it: nothing reaches GitLab until you say yes. The
-MR's repo must be cloned under the workspace root, found by its origin remote or its name, and a
+MR's repo must be cloned under the Code folder, found by its origin remote or its name, and a
 second fix waits until the first agent is removed.
 
 ## The board
@@ -1155,8 +1103,7 @@ artifact preview framing the page, can neither read it nor act through it.
 
 Nothing on the page leaves it. An MR anywhere opens its drawer in place, and the only way out is
 a button that says so, such as **Open on GitLab** in that drawer, which opens the link in your
-default browser: through the system `open` in the plugin, and through the app's own host in the
-app. Either way only an http or https link opens, and anything else is refused before it runs.
+default browser through the app. Only an http or https link opens, and anything else is refused before it runs.
 Text from GitLab, Jira, agents and terminals is shown as text, never parsed as markup, and a
 click on any stray link is caught before the browser follows it.
 
@@ -1188,7 +1135,7 @@ module that fails to import, the review engine mid-rebuild included, leaves the 
 place. An engine
 that failed to load is tried afresh on every Reload. The page is rebuilt from `ui/` on every
 load, and reloads itself once nothing is open, half typed or showing a message. Only a change to
-`worker.mjs` needs the plugin turned off and on in Orca, and the rail says when it does.
+`worker.mjs` needs the app quit and opened again, and the rail says when it does.
 
 When the review engine will not load, or a button or panel needs a newer build of it, the rail and
 a toast offer **Rebuild the engine**, which runs `npm run build` in the folder the engine was
@@ -1230,7 +1177,7 @@ say in their notes. In place of **Update now**, What's new says to run
 checkout instead, as a build from source does.
 
 **Update now** takes two clicks and works in the checkout: `repoPath` from `config.json`, else the
-checkout the plugin runs from, else the one `build.json` says the app was built in, else
+checkout `npm start` runs from, else the one `build.json` says the app was built in, else
 `~/Projects/underlings`:
 
 1. It changes nothing, and says why, when that folder is not a git checkout, is not on `main`, or
@@ -1238,8 +1185,8 @@ checkout the plugin runs from, else the one `build.json` says the app was built 
 2. It runs `git pull --ff-only` (on the releases channel `git fetch --tags origin`, then
    `git merge --ff-only` to the tag), `npm run setup` and `npm run build`, streaming what each
    prints into What's new.
-3. In the plugin, **Reload** then loads the new code, or the plugin is turned off and on when
-   `worker.mjs` changed. In the app it also runs `npm --prefix desktop run pack`, then starts
+3. Run from a checkout, **Reload** then loads the new code, or the app is quit and `npm start` run
+   again when `worker.mjs` changed. In the installed app it also runs `npm --prefix desktop run pack`, then starts
    `lib/apphelper.mjs` on its own (the app's binary run as plain Node), which waits for the app
    to quit, copies the new build beside `/Applications/Underlings.app`, swaps it in and opens
    it again. The helper's log is `~/.local/state/underlings/update-install.log`.
@@ -1471,7 +1418,7 @@ engine's own, under tsx) and `npm run test:cc` (these), each at most four files 
 London on an `en_US` system so no result depends on the machine; a test of another place says so.
 Page tests show a snapshot in London time on the 24 hour clock unless they give their own. Running
 these by hand needs their glob, `node --experimental-test-module-mocks --test "**/*.test.mjs"`,
-since a bare `node --test` also picks up the engine's `.ts` tests. The `orca`, `git`, `npm` and `open` processes,
+since a bare `node --test` also picks up the engine's `.ts` tests. The `git`, `npm` and `open` processes,
 GitLab and the review engine are stubbed (`lib/testkit.mjs` is the stand-in engine, lock included); everything
 between runs for real, the worker included, on a port of its own with a temporary home folder.
 GitHub is faked the same way, by `engine/src/fixtures/github/fakegithub.mjs`: it answers REST and
@@ -1481,7 +1428,7 @@ limits, 429, 502) and refuses any other host. `gh` is never run for real: the en
 runs the GitLab baselines twice, the second with GitHub switched on against a GitHub with nothing
 for you, and neither run may write them.
 `lib/fullauto.test.mjs` runs whole workers in processes of their own (`lib/workerproc.mjs`) against
-a real engine build and one state folder, with only Orca, `pgrep`, GitLab and `claude`
+a real engine build and one state folder, with only `pgrep`, GitLab and `claude`
 (`lib/fixtures/fake-claude.mjs`, given to every worker, so none can start a real session) faked. It loads
 `UNDERLINGS_TEST_ENGINE`, or this checkout's `engine/dist/engine.js`, with the workers' beat and poll
 shortened so the tests wait on what happens rather than the clock, and fails when that is not built
