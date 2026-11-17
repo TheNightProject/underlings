@@ -17,7 +17,6 @@ export function agentCommands(): AgentCommands {
   return { reviewCommand: read(agents.reviewCommand), selfReviewCommand: read(agents.selfReviewCommand), kickoffCommand: read(agents.kickoffCommand) };
 }
 
-/** One line, as the Orca fallback types it into a terminal where a newline submits early. */
 export function reviewLine(webUrl: string): string {
   const { reviewCommand } = agentCommands();
   return reviewCommand ? `${reviewCommand} ${webUrl}` : [REVIEW_SKILL, webUrl, ...styleLines('each finding')].join(' ');

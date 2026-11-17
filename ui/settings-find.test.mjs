@@ -16,7 +16,7 @@ const MODELS = {
 
 const SETTING_ROWS = [
   { key: 'pollSeconds', label: 'Refresh every', hint: 'how often GitLab is read, at the café or anywhere.', kind: 'number', value: 90, bounds: { min: 30, max: 600 } },
-  { key: 'agentHost', label: 'Agent host', hint: 'where a background agent runs.', kind: 'choice', choices: [['claude', 'Claude Code'], ['orca', 'Orca']], value: 'claude' },
+  { key: 'agentPermissions', label: 'Agent permissions', hint: 'whether a background agent asks first.', kind: 'choice', choices: [['ask', 'Ask me'], ['auto', 'Automatic']], value: 'ask' },
   { key: 'maxAgents', label: 'Most at once', hint: 'background agents running together.', kind: 'number', value: 4, bounds: { min: 0, max: 20 } },
 ];
 
@@ -98,11 +98,11 @@ test('the filter keeps the groups and rows whose label, hint, options or group t
   type(page, 'CAFE');
   assert.deepEqual(groups(page), ['Refresh every'], 'matched in a hint, without its accent');
 
-  type(page, 'orca');
-  assert.deepEqual(rowsIn(page, 'Running agents'), ['Agent host'], 'matched by a choice, and its group keeps only that row');
+  type(page, 'automatic');
+  assert.deepEqual(rowsIn(page, 'Running agents'), ['Agent permissions'], 'matched by a choice, and its group keeps only that row');
 
   type(page, 'running');
-  assert.deepEqual(rowsIn(page, 'Running agents'), ['Agent host', 'Most at once'], 'a group title that matches keeps the whole group');
+  assert.deepEqual(rowsIn(page, 'Running agents'), ['Agent permissions', 'Most at once'], 'a group title that matches keeps the whole group');
 
   type(page, 'running most');
   assert.deepEqual(rowsIn(page, 'Running agents'), ['Most at once'], 'words matched by the title and by a row together');
@@ -115,8 +115,8 @@ test('the matched words are highlighted in elements and text alone, in the label
   assert.deepEqual(marks(group.querySelector('h2')), ['Refresh']);
   assert.deepEqual(marks(group.querySelector('.setting')), ['Refresh', 'café']);
   assert.equal(text(group.querySelector('.setting .hint')), 'How often GitLab is read, at the café or anywhere.', 'the text reads as it did');
-  type(page, 'orca');
-  assert.deepEqual(marks(page.$('#set-agentHost-orca')), ['Orca']);
+  type(page, 'automatic');
+  assert.deepEqual(marks(page.$('#set-agentPermissions-auto')), ['Automatic']);
   type(page, 'sig');
   assert.deepEqual(marks(page.$('#slack-settings')), ['Sig', 'sig', 'Sig']);
   const source = await readFile(new URL('./36-settings-find.js', import.meta.url), 'utf8');

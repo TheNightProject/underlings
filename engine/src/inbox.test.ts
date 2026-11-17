@@ -12,8 +12,8 @@ const dir = mkdtempSync(join(tmpdir(), 'thematrix-inbox-'));
 process.env['UNDERLINGS_STATE_DIR'] = dir;
 process.env['GITLAB_TOKEN'] = 'not-a-real-token';
 
-// Orca at its boundary: the terminal list answers whatever the test says, and nothing is started.
-let terminalList: () => Promise<{ stdout: string }> = () => Promise.reject(new Error('spawn orca ENOENT'));
+// Nothing is run: a call that gets this far is counted and refused.
+let terminalList: () => Promise<{ stdout: string }> = () => Promise.reject(new Error('spawn ENOENT'));
 Object.assign(childProcess, { execFile: Object.assign(() => undefined, { [promisify.custom]: () => terminalList() }) });
 syncBuiltinESMExports();
 
@@ -67,32 +67,12 @@ test('your approval is named on the row', () => {
   assert.equal(rows[0]?.verdict, 'YOU APPROVED');
 });
 
-test('with agentHost orca, a terminal list Orca could not give comes back as terminalsError, not as every agent gone', async () => {
-  writeFileSync(join(dir, 'repos.json'), JSON.stringify({ at: new Date().toISOString(), repos: [{ path: 'acme/engine', label: 'Engine' }] }));
-  changeSettings((s) => ({ ...s, agentHost: 'orca' }));
-  try {
-    const blind = await fetchInbox();
-    assert.deepEqual(blind.terminals, []);
-    assert.equal(blind.terminalsError, 'spawn orca ENOENT');
-    const listed = { handle: 't1', title: '✳ claude', agentIdentity: 'claude', connected: true, orphaned: false };
-    terminalList = async () => ({ stdout: JSON.stringify({ id: 'x', ok: true, result: { terminals: [listed] } }) });
-    const asked = Date.now();
-    const seeing = await fetchInbox();
-    assert.deepEqual(seeing.terminals.map((t) => t.handle), ['t1']);
-    assert.equal(seeing.terminalsError, undefined);
-    assert.ok(seeing.listedAt >= asked && seeing.listedAt <= Date.now(), 'and says when Orca was asked');
-  } finally {
-    changeSettings((s) => ({ ...s, agentHost: 'claude' }));
-    terminalList = () => Promise.reject(new Error('spawn orca ENOENT'));
-  }
-});
-
-test('by default the inbox lists its agents from Claude Code alone, and asks Orca nothing', async () => {
+test('the inbox lists its agents from Claude Code, and runs nothing to do it', async () => {
   writeFileSync(join(dir, 'repos.json'), JSON.stringify({ at: new Date().toISOString(), repos: [{ path: 'acme/engine', label: 'Engine' }] }));
   let asked = 0;
   terminalList = () => {
     asked += 1;
-    return Promise.reject(new Error('spawn orca ENOENT'));
+    return Promise.reject(new Error('spawn ENOENT'));
   };
   const data = await fetchInbox();
   assert.equal(asked, 0);

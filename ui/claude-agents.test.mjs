@@ -227,9 +227,9 @@ test('a Needs you card whose agent asks carries the question and its options, an
   assert.equal(page.$$('#main .need-card .options').length, 1, 'the question shows once');
 });
 
-test('nothing about an agent says Orca, and where agents run is a choice in the Running agents group of Settings', async () => {
+test('nothing about an agent says Orca, and the Running agents group of Settings holds what they may do and spend', async () => {
   const { page } = await pageWith(chat(), 'agents');
   assert.doesNotMatch(page.$('#main').textContent, /Orca/);
   assert.equal(page.run('typeof inOrcaIfSplit'), 'undefined');
-  assert.equal(page.run("JSON.stringify(SETTING_GROUPS.find(([title]) => title === 'Running agents'))"), JSON.stringify(['Running agents', ['agentHost', 'agentPermissions', 'maxAgents', 'agentBudgetUsd']]));
+  assert.equal(page.run("JSON.stringify(SETTING_GROUPS.find(([title]) => title === 'Running agents'))"), JSON.stringify(['Running agents', ['agentPermissions', 'maxAgents', 'agentBudgetUsd']]));
 });

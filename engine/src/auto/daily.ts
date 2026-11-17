@@ -22,7 +22,7 @@ function takeSlot(key: string, nextAt: string, now: number): boolean {
   });
 }
 
-/** What Orca's daily automation did: look once a day, and run the review command only if the MR moved. */
+/** Look once a day, and run the review command only if the MR moved. */
 export async function dailyReReviews(ctx: AutoContext, ports: AutoPorts, watches: Record<string, Watch>): Promise<ReReviewReport> {
   const report: ReReviewReport = { reReviewed: [], errors: [] };
   for (const mr of ctx.mrs) {

@@ -12,7 +12,8 @@ import { agentCommands, kickoffLine } from '../agentprompts.js';
 import { checkoutFor, discoverCheckouts, noCheckout, type Checkout } from '../checkouts.js';
 import type { Discussion } from '../data/forge.js';
 import type { AgentSpec } from '../agents/host.js';
-import { agentStateOn, launchHost, listWorkspaceAgents, listWorktrees, removeWorktree } from '../agents/index.js';
+import { claudeHost } from '../agents/claude.js';
+import { agentStateOn, listWorkspaceAgents, listWorktrees, removeWorktree } from '../agents/index.js';
 import { loadRuns, loadSettings, recordRun } from '../data/store.js';
 import { conflictBrief, fixBrief, fixKey } from '../fix.js';
 import { workspaceForReview } from '../gc.js';
@@ -27,7 +28,7 @@ const run = promisify(execFile);
 const root = (): string => workspaceRoot(loadSettings().workspaceRoot);
 
 export interface LaunchOutcome {
-  how: 'worktree' | 'terminal' | 'claude';
+  how: 'claude';
   handle?: string;
   path?: string;
   name?: string;
@@ -201,7 +202,7 @@ async function startFix(mr: Mr, checkout: string, brief: (path: string) => strin
     await run('git', ['-C', checkout, 'fetch', '--quiet', 'origin', mr.sourceBranch]);
     await run('git', ['-C', checkout, 'worktree', 'add', '--quiet', '-b', name, path, `origin/${mr.sourceBranch}`]);
     recordRun(journal, { worktreePath: path });
-    const started = await startAgent({ name, prompt: brief(path), title: `fix ${refNumber(mr)}`, kind: 'fix', mr: mrKey(mr), worktree: path, link: mr.webUrl });
+    const started = await startAgent({ name, prompt: brief(path), title: `fix ${refNumber(mr)}`, kind: 'fix', mr: mrKey(mr), worktree: path });
     recordRun(journal, { status: 'running', terminal: started.handle });
     return { how: started.how, handle: started.handle, path, name, ...(started.note ? { note: started.note } : {}) };
   } catch (e) {
@@ -212,7 +213,7 @@ async function startFix(mr: Mr, checkout: string, brief: (path: string) => strin
 
 // Every agent starts in the workspace root, where the workspace CLAUDE.md, settings and commands are.
 function startAgent(spec: Omit<AgentSpec, 'cwd'>): Promise<LaunchOutcome> {
-  return launchHost().start({ ...spec, cwd: root() });
+  return claudeHost.start({ ...spec, cwd: root() });
 }
 
 async function freeFixName(checkout: string, base: string): Promise<string> {

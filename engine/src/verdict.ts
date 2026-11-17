@@ -1,6 +1,6 @@
 import { setApproved } from './commands.js';
 import { forgeOf, needs } from './data/forge.js';
-import { agentWorking, type AgentTerminal, type Workspace } from './agents/host.js';
+import type { AgentTerminal, Workspace } from './agents/host.js';
 import { listAgentTerminals, listWorktrees, removeWorktree } from './agents/index.js';
 import { changeUnsent, forgetReviewHold, loadQueue, loadSettings, loadState, recordVerdict } from './data/store.js';
 import { workspaceForReview } from './gc.js';
@@ -78,5 +78,5 @@ async function reviewAgentWorking(mr: Mr, hosts: WorkspacePorts): Promise<boolea
   const handle = loadState().watches[mrKey(mr)]?.terminal;
   if (!handle) return false;
   const terminal = (await hosts.listAgentTerminals()).find((t) => t.handle === handle);
-  return terminal !== undefined && agentWorking(terminal);
+  return terminal !== undefined && terminal.working;
 }

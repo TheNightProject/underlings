@@ -18,7 +18,7 @@ type Mr = import('../types.js').Mr;
 after(() => rmSync(dir, { recursive: true, force: true }));
 beforeEach(() => resetState());
 
-const agent = (handle: string): AgentTerminal => ({ handle, title: '◐ claude', agent: 'claude', connected: true, orphaned: false });
+const agent = (handle: string): AgentTerminal => ({ handle, title: 'review', agent: 'claude', connected: true, orphaned: false, working: true });
 
 /** A head seen on an earlier poll with its pipeline done, so auto re-review takes it now. */
 function settledHead(key: string, sha: string): void {
@@ -97,7 +97,7 @@ test('a review a poll launches is not marked ended by the list that same poll wa
   setAuto('acme/engine!9', true);
   settledHead('acme/engine!9', 'moved');
   const fake = fakeWorld({ mrs: [mr({ iid: 9, author: 'alice', sha: 'moved' })] });
-  fake.ports.launch = (m, prompt) => startAutoReview(m, prompt, async () => ({ how: 'worktree', handle: 't-new', path: '/w' }));
+  fake.ports.launch = (m, prompt) => startAutoReview(m, prompt, async () => ({ how: 'claude', handle: 't-new', path: '/w' }));
   const input = { mrs: fake.world.mrs, me: 'frank', terminals: [], listedAt: Date.now() - MINUTE, claimBy: 'auto:t' };
   const report = await backgroundPoll(input, fencedPorts(() => true, fake.ports));
   assert.deepEqual(report.reReviewed, ['acme/engine!9']);
@@ -127,7 +127,7 @@ test('an agent is on an MR when its watch or its run names a live terminal', () 
   assert.equal(gone(mr({ iid: 1 })), false);
 });
 
-test('a finished agent Orca calls done stops blocking its MR; working, waiting, blocked or no state at all still blocks', () => {
+test('a finished agent stops blocking its MR; working, waiting, blocked or no state at all still blocks', () => {
   const watch = { key: 'acme/engine!1', projectPath: 'acme/engine', iid: 1, webUrl: '', auto: false, terminal: 'w1', seen: { sha: null, pipeline: null, notes: 0, approvals: 0 }, addedAt: '' };
   const onWith = (state?: string): boolean => agentOnFor({ [watch.key]: watch }, {}, [{ ...agent('w1'), ...(state ? { state } : {}) }])(mr({ iid: 1 }));
   assert.equal(onWith('done'), false);
@@ -141,7 +141,7 @@ test('a launch in flight from either front end counts as an agent on the MR', ()
   const listedAt = now - MINUTE;
   const run = (status: string, startedAt: number) => ({ key: 'acme/engine!1', webUrl: '', startedAt: new Date(startedAt).toISOString(), status, terminal: 't-unlisted' });
   const on = (r: ReturnType<typeof run>): boolean => agentOnFor({}, { [r.key]: r }, [], { listedAt, now })(mr({ iid: 1 }));
-  assert.equal(on(run('launching', now - MINUTE)), true, 'not back from Orca yet');
+  assert.equal(on(run('launching', now - MINUTE)), true, 'not back from its host yet');
   assert.equal(on(run('launching', now - 10 * MINUTE)), false, 'unless it has been longer than any launch takes');
   assert.equal(on(run('working', listedAt + 1)), true, 'back, but started since the list was taken');
   assert.equal(on(run('working', listedAt - 1)), false, 'started before it, and missing from it');
@@ -170,13 +170,13 @@ test('a Review pressed on one MR while full auto is launching on another is seen
   const [a, b] = [mr({ iid: 1 }), mr({ iid: 2 })];
   const fake = fakeWorld({ mrs: [a, b] });
   const agents: number[] = [];
-  const orca = async (m: Mr) => {
+  const host = async (m: Mr) => {
     agents.push(m.iid);
-    return { how: 'worktree' as const, handle: `t${agents.length}` };
+    return { how: 'claude' as const, handle: `t${agents.length}` };
   };
   fake.ports.launch = async (m, prompt) => {
-    if (m.iid === 1) await startAutoReview(b, 'by hand', orca);
-    return startAutoReview(m, prompt, orca);
+    if (m.iid === 1) await startAutoReview(b, 'by hand', host);
+    return startAutoReview(m, prompt, host);
   };
   const input = { mrs: fake.world.mrs, me: 'frank', terminals: [], listedAt: Date.now(), claimBy: 'auto:t' };
   const report = await backgroundPoll(input, fencedPorts(() => true, fake.ports));

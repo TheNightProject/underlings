@@ -14,7 +14,7 @@ export type ReviewPhase =
 export interface AgentState {
   /** The agent terminal is alive. */
   alive: boolean;
-  /** Mid-turn: said by its host, or read off an Orca terminal's spinning title glyph. */
+  /** Mid-turn, as its host says. */
   working: boolean;
   lastOutputAt?: number;
   /** Where the review is running, so a browser tab can open beside it. */

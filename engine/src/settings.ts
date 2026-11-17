@@ -23,7 +23,7 @@ export interface Settings {
   pollSeconds: number;
   /** Atlassian host for the ticket pane, e.g. `acme.atlassian.net`. Blank disables it. */
   jiraSite: string;
-  /** The folder agents start in, beside the repos. Blank means ORCA_WORKSPACE_ROOT, then wherever the tool was started. */
+  /** The folder agents start in, beside the repos. Blank means UNDERLINGS_CODE_FOLDER, then wherever the tool was started. */
   workspaceRoot: string;
   /** Days the leaderboard looks back. Longer costs more requests to build. */
   leaderboardDays: number;
@@ -38,7 +38,6 @@ export interface Settings {
   autoFooter: boolean;
   /** The kill switch. Not a row: `!` flips it from anywhere. */
   autoPaused: boolean;
-  agentHost: 'orca' | 'claude';
   /** auto lets Claude Code's auto mode approve what it judges safe; ask sends every action your allow list misses to you. */
   agentPermissions: 'auto' | 'ask';
   /** Blank means the built-in prompt; anything else is a slash command or prompt your own Claude Code knows. */
@@ -128,7 +127,7 @@ export const DEFAULT_SETTINGS: Settings = {
   mouse: true,
   pollSeconds: 90,
   jiraSite: process.env['UNDERLINGS_JIRA_SITE'] ?? process.env['JIRA_SITE'] ?? '',
-  workspaceRoot: process.env['ORCA_WORKSPACE_ROOT'] ?? '',
+  workspaceRoot: process.env['UNDERLINGS_CODE_FOLDER'] ?? '',
   leaderboardDays: 30,
   pointWeights: formatWeights(DEFAULT_WEIGHTS),
   fullAuto: '',
@@ -138,7 +137,6 @@ export const DEFAULT_SETTINGS: Settings = {
   autoSensitivePaths: '**/migrations/**, helm/**, **/auth/**, .gitlab-ci*',
   autoFooter: false,
   autoPaused: false,
-  agentHost: 'claude',
   agentPermissions: 'ask',
   agents: BUILT_IN_COMMANDS,
   maxAgents: 4,
@@ -484,13 +482,6 @@ export const SETTING_ROWS: SettingRow[] = [
     label: 'Auto footer',
     hint: 'says on each auto-posted comment that it went without being read first.',
     kind: 'toggle',
-  },
-  {
-    key: 'agentHost',
-    label: 'Agents run in',
-    hint: 'claude runs each agent as Claude Code in the background. orca opens it in an Orca terminal instead.',
-    kind: 'choice',
-    choices: [['claude', 'Claude Code'], ['orca', 'Orca terminals']],
   },
   {
     key: 'agentPermissions',

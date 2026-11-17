@@ -8,7 +8,7 @@ const SETTING_GROUPS = [
   ['Jira site', ['jiraSite']],
   ['Tickets', ['jira.projects', 'jira.defaultProject', 'jira.statuses', 'jira.doneStatuses', 'jira.issueType', 'jira.ticketTemplate', 'tickets.noQaPaths']],
   ['Leaderboard', ['leaderboardDays', 'pointWeights']],
-  ['Running agents', ['agentHost', 'agentPermissions', 'maxAgents', 'agentBudgetUsd']],
+  ['Running agents', ['agentPermissions', 'maxAgents', 'agentBudgetUsd']],
   ['Full auto guardrails', ['autoHoldSeconds', 'autoMaxComments', 'autoMaxDiffLines', 'autoSensitivePaths', 'autoFooter']],
   ['What reviews post as you', ['holdNote', 'postedFooter', 'autoFooterText']],
 ];

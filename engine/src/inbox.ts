@@ -1,7 +1,6 @@
 import type { RepoSpec } from './config.js';
 import { forgeOf, forges, GITLAB, isHeld, type Forge, type Todo } from './data/forge.js';
 import { githubRepos } from './data/github-forge.js';
-import { agentWorking } from './agents/host.js';
 import { listAgentTerminals } from './agents/index.js';
 import type { AgentTerminal } from './agents/host.js';
 import { amendRepoCache, loadQueue, loadRepoCache, loadSettings, loadState, saveRepoCache } from './data/store.js';
@@ -52,7 +51,7 @@ export function agentStates(terminals: AgentTerminal[]): Map<string, AgentState>
         t.handle,
         {
           alive: t.connected && !t.orphaned,
-          working: agentWorking(t),
+          working: t.working,
           ...(t.lastOutputAt !== undefined ? { lastOutputAt: t.lastOutputAt } : {}),
           ...(t.worktreePath ? { worktreePath: t.worktreePath } : {}),
         },

@@ -225,14 +225,13 @@ test('Settings links to Setup, and has the three agent commands, blank for the U
   assert.deepEqual(p.posts, [['/api/matrix/agent-commands', { agents: { kickoffCommand: '/start' } }], ['/api/matrix/agent-commands', { agents: { reviewCommand: '' } }]]);
 });
 
-test('Settings has a Running agents group: where they run and whether they ask are choices, with the limit and spend cap beside them', async () => {
+test('Settings has a Running agents group: whether they ask is a choice, with the limit and spend cap beside it', async () => {
   const choice = (key, label, value, choices) => ({ key, label, hint: 'auto lets an agent act without asking.', kind: 'choice', bounds: null, choices, value });
   const p = await page({
     settings: {
       ...SETTINGS,
       rows: [
         ...SETTINGS.rows,
-        choice('agentHost', 'Agents run in', 'claude', [['claude', 'Claude Code'], ['orca', 'Orca terminals']]),
         choice('agentPermissions', 'Agent permissions', 'ask', [['ask', 'Ask me'], ['auto', 'Auto']]),
         { key: 'maxAgents', label: 'Agents at once', hint: '0 means no limit.', kind: 'number', bounds: { step: 1, min: 0, max: 20 }, value: 4 },
         { key: 'agentBudgetUsd', label: 'Spend cap a run', hint: 'blank means no cap.', kind: 'text', bounds: null, value: '' },
@@ -245,7 +244,7 @@ test('Settings has a Running agents group: where they run and whether they ask a
   const titles = p.$$('#main .settings-group h2').map((h) => h.textContent);
   assert.deepEqual(titles.slice(0, 8), ['You', 'Setup', 'Features', 'Repos', 'Reviewing', 'Refresh every', 'Running agents', 'What reviews post as you']);
   const agents = p.$$('#main .settings-group').find((g) => g.querySelector('h2').textContent === 'Running agents');
-  assert.deepEqual(agents.querySelectorAll('.setting label').map((l) => l.textContent), ['Agents run in', 'Agent permissions', 'Agents at once', 'Spend cap a run']);
+  assert.deepEqual(agents.querySelectorAll('.setting label').map((l) => l.textContent), ['Agent permissions', 'Agents at once', 'Spend cap a run']);
   assert.equal(p.$('#set-agentPermissions-ask').getAttribute('aria-pressed'), 'true');
   assert.match(p.$('#main .settings-spend').textContent, /spend your Claude usage/);
   p.$('#set-agentPermissions-auto').click();

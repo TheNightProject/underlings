@@ -60,18 +60,18 @@ after(() => {
 });
 
 const REVIEW_WORKSPACE = { id: 'repo::/work::workspace:review', displayName: 'review-Engine-621', path: '/work', branch: '', isMainWorktree: false };
-let agentTitle = '✳ Claude Code';
+let agentWorking = false;
 
-function orcaStub() {
+function hostStub() {
   const removed: string[] = [];
-  const orca = {
+  const host = {
     listWorktrees: async () => [REVIEW_WORKSPACE],
     removeWorktree: async (id: string) => {
       removed.push(id);
     },
-    listAgentTerminals: async () => [{ handle: 'term-review', title: agentTitle, agent: 'claude', connected: true, orphaned: false }],
+    listAgentTerminals: async () => [{ handle: 'term-review', title: 'review !621', agent: 'claude', connected: true, orphaned: false, working: agentWorking }],
   };
-  return { orca, removed };
+  return { host, removed };
 }
 
 beforeEach(() => {
@@ -79,7 +79,7 @@ beforeEach(() => {
   calls.length = 0;
   liveStatus = 'NOT_APPROVED';
   holdErrors = [];
-  agentTitle = '✳ Claude Code';
+  agentWorking = false;
   saveSettings({ ...DEFAULT_SETTINGS, closeWorkspaceWhenDone: true });
   watchForReview(mr());
   recordReviewTerminal(KEY, 'term-review');
@@ -89,16 +89,16 @@ const recorded = (): string | undefined => loadState().verdicts?.[KEY]?.verdict;
 
 test('approving lifts a hold that is on now, and records the verdict', async () => {
   liveStatus = 'REQUESTED_CHANGES';
-  const { orca } = orcaStub();
-  const decision = await decide(mr({ mergeStatus: 'NOT_APPROVED' }), 'approve', { hosts: orca });
+  const { host } = hostStub();
+  const decision = await decide(mr({ mergeStatus: 'NOT_APPROVED' }), 'approve', { hosts: host });
   assert.equal(decision.liftedHold, true);
   assert.deepEqual(calls, ['fetch', 'approve', 'release', `note: ${RELEASE_NOTE_BARE}`]);
   assert.equal(recorded(), 'approved');
 });
 
 test('requesting changes holds the merge, says why, and records the verdict', async () => {
-  const { orca } = orcaStub();
-  const decision = await decide(mr(), 'changes', { hosts: orca });
+  const { host } = hostStub();
+  const decision = await decide(mr(), 'changes', { hosts: host });
   assert.equal(decision.liftedHold, false);
   assert.deepEqual(calls, ['hold', `note: ${CHANGES_NOTE}`]);
   assert.equal(recorded(), 'changes');
@@ -106,69 +106,69 @@ test('requesting changes holds the merge, says why, and records the verdict', as
 
 test('requesting changes makes the hold your verdict, so the review no longer owns it', async () => {
   noteReviewHold(KEY, 'head-1');
-  await decide(mr(), 'changes', { hosts: orcaStub().orca });
+  await decide(mr(), 'changes', { hosts: hostStub().host });
   assert.equal(loadState().reviewHolds?.[KEY], undefined);
 });
 
 test('a hold GitLab warns about but places still counts, and the warning is passed on', async () => {
   holdErrors = ['Reviewer not found'];
   liveStatus = 'REQUESTED_CHANGES';
-  const { orca } = orcaStub();
-  const decision = await decide(mr(), 'changes', { hosts: orca });
+  const { host } = hostStub();
+  const decision = await decide(mr(), 'changes', { hosts: host });
   assert.equal(decision.warning, 'Reviewer not found');
   assert.equal(recorded(), 'changes');
 });
 
 test('a change request GitLab refuses records nothing and closes nothing', async () => {
   holdErrors = ['You are not allowed to request changes'];
-  const { orca, removed } = orcaStub();
-  await assert.rejects(decide(mr(), 'changes', { hosts: orca }), /You are not allowed to request changes/);
+  const { host, removed } = hostStub();
+  await assert.rejects(decide(mr(), 'changes', { hosts: host }), /You are not allowed to request changes/);
   assert.equal(recorded(), undefined);
   assert.deepEqual(removed, []);
 });
 
 test('an MR you already approved is not approved twice, but the verdict is still recorded', async () => {
-  const { orca } = orcaStub();
-  await decide(mr({ approvedBy: [ME] }), 'approve', { me: ME, hosts: orca });
+  const { host } = hostStub();
+  await decide(mr({ approvedBy: [ME] }), 'approve', { me: ME, hosts: host });
   assert.deepEqual(calls, []);
   assert.equal(recorded(), 'approved');
 });
 
 test('deciding closes the review workspace once its agent has stopped', async () => {
-  const { orca, removed } = orcaStub();
-  const decision = await decide(mr(), 'approve', { hosts: orca });
+  const { host, removed } = hostStub();
+  const decision = await decide(mr(), 'approve', { hosts: host });
   assert.deepEqual(decision.workspace, { closed: true });
   assert.deepEqual(removed, [REVIEW_WORKSPACE.id]);
 });
 
 test('the workspace is kept while its agent works, and says so', async () => {
-  agentTitle = '◐ Claude Code';
-  const { orca, removed } = orcaStub();
-  const decision = await decide(mr(), 'approve', { hosts: orca });
+  agentWorking = true;
+  const { host, removed } = hostStub();
+  const decision = await decide(mr(), 'approve', { hosts: host });
   assert.deepEqual(decision.workspace, { closed: false, kept: 'its agent is still working' });
   assert.deepEqual(removed, []);
   assert.equal(recorded(), 'approved');
 });
 
-test('with tidying switched off nothing in Orca is touched', async () => {
+test('with tidying switched off no workspace is touched', async () => {
   saveSettings({ ...DEFAULT_SETTINGS, closeWorkspaceWhenDone: false });
   let asked = false;
   const touched = async (): Promise<never> => {
     asked = true;
-    throw new Error('Orca should not be asked');
+    throw new Error('the host should not be asked');
   };
   const decision = await decide(mr(), 'changes', { hosts: { listWorktrees: touched, removeWorktree: touched, listAgentTerminals: touched } });
   assert.deepEqual(decision.workspace, { closed: false });
   assert.equal(asked, false);
 });
 
-test('Orca refusing the removal is reported, and the verdict still stands', async () => {
-  const { orca } = orcaStub();
-  orca.removeWorktree = async () => {
-    throw new Error('orca worktree rm failed: workspace has uncommitted changes');
+test('a removal that fails is reported, and the verdict still stands', async () => {
+  const { host } = hostStub();
+  host.removeWorktree = async () => {
+    throw new Error('host worktree rm failed: workspace has uncommitted changes');
   };
-  const decision = await decide(mr(), 'approve', { hosts: orca });
-  assert.deepEqual(decision.workspace, { closed: false, kept: 'orca worktree rm failed: workspace has uncommitted changes' });
+  const decision = await decide(mr(), 'approve', { hosts: host });
+  assert.deepEqual(decision.workspace, { closed: false, kept: 'host worktree rm failed: workspace has uncommitted changes' });
   assert.equal(recorded(), 'approved');
 });
 

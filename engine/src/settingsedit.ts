@@ -98,7 +98,6 @@ function coerce(row: SettingRow, value: unknown): unknown {
   return text === undefined || !row.pattern || row.pattern.test(text) ? text : undefined;
 }
 
-// A command is typed into a terminal by the Orca fallback, where a newline would submit it early.
 function agentCommandsPatch(value: unknown): Partial<AgentCommands> | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const entries = Object.entries(value);
