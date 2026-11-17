@@ -25,13 +25,12 @@ beforeEach(() => {
   changeSettings((s) => ({ ...s, github: { ...DEFAULT_GITHUB, on: true } }));
 });
 
-test('GitHub says by flag what it cannot do yet: no log for another app\'s check, and no agents or changes to your own pull request', () => {
+test('GitHub says by flag what it cannot do yet: no log or retry for another app\'s check, no to-dos, no resolving a plain comment, and no agents yet', () => {
   assert.deepEqual(githubForge.caps, {
-    hold: true, withdrawApproval: true, rebase: false, autoMerge: false, jobLogs: 'actions', retry: false, todos: false, generalThreads: false, post: true, agents: false, ownMr: false,
+    hold: true, withdrawApproval: true, rebase: true, autoMerge: true, jobLogs: 'actions', retry: 'actions', todos: false, generalThreads: false, post: true, agents: false, ownMr: true,
   });
-  assert.throws(() => needs(githubForge, 'ownMr', 'change your own pull request from here yet'), { message: 'GitHub has no way to change your own pull request from here yet' });
-  assert.doesNotThrow(() => needs(githubForge, 'hold', 'hold a merge'));
-  assert.doesNotThrow(() => needs(githubForge, 'jobLogs', 'read a log'));
+  assert.throws(() => needs(githubForge, 'agents', 'launch an agent on it from here yet'), { message: 'GitHub has no way to launch an agent on it from here yet' });
+  for (const cap of ['hold', 'ownMr', 'jobLogs', 'retry'] as const) assert.doesNotThrow(() => needs(githubForge, cap, 'do it'));
 });
 
 test('a flag GitLab leaves out is one it can do, so the flags it always had read as they did', () => {
@@ -41,14 +40,9 @@ test('a flag GitLab leaves out is one it can do, so the flags it always had read
   }
 });
 
-test('every write GitHub cannot yet do says it comes in a later version, and asks GitHub nothing', async () => {
+test('the reads of one pull request\'s activity, which only the standup and the game ask, say they come in a later version, and ask GitHub nothing', async () => {
   const forge = forgeOf(REF);
-  const tries = [
-    forge.merge(REF, { sha: 'a', whenGreen: false } as never), forge.cancelAutoMerge(REF), forge.rebase(REF), forge.rebaseState(REF), forge.ready(REF),
-    forge.setReviewers(REF, ['trent']), forge.rerequest(REF, 'trent'), forge.retryJob(REF, 7001), forge.retryChecks(REF, 9001),
-  ];
-  const settled = await Promise.allSettled(tries);
-  assert.equal(settled.length, 9);
+  const settled = await Promise.allSettled([forge.brief(REF), forge.approvers(REF)]);
   for (const result of settled) {
     assert.equal(result.status, 'rejected');
     assert.match(String((result as PromiseRejectedResult).reason.message), /^GitHub: .+ from here comes in a later version\. Do it on GitHub for now$/);

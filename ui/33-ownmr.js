@@ -37,13 +37,17 @@ function rebasing(key, facts) {
 const branchChanging = (key) => rebasing(key, ownFactsFor(key)) || ui.busy.has('merge:' + key);
 
 // GitLab names only the first check that fails, and need_rebase only on fast-forward projects, so the branch says how far behind it is.
+// GitHub's Update branch merges the target in rather than rebasing, so it is called what GitHub calls it.
 function rebaseButton(r, facts) {
-  if (facts?.rebase?.state === 'running') return el('button', { disabled: true, title: 'GitLab is rebasing it' }, icon('clock'), 'Rebasing…');
+  const github = keyProvider(r.key) === 'github';
+  if (facts?.rebase?.state === 'running') return el('button', { disabled: true, title: github ? 'GitHub is updating the branch' : 'GitLab is rebasing it' }, icon('clock'), github ? 'Updating…' : 'Rebasing…');
   if (r.flags.conflict || !(facts?.behind > 0 || r.mergeStatus === 'NEED_REBASE')) return null;
   const id = 'rebase:' + r.key;
-  const onto = facts?.target ? ' onto ' + facts.target : ' on GitLab';
+  const onto = facts?.target ? (github ? ' with ' : ' onto ') + facts.target : ' on ' + forgeName(r.key);
   const behind = facts?.behind > 0 ? ', ' + plural(facts.behind, 'commit') + ' behind' : '';
-  return guarded(id, 'Rebase', 'git-branch', 'Rebase ' + refNumber(r) + onto + behind + '?', () => matrixAct('rebase', { key: r.key, expect: { sha: r.sha } }, id));
+  const label = github ? 'Update branch' : 'Rebase';
+  const ask = github ? 'Update the branch of ' + refNumber(r) : 'Rebase ' + refNumber(r);
+  return guarded(id, label, 'git-branch', ask + onto + behind + '?', () => matrixAct('rebase', { key: r.key, expect: { sha: r.sha } }, id));
 }
 
 function conflictsButton(r) {

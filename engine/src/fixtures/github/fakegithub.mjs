@@ -150,7 +150,8 @@ function graphqlAnswer(world, shape, { op, body }) {
     PrBranch: () => ({ repository: onePr(shape, v, (p) => ({ baseRefName: p.baseRefName ?? 'main', headRefOid: p.headRefOid })) }),
     PrThreads: () => ({ repository: onePr(shape, v, (p) => threadsOf(p)) }),
     PrChecks: () => ({ repository: checksOf(world, shape, v) }),
-    PrNode: () => ({ repository: onePr(shape, v, (p) => ({ id: `PR_fake${p.number}`, headRefOid: p.headRefOid })) }),
+    PrNode: () => ({ repository: onePr(shape, v, (p) => ({ id: prId(p), headRefOid: p.headRefOid })) }),
+    PrMerge: () => ({ repository: mergeFacts(shape, v) }),
   };
   const make = answers[op] ?? mutations(world, shape, v)[op];
   if (!make) return { status: 200, body: { errors: [{ message: `the fake GitHub has no query named ${op}` }] } };
@@ -195,6 +196,52 @@ function decide(p) {
   p.reviewDecision = latest.some((r) => r.state === 'CHANGES_REQUESTED') ? 'CHANGES_REQUESTED' : latest.some((r) => r.state === 'APPROVED') ? 'APPROVED' : 'REVIEW_REQUIRED';
 }
 
+const prId = (p) => `PR_fake_${p.repo}_${p.number}`;
+const METHODS = ['MERGE', 'SQUASH', 'REBASE'];
+const methodsOf = (repo) => repo.methods ?? METHODS;
+
+function mergeFacts(shape, v) {
+  const repo = shape.repoOf(`${v.owner}/${v.name}`);
+  if (!repo) return null;
+  const found = shape.find(`${v.owner}/${v.name}`, v.number);
+  const allowed = methodsOf(repo);
+  return {
+    viewerDefaultMergeMethod: repo.defaultMethod ?? allowed[0], mergeCommitAllowed: allowed.includes('MERGE'), squashMergeAllowed: allowed.includes('SQUASH'), rebaseMergeAllowed: allowed.includes('REBASE'),
+    pullRequest: found ? { id: prId(found) } : null,
+  };
+}
+
+function ownMutations(world, shape, v) {
+  const pr = (field) => {
+    const found = world.prs.find((p) => prId(p) === v.pr);
+    return found ?? new Refusal(field, `Could not resolve to a node with the global id of '${v.pr}'`, 'NOT_FOUND');
+  };
+  const autoMerge = () => {
+    const p = pr('enablePullRequestAutoMerge');
+    if (p instanceof Refusal) return p;
+    const repo = shape.repoOf(p.repo);
+    if (repo.autoMergeAllowed === false) return new Refusal('enablePullRequestAutoMerge', 'Auto merge is not allowed for this repository');
+    if (v.head !== p.headRefOid) return new Refusal('enablePullRequestAutoMerge', 'Head sha didn\'t match expected head sha');
+    if (!methodsOf(repo).includes(v.method)) return new Refusal('enablePullRequestAutoMerge', `${v.method.toLowerCase()} merges are not allowed on this repository`);
+    if ((p.mergeStateStatus ?? 'CLEAN') === 'CLEAN') return new Refusal('enablePullRequestAutoMerge', 'Pull request is in clean status');
+    p.autoMerge = { method: v.method };
+    return { enablePullRequestAutoMerge: { pullRequest: { autoMergeRequest: { enabledAt: now(world) } } } };
+  };
+  const cancel = () => {
+    const p = pr('disablePullRequestAutoMerge');
+    if (p instanceof Refusal) return p;
+    p.autoMerge = null;
+    return { disablePullRequestAutoMerge: { pullRequest: { autoMergeRequest: null } } };
+  };
+  const ready = () => {
+    const p = pr('markPullRequestReadyForReview');
+    if (p instanceof Refusal) return p;
+    p.isDraft = false;
+    return { markPullRequestReadyForReview: { pullRequest: { isDraft: false } } };
+  };
+  return { PrAutoMerge: autoMerge, PrCancelAutoMerge: cancel, PrReady: ready };
+}
+
 function mutations(world, shape, v) {
   const missing = (field, id) => new Refusal(field, `Could not resolve to a node with the global id of '${id}'`, 'NOT_FOUND');
   const reply = () => {
@@ -211,7 +258,7 @@ function mutations(world, shape, v) {
     found.thread.isResolved = isResolved;
     return { [field]: { thread: { isResolved } } };
   };
-  return { PrReply: reply, PrResolve: resolving('resolveReviewThread', true), PrUnresolve: resolving('unresolveReviewThread', false) };
+  return { PrReply: reply, PrResolve: resolving('resolveReviewThread', true), PrUnresolve: resolving('unresolveReviewThread', false), ...ownMutations(world, shape, v) };
 }
 
 const unprocessable = (message) => ({ status: 422, body: { message: 'Unprocessable Entity', errors: [message], documentation_url: 'https://docs.github.com/rest' } });
@@ -238,6 +285,7 @@ function writeAnswer(world, shape, { method, path, body }) {
   const parts = path.split('/').filter(Boolean);
   if (parts[0] !== 'repos' || parts.length < 6) return null;
   const repo = `${parts[1]}/${parts[2]}`;
+  if (parts[3] === 'actions' && shape.repoOf(repo)) return rerunAnswer(world, repo, method, parts.slice(4));
   const p = shape.repoOf(repo) && shape.find(repo, parts[4]);
   if (!p) return null;
   const route = `${method} ${parts[3]}/${parts.slice(5).map((part, n) => (n === 1 && /^\d+$/.test(part) ? ':id' : part)).join('/')}`;
@@ -246,6 +294,10 @@ function writeAnswer(world, shape, { method, path, body }) {
     'POST pulls/comments': () => lineComment(world, p, body),
     'POST pulls/reviews': () => submitReview(world, p, body),
     'PUT pulls/reviews/:id/dismissals': () => dismissReview(world, p, Number(parts[6]), body),
+    'PUT pulls/merge': () => mergeAnswer(world, shape, p, body),
+    'PUT pulls/update-branch': () => updateBranch(world, p, body),
+    'POST pulls/requested_reviewers': () => askReviewers(p, body, (asked) => [...new Set([...p.requested, ...asked])]),
+    'DELETE pulls/requested_reviewers': () => askReviewers(p, body, (dropped) => p.requested.filter((login) => !dropped.includes(login))),
   };
   return writes[route]?.() ?? null;
 }
@@ -287,6 +339,54 @@ function dismissReview(world, p, id, body) {
   review.dismissal = body.message;
   decide(p);
   return { body: restReview(review) };
+}
+
+const MERGEABLE = new Set(['CLEAN', 'UNSTABLE', 'HAS_HOOKS']);
+
+function mergeAnswer(world, shape, p, body) {
+  const repo = shape.repoOf(p.repo);
+  const method = String(body?.merge_method ?? 'merge').toUpperCase();
+  if (body?.sha && body.sha !== p.headRefOid) return { status: 409, body: { message: 'Head branch was modified. Review and try the merge again.' } };
+  if (!methodsOf(repo).includes(method)) return { status: 405, body: { message: `${method === 'MERGE' ? 'Merge commits are' : `${method.toLowerCase()} merges are`} not allowed on this repository.` } };
+  if ((p.state ?? 'OPEN') !== 'OPEN' || p.isDraft || !MERGEABLE.has(p.mergeStateStatus ?? 'CLEAN')) return { status: 405, body: { message: 'Pull Request is not mergeable' } };
+  Object.assign(p, { state: 'MERGED', mergedBy: world.viewer.login, mergedWith: method });
+  return { body: { sha: sha256(`${p.headRefOid}merged`).slice(0, 40), merged: true, message: 'Pull Request successfully merged' } };
+}
+
+/** GitHub merges the target in later; the fake does it at once, so the head has moved by the next read. */
+function updateBranch(world, p, body) {
+  if (body?.expected_head_sha && body.expected_head_sha !== p.headRefOid) return unprocessable('expected head sha didn\'t match current head ref.');
+  if (p.mergeable === 'CONFLICTING') return unprocessable('merge conflict between base and head');
+  if (p.mergeStateStatus !== 'BEHIND') return unprocessable('There are no new commits on the base branch.');
+  Object.assign(p, { headRefOid: sha256(`${p.headRefOid}updated`).slice(0, 40), mergeStateStatus: 'CLEAN' });
+  return { status: 202, body: { message: 'Updating pull request branch.', url: `https://github.com/${p.repo}/pull/${p.number}` } };
+}
+
+function askReviewers(p, body, change) {
+  const names = body?.reviewers ?? [];
+  if (names.includes(p.author)) return unprocessable('Review cannot be requested from pull request author.');
+  p.requested = change(names);
+  return { status: 201, body: { number: p.number, requested_reviewers: p.requested.map((login) => ({ login })), requested_teams: [] } };
+}
+
+/** Only an Actions job, or a run with a job that stopped, can be run again. */
+function rerunAnswer(world, repo, method, [kind, id, act]) {
+  if (method !== 'POST') return null;
+  const checks = world.prs.filter((p) => p.repo === repo).flatMap((p) => p.checks.filter((c) => c.runId && (c.slug ?? 'github-actions') === 'github-actions'));
+  const again = (c) => Object.assign(c, { status: 'QUEUED', conclusion: null, startedAt: null, completedAt: null });
+  if (kind === 'jobs' && act === 'rerun') {
+    const job = checks.find((c) => c.id === Number(id));
+    if (!job) return null;
+    again(job);
+    return { status: 201, text: '' };
+  }
+  if (kind === 'runs' && act === 'rerun-failed-jobs') {
+    const stopped = checks.filter((c) => c.runId === Number(id) && ['FAILURE', 'CANCELLED', 'TIMED_OUT', 'STARTUP_FAILURE'].includes(c.conclusion));
+    if (!stopped.length) return checks.some((c) => c.runId === Number(id)) ? { status: 403, body: { message: 'This workflow run has no failed jobs to re-run' } } : null;
+    stopped.forEach(again);
+    return { status: 201, text: '' };
+  }
+  return null;
 }
 
 const restReview = (r) => ({ id: r.id, node_id: `PRR_${r.id}`, user: { login: r.author }, body: r.body ?? '', state: r.state, submitted_at: r.createdAt });
@@ -370,10 +470,16 @@ function restAnswer(world, shape, { path }, url) {
   if (!shape.repoOf(repo)) return null;
   if (kind === 'pulls' && tail === 'files') return filesAnswer(shape, repo, id, url);
   if (kind === 'pulls' && tail === 'reviews') return reviewsAnswer(shape, repo, id, url);
+  if (kind === 'pulls' && tail === 'requested_reviewers') return requestedAnswer(shape, repo, id);
   if (kind === 'compare') return compareAnswer(world, repo, decodeURIComponent(parts.slice(4).join('/')));
   if (kind === 'contents') return contentsAnswer(world, repo, parts.slice(4).map(decodeURIComponent).join('/'), url.searchParams.get('ref'));
   if (kind === 'actions' && id === 'jobs' && parts[6] === 'logs') return logAnswer(world, parts[5]);
   return null;
+}
+
+function requestedAnswer(shape, repo, number) {
+  const found = shape.find(repo, number);
+  return found ? { body: { users: found.requested.map((login) => ({ login })), teams: [] } } : null;
 }
 
 function reviewsAnswer(shape, repo, number, url) {

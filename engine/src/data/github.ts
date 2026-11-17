@@ -223,8 +223,10 @@ export async function rest<T>(path: string, init: RequestInit = {}): Promise<T> 
   const res = await send(url, cached ? { ...init, headers: { ...(init.headers as Record<string, string>), 'If-None-Match': cached.etag } } : init);
   if (res.status === 304 && cached) return cached.body as T;
   if (!res.ok) throw await refusal(res, path);
-  if (res.status === 204) return undefined as T;
-  const body = (await res.json()) as T;
+  // A re-run answers 201 with nothing in it.
+  const text = res.status === 204 ? '' : await res.text();
+  if (!text) return undefined as T;
+  const body = JSON.parse(text) as T;
   keepEtag(url, res.headers.get('etag'), body);
   return body;
 }
