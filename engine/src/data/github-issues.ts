@@ -28,10 +28,9 @@ fragment issue on Issue {
   closedByPullRequestsReferences(first: 10, includeClosedPrs: false) { nodes { number repository { nameWithOwner } } }
 }`;
 
-const MINE_QUERY = `query MyIssues($assigned: String!, $authored: String!) {
+const MINE_QUERY = `query MyIssues($assigned: String!) {
   ${RATE}
   assigned: search(type: ISSUE, query: $assigned, first: ${SEARCH_FIRST}) { nodes { ...issue } }
-  authored: search(type: ISSUE, query: $authored, first: ${SEARCH_FIRST}) { nodes { ...issue } }
 }
 ${ISSUE_FIELDS}`;
 
@@ -185,14 +184,14 @@ function inRepos(key: string): boolean {
 
 const SEARCH_BASE = 'is:issue is:open archived:false sort:updated-desc';
 
-/** Open issues assigned to you or written by you, narrowed by GitHub repos, less those the Project calls finished; each read as fully as a view, bar its body. */
+/** Open issues assigned to you, as Jira's are, narrowed by GitHub repos, less those the Project calls finished; each read as fully as a view, bar its body. */
 export async function myIssues(limit = SEARCH_FIRST): Promise<TicketView[]> {
   const [data, on] = await Promise.all([
-    graphql<{ assigned: { nodes: (GhIssue | null)[] }; authored: { nodes: (GhIssue | null)[] } }>(MINE_QUERY, { assigned: `${SEARCH_BASE} assignee:@me`, authored: `${SEARCH_BASE} author:@me` }),
+    graphql<{ assigned: { nodes: (GhIssue | null)[] } }>(MINE_QUERY, { assigned: `${SEARCH_BASE} assignee:@me` }),
     projectBoard(),
   ]);
   const seen = new Map<string, GhIssue>();
-  for (const issue of [...issueNodes(data.assigned.nodes), ...issueNodes(data.authored.nodes)]) if (issue.repository && !seen.has(keyOf(issue))) seen.set(keyOf(issue), issue);
+  for (const issue of issueNodes(data.assigned.nodes)) if (issue.repository && !seen.has(keyOf(issue))) seen.set(keyOf(issue), issue);
   const done = new Set(finished());
   return [...seen.values()]
     .map((issue) => viewOf(issue, on))

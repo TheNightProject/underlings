@@ -836,8 +836,8 @@ line says whether it moved, was skipped because its status changed, or was refus
 
 ### GitHub Issues
 
-- **Your tickets** are your open issues, assigned to you or written by you, from one GraphQL
-  query of two searches, narrowed by **GitHub repos** as pull requests are. A key is
+- **Your tickets** are the open issues assigned to you, as in Jira, from one GraphQL search,
+  narrowed by **GitHub repos** as pull requests are. A key is
   `owner/repo#12`. An issue's parent issue is its epic, and the open pull requests that close it
   are its MRs, beside any MR that names it.
 - **The board** is a GitHub Project (v2), named under Ticket settings as **GitHub Project**, by

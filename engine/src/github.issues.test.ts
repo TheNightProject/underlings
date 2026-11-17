@@ -58,11 +58,12 @@ test('with tickets off, a read says why and asks GitHub nothing', async () => {
   assert.equal(h.fake.requests.length, 0);
 });
 
-test('your tickets are the open issues assigned to you or written by you, keyed owner/repo#12, less those the Project calls finished', async () => {
+test('your tickets are the open issues assigned to you, as in Jira, keyed owner/repo#12, less those the Project calls finished', async () => {
   const mine = await engine.fetchMyTickets();
   assert.deepEqual(keys(mine), ['acme-co/engine#4', 'acme-co/web#9', 'octo/api#30']);
   const search = h.fake.asked('MyIssues')[0]!.body.variables as Record<string, string>;
-  assert.deepEqual(search, { assigned: 'is:issue is:open archived:false sort:updated-desc assignee:@me', authored: 'is:issue is:open archived:false sort:updated-desc author:@me' });
+  assert.deepEqual(search, { assigned: 'is:issue is:open archived:false sort:updated-desc assignee:@me' });
+  assert.equal(mine.some((t) => t.key === 'octo/api#29'), false, 'one you only wrote is someone else\'s to do');
   const web9 = mine.find((t) => t.key === 'acme-co/web#9')!;
   assert.deepEqual([web9.summary, web9.status, web9.url, web9.labels, web9.prs], ['Token lookups are slow', 'In Progress', 'https://github.com/acme-co/web/issues/9', ['perf'], ['acme-co/web#12']]);
   assert.equal(mine.find((t) => t.key === 'acme-co/engine#4')?.status, 'No Status', 'on the Project with no Status set');

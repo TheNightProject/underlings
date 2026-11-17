@@ -170,7 +170,7 @@ function graphqlAnswer(world, shape, { op, body }) {
     PrChecks: () => ({ repository: checksOf(world, shape, v) }),
     PrNode: () => ({ repository: onePr(shape, v, (p) => ({ id: prId(p), headRefOid: p.headRefOid })) }),
     PrMerge: () => ({ repository: mergeFacts(shape, v) }),
-    MyIssues: () => ({ assigned: issueSearch(world, shape, v.assigned), authored: issueSearch(world, shape, v.authored) }),
+    MyIssues: () => ({ assigned: issueSearch(world, shape, v.assigned) }),
     IssueSearch: () => ({ search: issueSearch(world, shape, v.query, v.first) }),
     Issue: () => ({ repository: oneIssue(shape, v.owner, v.name, v.number, shape.issue) }),
     Issues: () => manyIssues(shape, v),
