@@ -4,7 +4,8 @@ import { githubRepos } from './data/github-forge.js';
 import { agentWorking } from './agents/host.js';
 import { listAgentTerminals } from './agents/index.js';
 import type { AgentTerminal } from './agents/host.js';
-import { loadQueue, loadRepoCache, loadSettings, loadState, saveRepoCache } from './data/store.js';
+import { amendRepoCache, loadQueue, loadRepoCache, loadSettings, loadState, saveRepoCache } from './data/store.js';
+import { labelRepos } from './data/shared.js';
 import { deriveFlags, sortForReview, type RowFlags } from './flags.js';
 import { moodForRow, type Mood } from './pulse.js';
 import { reviewPhase, reviewVerdict, type AgentState, type ReviewPhase, type ThreadSummary } from './review.js';
@@ -15,15 +16,32 @@ import { mrKey, type Mr, type QueuedComment, type Watch } from './types.js';
 
 const THREAD_CANDIDATES = 40;
 const THREAD_BATCH = 8;
+const MINE_EVERY_MS = 5 * 60_000;
 
-/** Discovered once, cached, then narrowed by settings. */
-export async function currentRepos(): Promise<RepoSpec[]> {
+let mineAskedAt = 0;
+
+/** Discovered once a day, cached, then narrowed by settings; a repo where an MR of yours opens since joins within minutes. */
+export async function currentRepos(now = Date.now()): Promise<RepoSpec[]> {
   let repos = loadRepoCache();
   if (!repos) {
     repos = await forgeOf(GITLAB).discoverRepos();
     saveRepoCache(repos);
+  } else if (now - mineAskedAt >= MINE_EVERY_MS) {
+    mineAskedAt = now;
+    repos = await withMine(repos);
   }
   return applyFilter(repos, loadSettings().repoFilter);
+}
+
+// Labelled afresh as a whole, as the next discovery would, so a newcomer never shares a label.
+async function withMine(repos: RepoSpec[]): Promise<RepoSpec[]> {
+  const known = new Set(repos.map((r) => r.path));
+  const fresh = (await forgeOf(GITLAB).myRepos().catch(() => [])).filter((path) => !known.has(path));
+  if (!fresh.length) return repos;
+  const labels = new Map(labelRepos([...known, ...fresh]).map((r) => [r.path, r.label]));
+  const joined = [...repos, ...fresh.map((path) => ({ path, label: path, openCount: 1 }))].map((r) => ({ ...r, label: labels.get(r.path) ?? r.label }));
+  amendRepoCache(joined);
+  return joined;
 }
 
 export function agentStates(terminals: AgentTerminal[]): Map<string, AgentState> {

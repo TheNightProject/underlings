@@ -313,6 +313,17 @@ test('typing a repo filter previews its matches and request rate, and the draft 
   assert.deepEqual(p.posts, [['/api/matrix/settings', { patch: { repoFilter: 'acme/eng' } }]]);
 });
 
+test('a pattern in Repos that matches no repo found yet is named, with how a repo comes to be found', async () => {
+  const p = await page({ settings: { ...SETTINGS, repos: { ...SETTINGS.repos, filter: 'acme,docs', unmatched: ['docs'] } } });
+  p.show(snapshot(), 'settings');
+  await p.settle();
+  assert.match(p.$('#main .repos').textContent, /“docs” matches no repo found yet\. A repo is found once it has an open MR; one of yours shows within minutes\./);
+  const quiet = await page();
+  quiet.show(snapshot(), 'settings');
+  await quiet.settle();
+  assert.doesNotMatch(quiet.$('#main .repos').textContent, /found yet/);
+});
+
 test('Look for repos again is one click', async () => {
   const p = await page();
   p.show(snapshot(), 'settings');

@@ -563,6 +563,12 @@ export function saveRepoCache(repos: RepoSpec[], file = REPO_CACHE_FILE): void {
   writeJson(file, { at: new Date().toISOString(), repos });
 }
 
+/** Rewrites the list without making it any younger, so the daily look for repos still comes when it would have. */
+export function amendRepoCache(repos: RepoSpec[], file = REPO_CACHE_FILE): void {
+  const cached = readJson<{ at: string } | null>(file, null);
+  writeJson(file, { at: cached?.at ?? new Date().toISOString(), repos });
+}
+
 export const loadGithubRepoCache = (): RepoSpec[] | null => loadRepoCache(GITHUB_REPO_CACHE_FILE);
 export const saveGithubRepoCache = (repos: RepoSpec[]): void => saveRepoCache(repos, GITHUB_REPO_CACHE_FILE);
 

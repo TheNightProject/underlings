@@ -10,6 +10,7 @@ import {
   NESTED_ROWS,
   requestRate,
   SETTING_ROWS,
+  unmatchedPatterns,
   type AgentCommands,
   type NestedGroup,
   type NestedKey,
@@ -138,13 +139,14 @@ export interface RepoMatch {
   perMinute: number;
   heavy: boolean;
   discoveredAt: string | null;
+  unmatched: string[];
 }
 
 export function repoMatch(filter: string, pollSeconds: unknown): RepoMatch {
   const { at, repos } = repoCache();
   const matched = applyFilter(repos, filter);
   const rate = requestRate(planBatches(matched).length, pollFor(pollSeconds));
-  return { total: repos.length, matching: matched.map((r) => r.path), ...rate, discoveredAt: at };
+  return { total: repos.length, matching: matched.map((r) => r.path), ...rate, discoveredAt: at, unmatched: unmatchedPatterns(repos, filter) };
 }
 
 function pollFor(value: unknown): number {

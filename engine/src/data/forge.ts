@@ -91,6 +91,8 @@ export interface Forge {
   me(): Promise<string>;
   myName(): Promise<string>;
   discoverRepos(): Promise<RepoSpec[]>;
+  /** The paths of the repos where an open MR is yours or asks for you. */
+  myRepos(): Promise<string[]>;
   listOpen(repos: RepoSpec[]): Promise<MrFetch>;
   todos(): Promise<Todo[]>;
   one(r: MrRef): Promise<Mr | null>;

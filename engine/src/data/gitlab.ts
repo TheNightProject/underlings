@@ -1204,6 +1204,19 @@ export async function fetchMrBrief(projectId: number, iid: number): Promise<MrBr
   return briefOf(await rest<RawMr>(`/projects/${projectId}/merge_requests/${iid}`));
 }
 
+const MINE_LISTED = 100;
+
+/** Every project with an open MR you wrote, are assigned or are asked to review, in one request. */
+export async function fetchMyRepoPaths(): Promise<string[]> {
+  const list = `(state: opened, first: ${MINE_LISTED}) { nodes { project { fullPath } } }`;
+  type Listed = { nodes: { project: { fullPath: string } | null }[] } | null;
+  const data = await gql<{ currentUser: Record<string, Listed> | null }>(
+    `query Mine { currentUser { authored: authoredMergeRequests${list} assigned: assignedMergeRequests${list} reviewing: reviewRequestedMergeRequests${list} } }`,
+  );
+  const paths = Object.values(data.currentUser ?? {}).flatMap((l) => l?.nodes ?? []).flatMap((n) => (n.project?.fullPath ? [n.project.fullPath] : []));
+  return [...new Set(paths)].sort();
+}
+
 export async function fetchMyMrs(state: 'opened' | 'merged', updatedAfter?: string): Promise<MrBrief[]> {
   const out: MrBrief[] = [];
   const since = updatedAfter ? `&updated_after=${encodeURIComponent(updatedAfter)}` : '';

@@ -208,6 +208,7 @@ function toRegExp(pattern: string): RegExp {
 }
 
 export interface Pattern {
+  text: string;
   negated: boolean;
   test: (path: string) => boolean;
 }
@@ -223,7 +224,7 @@ export function parseFilter(filter: string): Pattern[] {
       // A bare word is a substring, so `frontend` finds it wherever it sits in the tree.
       const expr = body.includes('*') || body.includes('/') ? body : `*${body}*`;
       const re = toRegExp(expr);
-      return { negated, test: (path: string) => re.test(path) };
+      return { text: body, negated, test: (path: string) => re.test(path) };
     });
 }
 
@@ -242,6 +243,11 @@ export function matchRepo(path: string, patterns: Pattern[]): boolean {
 export function applyFilter(repos: RepoSpec[], filter: string): RepoSpec[] {
   const patterns = parseFilter(filter);
   return repos.filter((r) => matchRepo(r.path, patterns));
+}
+
+/** What you asked for by name that none of the repos found is, such as a repo whose MRs opened after the look. */
+export function unmatchedPatterns(repos: RepoSpec[], filter: string): string[] {
+  return parseFilter(filter).filter((p) => !p.negated && !repos.some((r) => p.test(r.path))).map((p) => p.text);
 }
 
 export interface SettingRow {
