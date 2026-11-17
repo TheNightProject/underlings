@@ -1,6 +1,6 @@
 import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { configDir } from '../../lib/home.mjs';
+import { sharedConfigDir } from '../../lib/home.mjs';
 import { dateFormat, localeOf, machineZone } from '../../lib/clock.mjs';
 import { UNDER_TEST_RUNNER } from './data/store.js';
 
@@ -13,7 +13,7 @@ let read: { file: string; mtime: number; locale: Locale } | null = null;
 
 // The app's Settings keep it; a test that sets no file of its own must never read yours.
 function localeFile(): string | null {
-  return process.env['UNDERLINGS_LOCALE_FILE'] ?? (UNDER_TEST_RUNNER ? null : join(configDir(), 'locale.json'));
+  return process.env['UNDERLINGS_LOCALE_FILE'] ?? (UNDER_TEST_RUNNER ? null : join(sharedConfigDir(), 'locale.json'));
 }
 
 export function savedLocale(): Locale {

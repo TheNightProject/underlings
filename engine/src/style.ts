@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { configDir } from '../../lib/home.mjs';
+import { sharedConfigDir } from '../../lib/home.mjs';
 import { UNDER_TEST_RUNNER } from './data/store.js';
 
 export interface WritingStyle {
@@ -13,7 +13,7 @@ const oneLine = (value: unknown): string => (typeof value === 'string' ? value.r
 
 // The app's Settings keep the profile; a test that sets no file of its own must never read yours.
 function profileFile(): string | null {
-  return process.env['UNDERLINGS_PROFILE_FILE'] ?? (UNDER_TEST_RUNNER ? null : join(configDir(), 'profile.json'));
+  return process.env['UNDERLINGS_PROFILE_FILE'] ?? (UNDER_TEST_RUNNER ? null : join(sharedConfigDir(), 'profile.json'));
 }
 
 export function writingStyle(): WritingStyle {

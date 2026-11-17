@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { startHelper } from '../lib/apphelper.mjs';
-import { configDir, logsDir, migrateHome, OLD_APP_NAME } from '../lib/home.mjs';
+import { logsDir, migrateHome, OLD_APP_NAME, sharedConfigDir } from '../lib/home.mjs';
 import { APP_ID, APP_NAME, FOLDER } from '../lib/product.mjs';
 import { createHost, heldByOurWorker, nextFreePort, readConfig } from './host.mjs';
 import { keptBounds } from './bounds.mjs';
@@ -34,7 +34,7 @@ const MOVE_FAILED = MOVE ? await moveToOwnName(MOVE) : null;
 // Before the single instance lock, the first thing to write in the app's own folder, so the move still finds it empty.
 const MOVED = migrateHome({ parts: ['config', 'state', 'logs', 'appData'], userData: app.getPath('userData') });
 // $HOME, which Electron's own paths ignore, so the main process reads the config and writes the log the worker does.
-const CONFIG_FILE = join(configDir(), 'config.json');
+const CONFIG_FILE = join(sharedConfigDir(), 'config.json');
 const LOG_DIR = logsDir();
 const BADGE_MS = 10_000;
 const QUIT_WAIT_MS = 3000;
