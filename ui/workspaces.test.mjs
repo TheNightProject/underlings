@@ -47,6 +47,7 @@ test('the switcher names this workspace, counts what waits elsewhere, and switch
   assert.equal(page.$('#switcher').hidden, false);
   assert.equal(button.querySelector('.ws-name').textContent, 'Work');
   assert.equal(button.querySelector('.count').textContent, '3', 'only the other workspaces\' count');
+  assert.doesNotMatch(page.$('#switcher').textContent, /null/);
   button.click();
   const items = page.$$('.switcher-item[role="menuitemradio"]');
   assert.deepEqual(items.map((i) => [i.dataset.id, i.getAttribute('aria-checked')]), [['default', 'true'], ['side-project', 'false'], ['oss', 'false']]);

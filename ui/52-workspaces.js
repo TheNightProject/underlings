@@ -18,7 +18,7 @@ function renderSwitcher() {
   if (node.hidden) return node.replaceChildren();
   const box = workspacesBox();
   const elsewhere = list.filter((w) => !w.here).reduce((n, w) => n + w.count, 0);
-  node.replaceChildren(
+  node.replaceChildren(...[
     el('button', { id: 'switcher-button', class: 'switcher-button', 'aria-expanded': String(box.open), 'aria-haspopup': 'menu', title: 'Switch workspace', onclick: () => { box.open = !box.open; render(true); } },
       workspaceDot(here), el('span', { class: 'ws-name' }, here.name),
       elsewhere ? el('span', { class: 'count hot', title: elsewhere + ' waiting on you in other workspaces' }, String(elsewhere)) : null,
@@ -26,7 +26,8 @@ function renderSwitcher() {
     box.open ? el('div', { class: 'switcher-menu', role: 'menu' },
       list.map((w) => el('button', { role: 'menuitemradio', 'aria-checked': String(w.here), class: 'switcher-item', 'data-id': w.id, onclick: () => switchWorkspace(w) },
         workspaceDot(w), el('span', { class: 'ws-name' }, w.name), w.count ? el('span', { class: 'count hot' }, String(w.count)) : null, w.state === 'running' ? null : el('span', { class: 'meta' }, w.state))),
-      el('a', { class: 'switcher-item manage', ...inPage('#workspaces', () => { box.open = false; }) }, icon('settings'), 'Manage workspaces')) : null);
+      el('a', { class: 'switcher-item manage', ...inPage('#workspaces', () => { box.open = false; }) }, icon('settings'), 'Manage workspaces')) : null,
+  ].filter(Boolean));
 }
 
 async function switchWorkspace(w) {
@@ -58,7 +59,7 @@ function workspaceRow(w) {
     el('div', { class: 'foot' }, metaLine(w.account ? 'cswap account ' + w.account : 'default Claude login', 'port ' + w.port, w.id === 'default' ? 'the folders it always used' : 'workspaces/' + w.id)),
     el('div', { class: 'workspace-edit' },
       el('label', {}, 'Name ', el('input', { id: 'ws-name-' + w.id, value: draft.name, maxlength: 40, oninput: keep('name') })),
-      el('label', {}, 'cswap account ', el('input', { id: 'ws-account-' + w.id, value: draft.account, placeholder: 'default login', inputmode: 'numeric', size: 6, oninput: keep('account') })),
+      el('label', {}, 'cswap account ', el('input', { id: 'ws-account-' + w.id, value: draft.account, placeholder: 'default', inputmode: 'numeric', size: 8, oninput: keep('account') })),
       el('button', { id: 'ws-save-' + w.id, disabled: ui.busy.has('ws-update:' + w.id), onclick: () => save({ name: box.drafts[w.id]?.name ?? w.name, account: box.drafts[w.id]?.account ?? w.account }) }, icon('check'), 'Save'),
       chips(WORKSPACE_COLOURS.map((c) => [c, el('span', { class: 'ws-dot ws-' + c, title: c })]), w.colour, (colour) => save({ colour }), 'ws-colour-' + w.id + '-')),
     el('div', { class: 'actions' },
@@ -75,7 +76,7 @@ function workspaceCreate(list) {
   };
   return el('div', { class: 'workspace-create' },
     el('label', {}, 'Name ', el('input', { id: 'ws-new-name', value: draft.name, maxlength: 40, placeholder: 'Side project', oninput: keep('name') })),
-    el('label', {}, 'cswap account ', el('input', { id: 'ws-new-account', value: draft.account, placeholder: 'default login', inputmode: 'numeric', size: 6, oninput: keep('account') })),
+    el('label', {}, 'cswap account ', el('input', { id: 'ws-new-account', value: draft.account, placeholder: 'default', inputmode: 'numeric', size: 8, oninput: keep('account') })),
     el('div', { class: 'workspace-copy' }, el('span', { class: 'meta' }, 'Settings '),
       chips([[null, 'Start fresh'], ...list.map((w) => [w.id, 'Copy ' + w.name])], draft.copyFrom, (id) => { draft.copyFrom = id; render(true); }, 'ws-copy-')),
     el('p', { class: 'hint' }, 'A copy takes how the workspace reads and shows things, never its tokens, its history or its Setup.'),
