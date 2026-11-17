@@ -65,6 +65,8 @@ const terminals = new Map();
 if (!app.requestSingleInstanceLock()) app.exit(0);
 app.on('second-instance', reveal);
 app.on('activate', reveal);
+// The app lives in the menu bar, so closing or swapping its last window is never a quit.
+app.on('window-all-closed', () => {});
 app.on('before-quit', () => {
   quitting = true;
 });
@@ -224,18 +226,15 @@ function switchTo(workspace, url) {
   active = workspace.id;
   page = new URL(url);
   for (const { terminal } of terminals.values()) ['panel', 'window'].forEach((id) => terminal.detach(id));
-  if (termWin) {
-    termWin.destroy();
-    termWin = null;
-    shareClaudeState();
-  }
-  if (win) {
-    writeFileSync(WINDOW_FILE, JSON.stringify({ ...readSaved(WINDOW_FILE), ...win.getNormalBounds() }));
-    win.destroy();
-  }
+  const [oldWin, oldTermWin] = [win, termWin];
+  if (oldWin) writeFileSync(WINDOW_FILE, JSON.stringify({ ...readSaved(WINDOW_FILE), ...oldWin.getNormalBounds() }));
   startHidden = false;
   win = createWindow(url);
+  termWin = null;
   reveal();
+  oldTermWin?.destroy();
+  oldWin?.destroy();
+  if (oldTermWin) shareClaudeState();
   refreshTray();
   return { reused: false };
 }
