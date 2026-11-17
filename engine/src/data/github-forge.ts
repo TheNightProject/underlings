@@ -77,6 +77,7 @@ export const githubForge: Forge = {
   approvers: notYet('reading activity'),
   myEvents: none,
   myMrs: none,
+  myRepos: none,
   mergedIn: none,
   mergedMentioning: none,
   mergedBy: none,

@@ -106,6 +106,7 @@ const CONTRACT: Record<string, [() => Promise<unknown>, () => Promise<unknown>]>
   approvers: [() => gitlabForge.approvers(REF), () => gitlab.fetchApprovers(7, 88)],
   myEvents: [() => gitlabForge.myEvents('2026-11-01', '2026-11-03'), () => gitlab.fetchMyEvents('2026-11-01', '2026-11-03')],
   myMrs: [() => gitlabForge.myMrs('merged', '2026-11-01T00:00:00Z'), () => gitlab.fetchMyMrs('merged', '2026-11-01T00:00:00Z')],
+  myRepos: [() => gitlabForge.myRepos(), () => gitlab.fetchMyRepoPaths()],
   mergedIn: [() => gitlabForge.mergedIn('acme', '2026-11-01', '2026-11-02'), () => gitlab.fetchMergedMrs('acme', '2026-11-01', '2026-11-02')],
   boardMrs: [() => gitlabForge.boardMrs([REPO], '2026-11-01'), () => gitlab.fetchBoardMrs([REPO], '2026-11-01')],
   boardComments: [() => gitlabForge.boardComments(PROJECT, '2026-11-01', 2), () => gitlab.fetchCommentEvents(7, '2026-11-01', PROJECT.authors, 2)],

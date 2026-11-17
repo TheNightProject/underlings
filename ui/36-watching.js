@@ -366,10 +366,16 @@ function repoSummary(saved) {
       el('span', { class: 'meta' }, repos.perRefresh + (repos.perRefresh === 1 ? ' query' : ' queries') + ' a refresh, ' + repos.perMinute + ' a minute')),
     repos.heavy ? banner('That is more than GitLab will take for long. Narrow the filter or refresh less often, or GitLab will start refusing with 429s.', true) : null,
     repos.total ? null : banner('No repo list yet. Look for repos again to fetch one from GitLab.'),
+    repos.total && repos.unmatched?.length ? el('p', { class: 'hint' }, unmatchedWords(repos.unmatched)) : null,
     shown.length ? el('ul', { class: 'repo-list' }, shown.map((path) => el('li', {}, path))) : null,
     repos.matching.length > REPOS_SHOWN ? el('button', { class: 'linkish', onclick: () => { ui.settings.allRepos = !ui.settings.allRepos; render(true); } },
       ui.settings.allRepos ? 'Show fewer' : 'Show all ' + repos.matching.length) : null,
     el('div', { class: 'foot' }, el('span', { class: 'meta' }, plural(repos.total, 'repo') + ' found' + (repos.discoveredAt ? ' ' + ago(repos.discoveredAt) : '')), discoverButton()));
+}
+
+function unmatchedWords(names) {
+  const named = names.map((n) => '“' + n + '”').join(', ');
+  return named + (names.length === 1 ? ' matches' : ' match') + ' no repo found yet. A repo is found once it has an open MR; one of yours shows within minutes.';
 }
 
 function discoverButton() {
