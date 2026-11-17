@@ -121,7 +121,7 @@ function updateOffer(u) {
 
 function updatePlan(u) {
   const pull = u.channel === 'releases' ? 'Fast-forwards ' + u.repo + ' to ' + (u.target?.ref ?? 'the release') : 'Pulls main into ' + u.repo;
-  const then = { app: ', builds the app, then quits, puts the new build in place and opens it again.', dev: '. Then quit the app and run npm start again.', plugin: '. Then Reload loads it.' }[u.mode] ?? '.';
+  const then = { app: ', builds the app, then quits, puts the new build in place and opens it again.', dev: '. Then quit the app and run npm start again.' }[u.mode] ?? '.';
   return pull + ' and runs npm run setup and npm run build' + then + ' A checkout that is dirty or not on main is left as it is.';
 }
 
@@ -139,7 +139,7 @@ function updateJob(u) {
   if (!outcome) return null;
   if (outcome.refused) return banner(outcome.error, true);
   if (!outcome.ok) return [banner('The update stopped at ' + (outcome.step ?? 'its first step') + ': ' + outcome.error + '. This version keeps running.', true), printed];
-  return [banner(outcome.text, false, ' ', u.mode === 'plugin' ? reloadButton() : null), printed ? el('details', {}, el('summary', {}, 'What it printed'), printed) : null];
+  return [banner(outcome.text), printed ? el('details', {}, el('summary', {}, 'What it printed'), printed) : null];
 }
 
 function releaseNotes(data) {

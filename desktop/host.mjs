@@ -34,7 +34,7 @@ export const PAGE_MENU = [
 const KEPT_BANNERS = 50;
 const PORT_TRIES = 20;
 
-// The slice of Orca's plugin context the worker uses, plus `desktop`, which is how the worker knows it runs in the app.
+// What the worker is given: a log, its commands, and `desktop`, the windows, banners and links the app provides.
 export function createHost({ Notification, openExternal, window, logDir }) {
   const commands = new Map();
   const banners = new Set();
@@ -84,7 +84,6 @@ export function createHost({ Notification, openExternal, window, logDir }) {
   const ctx = {
     log,
     commands: { register: (id, handler) => commands.set(id, handler) },
-    host: { call: async () => undefined },
     desktop: { port: undefined, showPage: window.showPage, focus: window.focus, quit: window.quit, notify, openExternal: openLink, openArtifact: window.openArtifact, openArtifactCopy: window.openArtifactCopy, showOverlay: window.showOverlay, closeOverlay: window.closeOverlay, ...claudeWindow(window) },
   };
 
@@ -176,7 +175,7 @@ function isFree(port) {
   });
 }
 
-// A worker of this app, under any of its names, answers a request without its token in these words, which tells the Orca plugin apart from any other program.
+// A worker of this app, under any of its names, answers a request without its token in these words, which tells another copy apart from any other program.
 export async function heldByOurWorker(port) {
   const said = await fetch(`http://127.0.0.1:${port}/`).then((r) => r.text(), () => '');
   return said === 'missing token';

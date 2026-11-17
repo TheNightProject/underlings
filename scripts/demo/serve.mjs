@@ -130,7 +130,7 @@ async function main() {
   guardNetwork(world);
   const { default: activate, deactivate } = await import('../../worker.mjs');
   const logged = [];
-  await activate({ log: (text) => logged.push(text), commands: { register() {} }, host: { call: async () => undefined }, desktop: desktopStub() });
+  await activate({ log: (text) => logged.push(text), commands: { register() {} }, desktop: desktopStub() });
   const { MODULES } = await import('../../lib/actions.mjs');
   await ready();
   MODULES.selfupdate.stop();

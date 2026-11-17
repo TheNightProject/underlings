@@ -461,8 +461,7 @@
       "quiet": false,
       "quietFrom": "22:00",
       "quietTo": "07:00",
-      "weekends": false,
-      "clickable": false
+      "weekends": false
     },
     "latest": {
       "target": "needs-you",

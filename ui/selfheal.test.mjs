@@ -206,12 +206,12 @@ test('a page whose files changed waits for the toast of a write it just made to 
   assert.equal(reloads, 1);
 });
 
-test('only a worker.mjs newer than the running worker asks for the plugin to be turned off and on', async () => {
+test('only a worker.mjs newer than the running worker asks for the app to be opened again', async () => {
   const page = await openPage();
   page.show(snapshot({}, { worker: 1, started: 2 }));
   assert.doesNotMatch(page.$('#health').textContent, /Settings/);
   page.show(snapshot({}, { worker: 3, started: 2 }));
-  assert.match(page.$('#health').textContent, /The worker has changed\. In Orca, Settings, Plugins, turn Underlings off and on\./);
+  assert.match(page.$('#health').textContent, /The worker has changed\. Quit the app and open it again\./);
 });
 
 test('the very first GitLab error about the token shows the field to paste one, beside Retry and a link to Setup, and saves it', async () => {
