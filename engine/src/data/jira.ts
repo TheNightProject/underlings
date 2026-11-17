@@ -1,6 +1,7 @@
 import { listOf } from '../settings.js';
 import { KEY_PATTERN, PROJECT_KEY, TICKET_KEY } from '../ticketkeys.js';
 import { sectionPattern, ticketTemplate } from '../tickettemplate.js';
+import type { NewTicket, TicketView } from '../ticketsource.js';
 import type { Ticket } from '../types.js';
 import { runAcli, type AcliOptions } from './acli.js';
 import { loadSettings } from './store.js';
@@ -152,15 +153,6 @@ export async function ticketChildren(parent: string, limit = 8): Promise<Ticket[
   return searchIssues(`parent = ${parent} ORDER BY created DESC`, limit);
 }
 
-export interface TicketView extends Ticket {
-  type: string;
-  epic: boolean;
-  parent: { key: string; summary: string; epic: boolean } | null;
-  description: string;
-  /** Null while acli leaves out the transitions its JSON has room for, as every version so far does. */
-  transitions: string[] | null;
-}
-
 function transitionsOf(raw: RawIssue): string[] | null {
   if (!Array.isArray(raw.transitions)) return null;
   return [...new Set(raw.transitions.map((t) => t?.to?.name).filter((name): name is string => typeof name === 'string' && name.length > 0))];
@@ -202,17 +194,6 @@ function adfLines(node: AdfNode | null | undefined): string[] {
   const inner = (node.content ?? []).flatMap(adfLines);
   if (node.type === 'listItem') return ['- ', inner.join('').trimEnd(), '\n'];
   return BLOCKS.has(node.type) ? [...inner, '\n'] : inner;
-}
-
-export interface NewTicket {
-  project: string;
-  type?: string;
-  summary: string;
-  /** Plain text: lines that name a section become bold headings and lines starting "- " a list. */
-  description: string;
-  parent?: string;
-  /** An email, an account id, or `@me`. */
-  assignee?: string;
 }
 
 /** Each value is one argument joined to its flag by `=`, never a shell string, so none of it runs or reads as a flag. */
