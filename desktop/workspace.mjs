@@ -17,7 +17,11 @@ parent.on('message', ({ data }) => {
 async function start({ workerDir, workspace, init }) {
   const ctx = workerCtx({ port, init });
   // Before the worker's first import, as the engine reads where Claude Code keeps its config only once.
-  if (workspace.account) process.env.CLAUDE_CONFIG_DIR = await configDirOf(workspace.account, workerDir, ctx);
+  if (workspace.account) {
+    const dir = await configDirOf(workspace.account, workerDir, ctx);
+    if (dir) process.env.CLAUDE_CONFIG_DIR = dir;
+    else delete process.env.CLAUDE_CONFIG_DIR;
+  }
   worker = await import(pathToFileURL(join(workerDir, 'worker.mjs')).href);
   await worker.default(ctx);
   port.post({ t: 'started' });
@@ -28,7 +32,7 @@ async function configDirOf(account, workerDir, ctx) {
   const [{ adoptShellPath }, { accountConfigDir }, { stateDir }] = await Promise.all([lib('shell-env.mjs'), lib('claudesession.mjs'), lib('home.mjs')]);
   await adoptShellPath().catch((err) => ctx.log(`could not read the shell's PATH: ${err.message}`));
   const dir = await accountConfigDir(account, { shimDir: join(stateDir(), 'where') });
-  ctx.log(`runs as cswap account ${account}, from ${dir}`);
+  ctx.log(`runs as cswap account ${account}${dir ? `, from ${dir}` : ', which is the default login'}`);
   return dir;
 }
 
