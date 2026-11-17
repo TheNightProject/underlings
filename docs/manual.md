@@ -123,20 +123,22 @@ With GitHub off too, full auto has nothing to review, and says so.
 
 ## GitHub
 
-Your pull requests on GitHub sit in the same Merge requests list as your GitLab ones, read only
-for now: read one, its diff, reviews, checks and Actions logs here, and open it on GitHub to act
-on it. It is off until you switch it on in Setup or under Settings. Being signed in to `gh` never
-turns it on, and while it is off nothing is asked of GitHub.
+Your pull requests on GitHub sit in the same Merge requests list as your GitLab ones, and take
+the same actions: read one, its diff, reviews, checks and Actions logs, review it with an agent,
+post, approve, hold, merge and fix it from here. It is off until you switch it on in Setup or under
+Settings. Being signed in to `gh` never turns it on, and while it is off nothing is asked of GitHub.
 
 - **The token** is the first of one pasted in Setup (kept in `~/.config/underlings/github-token`,
   readable only by you), `GITHUB_TOKEN` or `GH_TOKEN` from your shell profile, and `gh auth
   token`, which is held in memory and never written. Setup says which is in use, who it is and its
   scopes: `repo` and `read:org` for a classic token or gh. A fine-grained token lists none, so give
-  it read access to pull requests, contents, checks, commit statuses and Actions; it covers one
-  owner. An organisation that enforces single sign-on answers with where to authorise the token,
+  it read access to contents, checks and commit statuses, and read and write access to pull
+  requests and Actions, which posting, merging and running jobs again need; it covers one owner. An organisation that enforces single sign-on answers with where to authorise the token,
   and Setup says so. Agents are never given it.
 - **Which pull requests** is **Involving me** by default: one search reads every open one you
-  wrote, are assigned, are asked to review or are mentioned in, whichever organisation it is in.
+  wrote, are assigned, are asked to review, are mentioned in or have reviewed, whichever
+  organisation it is in. Any review you send takes GitHub's request for it away, so a pull request
+  you have commented on stays in the list.
   **My organisations** also reads every open one in the repos pushed to in the last 90 days in
   your organisations. **GitHub repos** narrows either, as Repos does, over `owner/repo`.
 - **GitHub Enterprise Server** is the **GitHub API** setting, such as
@@ -145,11 +147,36 @@ turns it on, and while it is off nothing is asked of GitHub.
   GitHub does not count, a wait for `retry-after` or the reset, and no sleeping through a wait
   of more than a minute. Hover GitHub on the status line for how many requests are left.
 - **One list.** Each forge is read at once and has its own account, error banner and Needs you
-  card, so one failing leaves the other's rows. A GitHub row shows a mark and `owner/repo#12`, and
-  what GitHub cannot do here yet, posting, approving, holding, merging, retries and agents, is
-  hidden, with Full auto never taking a GitHub pull request. GitHub's states read as the codes
-  the page already shows: a pull request that branch rules block says so, one GitHub has not
-  yet worked out says it is checking, and a check from another app has a link in place of a log.
+  card, so one failing leaves the other's rows. A GitHub row shows a mark and `owner/repo#12`.
+  GitHub's states read as the codes the page already shows: a pull request that branch rules block
+  says so, one GitHub has not yet worked out says it is checking, and a check from another app has
+  a link in place of a log.
+- **Posting.** A finding on a line opens a review thread on that line of the head; one on the
+  change as a whole, or on a line the diff no longer shows, is a comment on the conversation, the
+  latter with its `path:line` first. A reply goes on its thread, and resolving is GitHub's own.
+  A review's words and a conversation comment are not threads on GitHub: a reply to one is a
+  comment of its own, and neither can be resolved.
+- **Approving and holding.** Approving is an approving review. A hold is a review that requests
+  changes, with the hold's reason as its text, so nothing else is posted; it blocks the merge
+  wherever the branch rules ask for reviews, as GitLab's does where approvals are required.
+  Lifting a hold, or taking an approval back, dismisses that review with the reason, which needs
+  write access, and on a protected branch that limits who may dismiss, to be one of them.
+  Approving over your own hold lifts it, as GitHub does.
+- **Your own pull requests.** **Merge** sends the head you saw and merges the way GitHub's own
+  button would: your last choice, or the repo's default, among the ways the repo allows. **Merge
+  when green** is GitHub's auto-merge, which the repo must allow, and cancelling turns it off.
+  **Update branch** stands in for Rebase: GitHub merges the target in, and the row waits until
+  the head moves. **Mark ready**, choosing reviewers and asking again work as on GitLab; someone
+  who has reviewed stays a reviewer and is asked again only by **Ask again**.
+- **Checks.** A failed or cancelled Actions job runs again on its own, and **Retry failed jobs**
+  runs again the failed jobs of every Actions run on the head. A check from another app is run
+  again only on the page it links to.
+- **Agents and full auto.** Review agents read a pull request with `gh`, so it must be signed in,
+  and queue what they find as GitHub's. A fix agent cuts its checkout from `origin/<branch>`, so a
+  pull request from a fork is not fixed here, and replies, resolves and asks again with `gh`. Full
+  auto takes a pull request by its author's row in People, or on request when it asks for your
+  GitHub login, and the People table lists pull request authors too. A login on one forge is never
+  taken for you on the other, so a name shared by two people is one row in People for both.
 - **References.** `owner/repo#12` and pull request links open the drawer, in a description and
   in Claude Code's terminal; there `repo#12` links when one known GitHub repo has that name, and
   a bare `#12` never does. Inside a pull request, `#12` is that repo's.
@@ -678,7 +705,7 @@ capturing what each review agent has on screen.
   every 30 s, and no worker sends it meanwhile.
 - **Pause** stops launches, sends and auto re-review at the next item. Run output is still read.
 - **Readiness.** It drives only with an engine build that has the lock, a Code folder to launch
-  into, and `GITLAB_TOKEN`. The strip at the foot of the rail says which is missing, and the Full
+  into, and `GITLAB_TOKEN` or GitHub switched on. The strip at the foot of the rail says which is missing, and the Full
   auto view offers the fix. `UNDERLINGS_STATE_DIR` and `GITLAB_TOKEN` are read from your shell profile
   before the engine loads, so every copy of the app shares one state folder.
 - **Reload and deactivate.** A code reload hands the same seat to the new code, so the lock never
@@ -1470,7 +1497,8 @@ GitLab and the review engine are stubbed (`lib/testkit.mjs` is the stand-in engi
 between runs for real, the worker included, on a port of its own with a temporary home folder.
 GitHub is faked the same way, by `engine/src/fixtures/github/fakegithub.mjs`: it answers REST and
 GraphQL from a world, records every call, injects the failures GitHub makes (401, single sign-on,
-limits, 429, 502) and refuses any other host. `gh` is never run for real: the engine tests point
+limits, 429, 502) and refuses any other host. It takes the writes too, posting, reviews and
+dismissals, merges, auto-merge, Update branch, reviewers and re-runs, and refuses them as GitHub does. `gh` is never run for real: the engine tests point
 `UNDERLINGS_GH_BIN` at a stand-in and the worker tests fake `child_process`. `npm run test:golden`
 runs the GitLab baselines twice, the second with GitHub switched on against a GitHub with nothing
 for you, and neither run may write them.
