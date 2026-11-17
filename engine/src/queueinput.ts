@@ -1,8 +1,13 @@
+import { keyParts, keysInText } from './refs.js';
 import { SEVERITY_ORDER, type QueuedComment, type ReplyOutcome, type Severity } from './types.js';
 
 export type QueueInput = Omit<QueuedComment, 'id' | 'createdAt' | 'status'>;
 
 const OUTCOMES: ReplyOutcome[] = ['fixed', 'not-fixed', 'disagree'];
+
+// GitHub's forge reads a pull request by its path alone, so the repo's number is not asked of an agent that only has the link.
+const fromGithub = (c: Record<string, unknown>): boolean =>
+  c['provider'] === 'github' || (c['provider'] === undefined && keysInText(String(c['webUrl'] ?? '')).some((key) => keyParts(key)?.provider === 'github'));
 
 function severityOf(raw: unknown, kind: string, index: number): Severity {
   if (kind === 'reply' && (raw === undefined || raw === '')) return 'MINOR';
@@ -25,12 +30,14 @@ export function queueInput(item: unknown, index: number): QueueInput {
   if (kind !== 'finding' && kind !== 'reply') {
     throw new Error(`queue item ${index}: an agent cannot queue a ${kind}`);
   }
-  const required = ['projectPath', 'projectId', 'iid', 'body', ...(kind === 'finding' ? ['severity'] : [])];
+  const github = fromGithub(c);
+  const required = ['projectPath', ...(github ? [] : ['projectId']), 'iid', 'body', ...(kind === 'finding' ? ['severity'] : [])];
   const missing = required.filter((k) => c[k] === undefined || c[k] === null || c[k] === '');
   if (missing.length) throw new Error(`queue item ${index}: missing ${missing.join(', ')}`);
   return {
+    ...(github ? { provider: 'github' as const } : {}),
     projectPath: String(c['projectPath']),
-    projectId: Number(c['projectId']),
+    projectId: Number(c['projectId'] ?? 0),
     iid: Number(c['iid']),
     webUrl: String(c['webUrl'] ?? ''),
     severity: severityOf(c['severity'], kind, index),

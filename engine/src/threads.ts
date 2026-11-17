@@ -12,6 +12,7 @@ export function threadAsComment(discussion: Discussion, mr: Mr): QueuedComment {
   const match = SEVERITY_IN_BODY.exec(first?.body ?? '');
   return {
     id: `thread:${discussion.id}`,
+    ...(mr.provider ? { provider: mr.provider } : {}),
     projectPath: mr.projectPath,
     projectId: mr.projectId,
     iid: mr.iid,

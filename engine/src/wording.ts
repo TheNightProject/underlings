@@ -10,3 +10,5 @@ export const ATTRIBUTION =
   "_Found with Claude's assistance, read and verified by me before posting._";
 
 export const AUTO_FOOTER = '_Sent by my review agent without my reading it first._';
+
+export const CHANGES_NOTE = "My comments are up and need addressing, so I've requested changes until they are.";

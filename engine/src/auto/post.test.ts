@@ -90,7 +90,7 @@ test('posting everything never sends a verdict along with it', async () => {
     { ...base, severity: 'MINOR', body: 'a finding' },
     { ...base, severity: 'MINOR', kind: 'verdict', verdict: 'approve', body: 'Approve', auto: mark },
   ]);
-  const results = await postAllFor('acme/engine', 621);
+  const results = await postAllFor({ projectPath: 'acme/engine', iid: 621 });
   assert.equal(results.length, 1);
   assert.ok(!posted('/approve'));
   assert.equal(loadQueue().find((c) => c.kind === 'verdict')?.status, 'pending');

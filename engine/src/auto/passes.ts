@@ -39,6 +39,7 @@ function queueVerdict(pass: AutoPass, mr: Mr, ctx: AutoContext, now: number): vo
   if (!verdict) return;
   addToQueue([
     {
+      ...(mr.provider ? { provider: mr.provider } : {}),
       projectPath: mr.projectPath,
       projectId: mr.projectId,
       iid: mr.iid,

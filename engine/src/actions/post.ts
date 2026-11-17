@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { renderCommentBody, type SendHow } from '../comment.js';
 import { forgeOf, needs } from '../data/forge.js';
 import { changeUnsent, claimToSend, heldClaim, loadQueue, loadSettings, recordVerdict, updateQueueItem, type Claim } from '../data/store.js';
+import type { MrRef } from '../refs.js';
 import { footersOf } from '../settings.js';
 import { mrKey, type QueuedComment } from '../types.js';
 
@@ -78,11 +79,8 @@ export async function postOne(comment: QueuedComment, how: SendHow = {}): Promis
 }
 
 /** Verdicts are left out: posting everything should never approve as a side effect. */
-export async function postAllFor(projectPath: string, iid: number): Promise<PostOutcome[]> {
-  const queue = loadQueue().filter(
-    (c) =>
-      c.status === 'pending' && c.projectPath === projectPath && c.iid === iid && c.kind !== 'verdict',
-  );
+export async function postAllFor(ref: MrRef): Promise<PostOutcome[]> {
+  const queue = loadQueue().filter((c) => c.status === 'pending' && mrKey(c) === mrKey(ref) && c.kind !== 'verdict');
   const results: PostOutcome[] = [];
   for (const comment of queue) {
     results.push(await postOne(comment));

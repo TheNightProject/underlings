@@ -5,10 +5,11 @@ import { listAgentTerminals, listWorktrees, removeWorktree } from './agents/inde
 import { changeUnsent, forgetReviewHold, loadQueue, loadSettings, loadState, recordVerdict } from './data/store.js';
 import { workspaceForReview } from './gc.js';
 import { mrKey, type Mr } from './types.js';
+import { CHANGES_NOTE } from './wording.js';
 
 export type Verdict = 'approve' | 'changes';
 
-export const CHANGES_NOTE = "My comments are up and need addressing, so I've requested changes until they are.";
+export { CHANGES_NOTE };
 
 export interface WorkspacePorts {
   listWorktrees: () => Promise<Workspace[]>;
@@ -55,9 +56,9 @@ async function approve(mr: Mr, me: string | undefined): Promise<{ liftedHold: bo
 async function requestChanges(mr: Mr): Promise<{ liftedHold: false; warning?: string }> {
   const forge = forgeOf(mr);
   needs(forge, 'hold', 'hold a merge');
-  const { status, warning } = await forge.hold(mr, true);
+  const { status, warning, said } = await forge.hold(mr, true, CHANGES_NOTE);
   if (warning && (status ?? '').toUpperCase() !== 'REQUESTED_CHANGES') throw new Error(warning);
-  await forge.note(mr, CHANGES_NOTE).catch(() => undefined);
+  if (!said) await forge.note(mr, CHANGES_NOTE).catch(() => undefined);
   return warning ? { liftedHold: false, warning } : { liftedHold: false };
 }
 

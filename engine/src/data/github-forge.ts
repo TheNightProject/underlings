@@ -16,6 +16,7 @@ import {
   fetchPrSince,
   listOpenPrs,
 } from './github-prs.js';
+import { postPrComment, postPrFinding, replyOnPr, resolveOnPr, setPrApproval, setPrHold } from './github-writes.js';
 import { threadStateOf } from './shared.js';
 
 const notYet = (what: string) => async (): Promise<never> => {
@@ -24,20 +25,20 @@ const notYet = (what: string) => async (): Promise<never> => {
 
 const none = async (): Promise<never[]> => [];
 
-/** Reads only, for now: every write says so rather than half working. */
+/** A write it cannot do yet says so rather than half working. */
 export const githubForge: Forge = {
   id: 'github',
   name: 'GitHub',
   caps: {
-    hold: false,
-    withdrawApproval: false,
+    hold: true,
+    withdrawApproval: true,
     rebase: false,
     autoMerge: false,
     jobLogs: 'actions',
     retry: false,
     todos: false,
     generalThreads: false,
-    post: false,
+    post: true,
     agents: false,
     ownMr: false,
   },
@@ -60,12 +61,12 @@ export const githubForge: Forge = {
   jobLog: (r, jobId, lines) => fetchPrJobLog(r, jobId, lines),
   retryJob: notYet('retrying a job'),
   retryChecks: notYet('retrying checks'),
-  postFinding: notYet('posting a finding'),
-  reply: notYet('replying'),
-  resolve: notYet('resolving a thread'),
-  note: notYet('commenting'),
-  approve: notYet('approving'),
-  hold: notYet('holding a merge'),
+  postFinding: (item, how) => postPrFinding(item, how),
+  reply: (r, threadId, body) => replyOnPr(r, threadId, body),
+  resolve: (r, threadId, resolved) => resolveOnPr(r, threadId, resolved),
+  note: (r, body) => postPrComment(r, body),
+  approve: (r, on) => setPrApproval(r, on),
+  hold: (r, on, note) => setPrHold(r, on, note),
   merge: notYet('merging'),
   cancelAutoMerge: notYet('cancelling auto-merge'),
   rebase: notYet('updating a branch'),

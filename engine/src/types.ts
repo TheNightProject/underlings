@@ -180,6 +180,8 @@ export interface AutoMark {
 
 export interface QueuedComment {
   id: string;
+  /** Absent means GitLab, as on an MR. */
+  provider?: 'github';
   projectPath: string;
   projectId: number;
   iid: number;

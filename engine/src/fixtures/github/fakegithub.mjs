@@ -34,7 +34,7 @@ export function fakeGithub(world = emptyWorld(), { api = API, web = WEB } = {}) 
     requests.push(entry);
     const failure = takeFailure(entry);
     if (failure) return reply(failure.status, failure.body ?? { message: 'failed' }, { ...rateHeaders(world), ...failure.headers });
-    const route = entry.path === '/graphql' ? graphqlAnswer(world, shape, entry) : restAnswer(world, shape, entry, url);
+    const route = entry.path === '/graphql' ? graphqlAnswer(world, shape, entry) : entry.method === 'GET' ? restAnswer(world, shape, entry, url) : writeAnswer(world, shape, entry);
     const answer = route ?? { status: 404, body: { message: 'Not Found', documentation_url: 'https://docs.github.com/rest' } };
     return respond(answer, entry);
   }
@@ -68,7 +68,7 @@ export function fakeGithub(world = emptyWorld(), { api = API, web = WEB } = {}) 
 const matches = (match, entry) => (match.op ? entry.op === match.op : entry.path === match.path) && (!match.method || entry.method === match.method);
 
 function operationOf(body) {
-  return typeof body?.query === 'string' ? /^\s*query\s+(\w+)/.exec(body.query)?.[1] ?? 'anonymous' : null;
+  return typeof body?.query === 'string' ? /^\s*(?:query|mutation)\s+(\w+)/.exec(body.query)?.[1] ?? 'anonymous' : null;
 }
 
 function bodyOf(raw) {
@@ -99,14 +99,15 @@ function reply(status, body, headers = {}) {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
 }
 
+const latestBy = (reviews) => {
+  const last = new Map();
+  for (const r of reviews) last.set(r.author, r);
+  return [...last.values()];
+};
+
 function shapes(world, web) {
   const find = (path, number) => world.prs.find((p) => p.repo === path && p.number === Number(number));
   const repoOf = (path) => world.repos.find((r) => `${r.owner}/${r.name}` === path);
-  const latestBy = (reviews) => {
-    const last = new Map();
-    for (const r of reviews) last.set(r.author, r);
-    return [...last.values()];
-  };
   const author = (login) => ({ login, __typename: login.endsWith('[bot]') ? 'Bot' : 'User' });
   const review = (r) => ({ state: r.state, author: { login: r.author } });
   const pr = (p) => {
@@ -149,23 +150,159 @@ function graphqlAnswer(world, shape, { op, body }) {
     PrBranch: () => ({ repository: onePr(shape, v, (p) => ({ baseRefName: p.baseRefName ?? 'main', headRefOid: p.headRefOid })) }),
     PrThreads: () => ({ repository: onePr(shape, v, (p) => threadsOf(p)) }),
     PrChecks: () => ({ repository: checksOf(world, shape, v) }),
+    PrNode: () => ({ repository: onePr(shape, v, (p) => ({ id: `PR_fake${p.number}`, headRefOid: p.headRefOid })) }),
   };
-  const make = answers[op];
+  const make = answers[op] ?? mutations(world, shape, v)[op];
   if (!make) return { status: 200, body: { errors: [{ message: `the fake GitHub has no query named ${op}` }] } };
-  return { body: { data: { rateLimit: rate(world), ...make() } } };
+  const data = make();
+  if (data instanceof Refusal) return { body: { data: { [data.field]: null }, errors: [{ type: data.type, message: data.message }] } };
+  return { body: { data: { rateLimit: rate(world), ...data } } };
 }
+
+class Refusal {
+  constructor(field, message, type = 'UNPROCESSABLE') {
+    Object.assign(this, { field, message, type });
+  }
+}
+
+const now = (world) => new Date(world.clock()).toISOString();
+const nextId = (world) => {
+  world.nextId = (world.nextId ?? 90_000) + 1;
+  return world.nextId;
+};
+
+function threadById(world, id) {
+  for (const p of world.prs) {
+    const thread = p.threads.find((t) => t.id === id);
+    if (thread) return { p, thread };
+  }
+  return null;
+}
+
+/** Every comment GitHub files on a line sits in a review of its own, as a lone comment or a reply does. */
+function fileReview(world, p, state, body = '') {
+  const review = { id: nextId(world), author: world.viewer.login, state, body, createdAt: now(world) };
+  p.reviews.push(review);
+  p.requested = p.requested.filter((login) => login !== world.viewer.login);
+  decide(p);
+  return review;
+}
+
+// Only a pull request whose repo asks for reviews has a decision, as on GitHub.
+function decide(p) {
+  if (p.reviewDecision == null) return;
+  const latest = latestBy(p.reviews.filter((r) => r.state !== 'COMMENTED' && r.state !== 'DISMISSED'));
+  p.reviewDecision = latest.some((r) => r.state === 'CHANGES_REQUESTED') ? 'CHANGES_REQUESTED' : latest.some((r) => r.state === 'APPROVED') ? 'APPROVED' : 'REVIEW_REQUIRED';
+}
+
+function mutations(world, shape, v) {
+  const missing = (field, id) => new Refusal(field, `Could not resolve to a node with the global id of '${id}'`, 'NOT_FOUND');
+  const reply = () => {
+    const found = threadById(world, v.thread);
+    if (!found) return missing('addPullRequestReviewThreadReply', v.thread);
+    const id = nextId(world);
+    found.thread.comments.push({ id, author: world.viewer.login, body: v.body, createdAt: now(world) });
+    fileReview(world, found.p, 'COMMENTED');
+    return { addPullRequestReviewThreadReply: { comment: { id: `PRRC_${id}` } } };
+  };
+  const resolving = (field, isResolved) => () => {
+    const found = threadById(world, v.thread);
+    if (!found) return missing(field, v.thread);
+    found.thread.isResolved = isResolved;
+    return { [field]: { thread: { isResolved } } };
+  };
+  return { PrReply: reply, PrResolve: resolving('resolveReviewThread', true), PrUnresolve: resolving('unresolveReviewThread', false) };
+}
+
+const unprocessable = (message) => ({ status: 422, body: { message: 'Unprocessable Entity', errors: [message], documentation_url: 'https://docs.github.com/rest' } });
+
+/** The lines a patch shows on each side, as GitHub checks a comment's line against them. */
+function diffLines(patch) {
+  const sides = { LEFT: new Set(), RIGHT: new Set() };
+  let left = 0;
+  let right = 0;
+  for (const line of (patch ?? '').split('\n')) {
+    const hunk = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
+    if (hunk) [left, right] = [Number(hunk[1]), Number(hunk[2])];
+    else if (line.startsWith('+')) sides.RIGHT.add(right++);
+    else if (line.startsWith('-')) sides.LEFT.add(left++);
+    else if (!line.startsWith('\\') && (left || right)) {
+      sides.LEFT.add(left++);
+      sides.RIGHT.add(right++);
+    }
+  }
+  return sides;
+}
+
+function writeAnswer(world, shape, { method, path, body }) {
+  const parts = path.split('/').filter(Boolean);
+  if (parts[0] !== 'repos' || parts.length < 6) return null;
+  const repo = `${parts[1]}/${parts[2]}`;
+  const p = shape.repoOf(repo) && shape.find(repo, parts[4]);
+  if (!p) return null;
+  const route = `${method} ${parts[3]}/${parts.slice(5).map((part, n) => (n === 1 && /^\d+$/.test(part) ? ':id' : part)).join('/')}`;
+  const writes = {
+    'POST issues/comments': () => issueComment(world, p, body),
+    'POST pulls/comments': () => lineComment(world, p, body),
+    'POST pulls/reviews': () => submitReview(world, p, body),
+    'PUT pulls/reviews/:id/dismissals': () => dismissReview(world, p, Number(parts[6]), body),
+  };
+  return writes[route]?.() ?? null;
+}
+
+function issueComment(world, p, body) {
+  if (!body?.body) return unprocessable('Body cannot be blank');
+  const id = nextId(world);
+  p.comments.push({ id, author: world.viewer.login, body: body.body, createdAt: now(world) });
+  return { status: 201, body: { id, node_id: `IC_${id}`, body: body.body } };
+}
+
+function lineComment(world, p, body) {
+  if (body?.commit_id !== p.headRefOid) return unprocessable('commit_id is not part of the pull request');
+  const file = p.files.find((f) => f.filename === body.path);
+  if (!file || !diffLines(file.patch)[body.side ?? 'RIGHT'].has(body.line)) return unprocessable('pull_request_review_thread.line must be part of the diff');
+  const id = nextId(world);
+  const review = fileReview(world, p, 'COMMENTED');
+  p.threads.push({ id: `PRRT_fake${id}`, isResolved: false, path: body.path, line: body.line, side: body.side ?? 'RIGHT', commit: body.commit_id, comments: [{ id, author: world.viewer.login, body: body.body, createdAt: now(world) }] });
+  return { status: 201, body: { id, node_id: `PRRC_${id}`, pull_request_review_id: review.id, path: body.path, line: body.line } };
+}
+
+const EVENTS = { APPROVE: 'APPROVED', REQUEST_CHANGES: 'CHANGES_REQUESTED', COMMENT: 'COMMENTED' };
+
+function submitReview(world, p, body) {
+  const state = EVENTS[body?.event];
+  if (!state) return unprocessable('event is not one of APPROVE, REQUEST_CHANGES or COMMENT');
+  if (state !== 'COMMENTED' && p.author === world.viewer.login) return unprocessable(`Can not ${state === 'APPROVED' ? 'approve' : 'request changes on'} your own pull request`);
+  if (state !== 'APPROVED' && !body.body) return unprocessable(`Body is required for ${body.event}`);
+  const review = fileReview(world, p, state, body.body ?? '');
+  return { body: restReview(review) };
+}
+
+function dismissReview(world, p, id, body) {
+  const review = p.reviews.find((r) => r.id === id);
+  if (!review) return null;
+  if (!body?.message) return unprocessable('message is required');
+  if (review.state !== 'APPROVED' && review.state !== 'CHANGES_REQUESTED') return unprocessable('Can not dismiss a commented pull request review');
+  review.state = 'DISMISSED';
+  review.dismissal = body.message;
+  decide(p);
+  return { body: restReview(review) };
+}
+
+const restReview = (r) => ({ id: r.id, node_id: `PRR_${r.id}`, user: { login: r.author }, body: r.body ?? '', state: r.state, submitted_at: r.createdAt });
 
 const TERMS = {
   'review-requested:@me': (p, me) => p.requested.includes(me) || p.requestedViaTeam === true,
   'author:@me': (p, me) => p.author === me,
   'assignee:@me': (p, me) => (p.assignees ?? []).includes(me),
   'mentions:@me': (p, me) => (p.mentions ?? []).includes(me),
+  'reviewed-by:@me': (p, me) => p.reviews.some((r) => r.author === me),
 };
 
 function involved(world, shape, v, open) {
   const me = world.viewer.login;
   const out = { viewer: { login: me } };
-  for (const name of ['requested', 'authored', 'assigned', 'mentioned']) {
+  for (const name of ['requested', 'authored', 'assigned', 'mentioned', 'reviewed']) {
     const text = String(v[name] ?? '');
     const term = Object.keys(TERMS).find((t) => text.endsWith(t));
     const required = ['is:pr', 'is:open', 'archived:false'].every((w) => text.includes(w));
@@ -224,8 +361,7 @@ function checksOf(world, shape, v) {
   return { object: v.sha === found.headRefOid ? { statusCheckRollup: nodes.length ? { contexts: { nodes } } : null } : null };
 }
 
-function restAnswer(world, shape, { method, path }, url) {
-  if (method !== 'GET') return null;
+function restAnswer(world, shape, { path }, url) {
   if (path === '/user') return userAnswer(world);
   const parts = path.split('/').filter(Boolean);
   if (parts[0] !== 'repos' || parts.length < 4) return null;
@@ -233,10 +369,19 @@ function restAnswer(world, shape, { method, path }, url) {
   const [kind, id, tail] = [parts[3], parts[4], parts[5]];
   if (!shape.repoOf(repo)) return null;
   if (kind === 'pulls' && tail === 'files') return filesAnswer(shape, repo, id, url);
+  if (kind === 'pulls' && tail === 'reviews') return reviewsAnswer(shape, repo, id, url);
   if (kind === 'compare') return compareAnswer(world, repo, decodeURIComponent(parts.slice(4).join('/')));
   if (kind === 'contents') return contentsAnswer(world, repo, parts.slice(4).map(decodeURIComponent).join('/'), url.searchParams.get('ref'));
   if (kind === 'actions' && id === 'jobs' && parts[6] === 'logs') return logAnswer(world, parts[5]);
   return null;
+}
+
+function reviewsAnswer(shape, repo, number, url) {
+  const found = shape.find(repo, number);
+  if (!found) return null;
+  const per = Number(url.searchParams.get('per_page') ?? 30);
+  const page = Number(url.searchParams.get('page') ?? 1);
+  return { body: found.reviews.slice((page - 1) * per, page * per).map(restReview) };
 }
 
 function userAnswer(world) {

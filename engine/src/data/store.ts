@@ -600,7 +600,15 @@ export function forgetReviewHold(key: string): void {
 
 /** Called after every GitLab write the engine makes, from whichever front end. */
 export function noteOwnActivity(projectId: number, iid: number, delta: Partial<OwnActivity>): void {
-  const matches = (w: Watch): boolean => w.projectId === projectId && w.iid === iid;
+  noteOwn((w) => !w.provider && w.projectId === projectId && w.iid === iid, delta);
+}
+
+/** GitHub's writes name the pull request by its key, as an agent's finding may not know the repo's number. */
+export function noteOwnActivityOn(key: string, delta: Partial<OwnActivity>): void {
+  noteOwn((w) => w.key === key, delta);
+}
+
+function noteOwn(matches: (w: Watch) => boolean, delta: Partial<OwnActivity>): void {
   if (!Object.values(loadState().watches).some(matches)) return;
   mutateState((state) => {
     // Timed under the lock, so the writes stay in time order whichever process notes them.
