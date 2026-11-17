@@ -2,6 +2,20 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.3.0 (2026-11-17)
+
+### New
+
+- Show the routines on your Claude account in a read-only Scheduled view
+
+### Fixed
+
+- Show your MRs from a repo found after the daily look
+
+### Changed
+
+- Run every agent as Claude Code in the app, with Orca no longer needed: the Orca plugin mode and the Running agents setting are gone, and Workspace root is now called Code folder
+
 ## 1.2.1 (2026-11-16)
 
 ### New
