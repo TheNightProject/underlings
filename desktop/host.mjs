@@ -155,8 +155,8 @@ function bindOne(globalShortcut, accelerator, handler) {
   }
 }
 
-function logTo(dir) {
-  const file = join(dir, `${FOLDER}.log`);
+export function logTo(dir, name = FOLDER) {
+  const file = join(dir, `${name}.log`);
   let writing = mkdir(dir, { recursive: true });
   return (text) => {
     writing = writing.then(() => appendFile(file, `${new Date().toISOString()} ${text}\n`)).catch(() => {});

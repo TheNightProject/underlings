@@ -154,6 +154,36 @@ turns it on, and while it is off nothing is asked of GitHub.
   in Claude Code's terminal; there `repo#12` links when one known GitHub repo has that name, and
   a bare `#12` never does. Inside a pull request, `#12` is that repo's.
 
+## Workspaces
+
+Each workspace is a separate Underlings: its own settings, tokens, Claude account, agents, queue
+and stats, all running at once, so polling and full auto carry on in the ones you are not looking
+at. What is about you is shared by all of them: your profile, time and region, the game, updates,
+the window and the shortcuts.
+
+- **Default** is the setup you already have, in the same folders and on the same port.
+- **Another workspace** keeps its settings in `~/.config/underlings/workspaces/<id>/` and its
+  state in `~/.local/state/underlings/workspaces/<id>/`. It never takes a GitLab or GitHub token,
+  a state folder or a Claude login from your shell profile, so paste its tokens in its own Setup.
+- **Its Claude account** is a cswap account number. Its worker, its agents, the terminal and the
+  Slack and email reads all run in that account's config folder. Blank is the default login.
+- Each runs in a process of its own, and the app starts one again if it stops: after 2 s, then
+  15 s, then a minute, and not after that. Its log is `~/Library/Logs/Underlings/underlings-<id>.log`.
+- A banner says which workspace it came from, and clicking it shows that workspace in the window.
+  The menu bar count adds up every workspace, and **Pause full auto** there pauses them all.
+- Only Default checks for updates on its own.
+
+Until the switcher comes, workspaces are listed by hand in `~/.config/underlings/workspaces.json`,
+read when the app starts:
+
+```json
+{ "workspaces": [{ "id": "side-project", "name": "Side project", "port": 47322, "account": "2" }] }
+```
+
+An id is lower case letters, digits and dashes, and each port is the workspace's own. An entry
+with the id `default` names Default and gives it an account. One that cannot run as written is
+left out, and the log says why.
+
 ## Keys
 
 Every key comes from one list in `ui/02-keys.js`, which also fills Jump to and the Keyboard

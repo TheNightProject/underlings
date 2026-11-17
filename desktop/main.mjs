@@ -1,15 +1,17 @@
-import { app, BrowserWindow, clipboard, dialog, globalShortcut, ipcMain, Menu, Notification, screen, session, shell, systemPreferences, Tray, WebContentsView } from 'electron';
+import { app, BrowserWindow, clipboard, dialog, globalShortcut, ipcMain, Menu, Notification, screen, session, shell, systemPreferences, Tray, utilityProcess, WebContentsView } from 'electron';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { startHelper } from '../lib/apphelper.mjs';
 import { logsDir, migrateHome, OLD_APP_NAME, sharedConfigDir } from '../lib/home.mjs';
 import { APP_ID, APP_NAME, FOLDER } from '../lib/product.mjs';
-import { createHost, heldByOurWorker, nextFreePort, readConfig } from './host.mjs';
+import { DEFAULT_ID, DEFAULT_PORT, readWorkspaces } from '../lib/workspaces.mjs';
+import { COMMANDS, createHost, heldByOurWorker, logTo, nextFreePort, readConfig } from './host.mjs';
 import { keptBounds } from './bounds.mjs';
 import { createOverlay } from './overlay.mjs';
+import { createSupervisor } from './supervisor.mjs';
 import { bundleOf, moveFor, moveJob, tidyAfterMove } from './relocate.mjs';
 import { bridgeView, createTerminal } from './terminal.mjs';
 import { createViewer } from './viewer.mjs';
@@ -41,7 +43,11 @@ const QUIT_WAIT_MS = 3000;
 const PERMISSIONS = new Set(['notifications', 'clipboard-sanitized-write']);
 
 let host;
-let worker;
+let supervisor;
+let workspaces = [];
+// The workspace whose page the window shows, and the page each worker gave when it started.
+let active = DEFAULT_ID;
+const pages = new Map();
 let win = null;
 let termWin = null;
 let claudeOnTop = true;
@@ -69,7 +75,7 @@ app.on('will-quit', (event) => {
   event.preventDefault();
   globalShortcut.unregisterAll();
   terminal.end();
-  const stopping = worker?.deactivate?.() ?? Promise.resolve();
+  const stopping = supervisor?.stop() ?? Promise.resolve();
   Promise.race([stopping, new Promise((resolve) => setTimeout(resolve, QUIT_WAIT_MS))]).finally(() => app.exit(0));
 });
 app.whenReady().then(start).catch((err) => {
@@ -91,9 +97,13 @@ async function start() {
   host = createHost({ Notification, openExternal: (url) => shell.openExternal(url), window: windows, logDir: LOG_DIR });
   logMoves(MOVED);
   if (MOVE_FAILED) host.ctx.log(`could not move ${MOVE.from} to ${MOVE.to}, so it runs where it is: ${MOVE_FAILED}`);
-  worker = await import(pathToFileURL(join(WORKER_DIR, 'worker.mjs')).href);
-  if (!(await activate())) return app.exit(0);
+  workspaces = readWorkspaces({ defaultPort: readConfig(CONFIG_FILE).port ?? DEFAULT_PORT, log: host.ctx.log });
+  supervisor = createSupervisor({ fork: (...args) => utilityProcess.fork(...args), entry: join(APP_DIR, 'workspace.mjs'), workerDir: WORKER_DIR, desktopFor, logFor });
+  for (const id of [...Object.keys(COMMANDS), 'goto']) host.ctx.commands.register(id, (...args) => supervisor.get(active)?.bridge.run(id, ...args));
+  if (!(await startDefault())) return app.exit(0);
+  for (const workspace of workspaces.slice(1)) supervisor.start(workspace);
   host.bindShortcuts(globalShortcut, readConfig(CONFIG_FILE));
+  supervisor.keep('hotkeys', host.ctx.desktop.hotkeys);
   Menu.setApplicationMenu(appMenu());
   tray = new Tray(join(APP_DIR, 'assets/trayTemplate.png'));
   tray.setToolTip(APP_NAME);
@@ -123,17 +133,58 @@ function logMoves(moved) {
   }
 }
 
-async function activate() {
-  try {
-    await worker.default(host.ctx);
-  } catch (err) {
-    if (err.code !== 'EADDRINUSE') throw err;
-    const port = await askForAnotherPort(err.port);
-    if (!port) return false;
-    host.ctx.desktop.port = port;
-    await worker.default(host.ctx);
+async function startDefault(port) {
+  const { ok, error } = await supervisor.start(workspaces[0], { port }).ready;
+  if (ok) return true;
+  if (error.code !== 'EADDRINUSE') throw Object.assign(new Error(error.message), { stack: error.stack ?? error.message });
+  const free = await askForAnotherPort(error.port);
+  return free ? startDefault(free) : false;
+}
+
+// What every worker is given, less where its page goes and whose banners these are, which are its own.
+function desktopFor(workspace) {
+  const own = workspace.id !== DEFAULT_ID;
+  return {
+    ...host.ctx.desktop,
+    port: own ? workspace.port : undefined,
+    showPage: (url) => showPageOf(workspace, url),
+    notify: (banner) => host.ctx.desktop.notify(workspaces.length > 1 ? { ...banner, title: `${workspace.name}: ${banner.title}` } : banner),
+  };
+}
+
+function logFor(workspace) {
+  return workspace.id === DEFAULT_ID ? host.ctx.log : logTo(LOG_DIR, `${FOLDER}-${workspace.id}`);
+}
+
+// A worker shows its page once as it starts, which only Default's opens; after that, a page asked for is a switch to its workspace.
+function showPageOf(workspace, url) {
+  const starting = supervisor.get(workspace.id)?.state === 'starting';
+  if (starting) pages.set(workspace.id, new URL(url));
+  if (starting && win && workspace.id === active) return { reused: true };
+  if (workspace.id === active) return showPage(url);
+  if (starting) return { reused: false };
+  return switchTo(workspace, url);
+}
+
+// The window's preloads are told the page's origin when it is made, so a page from another worker gets windows of its own.
+function switchTo(workspace, url) {
+  active = workspace.id;
+  page = new URL(url);
+  terminal.end();
+  if (termWin) {
+    termWin.destroy();
+    termWin = null;
+    shareClaudeState();
   }
-  return true;
+  if (win) {
+    writeFileSync(WINDOW_FILE, JSON.stringify({ ...readSaved(WINDOW_FILE), ...win.getNormalBounds() }));
+    win.destroy();
+  }
+  startHidden = false;
+  win = createWindow(url);
+  reveal();
+  refreshTray();
+  return { reused: false };
 }
 
 async function askForAnotherPort(taken) {
@@ -210,6 +261,7 @@ function popOut() {
   termWin.show();
   termWin.focus();
   app.focus({ steal: true });
+  shareClaudeState();
   return { shown: true };
 }
 
@@ -227,17 +279,24 @@ function keepClaudeOnTop(on) {
   claudeOnTop = on;
   if (termWin) floatOnTop(termWin, on);
   writeFileSync(CLAUDE_FILE, JSON.stringify({ ...readSaved(CLAUDE_FILE), onTop: on }));
+  shareClaudeState();
   return claudeState();
 }
 
 function dockClaude() {
   termWin?.hide();
   reveal();
+  shareClaudeState();
   return claudeState();
 }
 
 function claudeState() {
   return { shown: Boolean(termWin?.isVisible()), onTop: claudeOnTop };
+}
+
+// Each worker reads this without waiting, so it is handed every change.
+function shareClaudeState() {
+  supervisor?.keep('claudeWindow', claudeState());
 }
 
 // The pty lives here, not in either view, so hiding or closing one leaves Claude Code running.
@@ -266,6 +325,7 @@ function createTerminalWindow() {
   w.on('closed', () => {
     terminal.detach('window');
     termWin = null;
+    shareClaudeState();
   });
   w.loadURL(windowUrl('terminal'));
   return w;
@@ -339,8 +399,16 @@ function appMenu() {
   ]);
 }
 
+// One count for every workspace, and full auto paused only when it is paused in all of them.
+async function badges() {
+  return Promise.all([...pages.values()].map((at) => askWorker(at, 'GET', '/api/badge').catch(() => ({ count: 0, paused: null }))));
+}
+
 async function refreshTray() {
-  const badge = await askWorker('GET', '/api/badge').catch(() => ({ count: 0, paused: null }));
+  if (!tray) return;
+  const each = await badges();
+  const known = each.filter((b) => b.paused !== null);
+  const badge = { count: each.reduce((n, b) => n + (b.count ?? 0), 0), paused: known.length ? known.every((b) => b.paused) : null };
   const openAtLogin = app.getLoginItemSettings().openAtLogin;
   const state = JSON.stringify({ ...badge, openAtLogin });
   if (state === trayState) return;
@@ -362,17 +430,20 @@ function trayMenu(paused, openAtLogin) {
   ]);
 }
 
-function togglePause() {
-  askWorker('POST', '/api/matrix/pause')
+// The page's pause flips one workspace; the menu bar's pauses or resumes them all, so each one not already there is flipped.
+async function togglePause() {
+  const at = [...pages.values()];
+  const each = await badges();
+  const pause = !each.filter((b) => b.paused !== null).every((b) => b.paused);
+  await Promise.all(at.map((url, i) => (each[i].paused === null || each[i].paused === pause ? null : askWorker(url, 'POST', '/api/matrix/pause'))))
     .catch((err) => host.ctx.log(`could not pause or resume full auto: ${err.message}`))
     .finally(refreshTray);
 }
 
 // Over HTTP with the page's token and origin, so the menu bar passes the same checks a click on the page does.
-async function askWorker(method, path) {
-  if (!page) throw new Error('the worker has not shown its page yet');
-  const headers = { 'x-cc-token': page.searchParams.get('t'), origin: page.origin, 'content-type': 'application/json' };
-  const res = await fetch(page.origin + path, { method, headers, body: method === 'POST' ? '{}' : undefined });
+async function askWorker(at, method, path) {
+  const headers = { 'x-cc-token': at.searchParams.get('t'), origin: at.origin, 'content-type': 'application/json' };
+  const res = await fetch(at.origin + path, { method, headers, body: method === 'POST' ? '{}' : undefined });
   if (!res.ok) throw new Error(`${path} answered ${res.status}`);
   return res.json();
 }
