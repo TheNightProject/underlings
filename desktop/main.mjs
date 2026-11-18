@@ -158,7 +158,15 @@ function desktopFor(workspace) {
     createWorkspace: (body) => admin.create(body),
     updateWorkspace: (body) => admin.update(body),
     removeWorkspace: (body) => removeWorkspace(body),
+    chooseFolder,
   };
+}
+
+// macOS's own picker, over the window, so a folder is picked rather than typed.
+async function chooseFolder({ from } = {}) {
+  const options = { title: 'Choose a folder', defaultPath: from || app.getPath('home'), properties: ['openDirectory', 'createDirectory'] };
+  const { canceled, filePaths } = win && !win.isDestroyed() ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options);
+  return { chosen: canceled ? null : (filePaths[0] ?? null) };
 }
 
 // Every workspace, as the one asking sees it: which is in front, which is its own, and what each needs.

@@ -108,7 +108,7 @@ every check once more.
 | GitLab token | on by default: GitLab, at gitlab.com or your **GitLab host**, knows the token and it has the `api` scope. Switched off, it is optional and asks nothing | the switch, a link that makes one with `api` ticked, a field to paste it, and the host field |
 | GitHub | optional, and off until you switch it on here: the token in use is known to GitHub, with `repo` and `read:org` | the switch, a link that makes a token, a field to paste one, and `gh auth refresh -s` for a token gh holds |
 | Jira | optional: a site is set, `acli` is on the PATH and `acli jira auth status` says signed in | the site field, a link to install `acli`, or `acli jira auth login --web` to copy |
-| Code folder | the folder exists and has at least one git checkout in it, counted | the folder field |
+| Code folder | the folder exists and has at least one git checkout in it, counted | the folder field, and **Choose…** for the Mac's folder picker |
 | Agent commands | always: each is the Underlings skill or your own | a field for each, see Agent skills |
 | Underlings skills | optional: the plugin is installed in your own Claude Code, at the version this app ships | the two commands it will run, shown first, with **Install the skills**, **Update the skills** or **Remove them**, see Agent skills |
 | Artifact hook | a `PostToolUse` hook in `~/.claude/settings.json` runs `record-artifact.mjs` | **Install the hook**, see Recording artifacts |

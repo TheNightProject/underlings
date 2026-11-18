@@ -254,7 +254,7 @@ function settingRow(row) {
   const unsaved = draft !== undefined && draft !== String(row.value ?? '');
   return el('div', { class: 'setting' },
     el('label', { for: 'set-' + row.key }, row.label),
-    el('div', { class: 'control' }, settingControl(row, draft), unsaved ? unsavedActions(row, draft) : null),
+    el('div', { class: 'control' }, settingControl(row, draft), unsaved ? unsavedActions(row, draft) : null, row.key === 'workspaceRoot' ? folderButton('set-workspaceRoot-choose', row.value, (path) => saveSetting('workspaceRoot', path)) : null),
     el('p', { class: 'hint' }, row.hint.charAt(0).toUpperCase() + row.hint.slice(1)),
     rootMissing(row) ? el('p', { class: 'hint bad' }, 'Full auto cannot launch reviews while this is blank.') : null);
 }

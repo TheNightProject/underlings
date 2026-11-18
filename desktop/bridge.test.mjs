@@ -116,6 +116,7 @@ test('the real worker starts across the bridge: its page is shown, its banners c
     notify: (banner) => (banners.push(banner), { delivered: true }),
     openExternal: async () => ({ ok: true }),
     workspaces: () => ({ workspaces: [{ id: 'default', name: 'Work', here: true }, { id: 'side', name: 'Side', here: false }] }),
+    chooseFolder: ({ from }) => ({ chosen: from ? null : '/Users/dev/code' }),
     switchWorkspace: ({ id }) => {
       if (id === 'starting') throw Object.assign(new Error('Starting has not started yet'), { status: 409 });
       return { ok: true, text: `Switched to ${id}` };
@@ -145,6 +146,8 @@ test('the real worker starts across the bridge: its page is shown, its banners c
   assert.deepEqual(state.workspaces.workspaces.map((w) => w.id), ['default', 'side'], 'the page is told every workspace');
   const switched = await fetch(page.origin + '/api/workspaces/switch', { method: 'POST', headers, body: JSON.stringify({ id: 'side' }) });
   assert.equal((await switched.json()).text, 'Switched to side');
+  const picked = await fetch(page.origin + '/api/choose-folder', { method: 'POST', headers, body: JSON.stringify({ from: '' }) });
+  assert.deepEqual(await picked.json(), { chosen: '/Users/dev/code' }, 'the app\'s folder picker answers the page');
   const refused = await fetch(page.origin + '/api/workspaces/switch', { method: 'POST', headers, body: JSON.stringify({ id: 'starting' }) });
   assert.deepEqual([refused.status, await refused.text()], [409, 'Starting has not started yet']);
 });
