@@ -2,6 +2,13 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.4.1 (2026-11-18)
+
+### Fixed
+
+- Full auto per person lists everyone you have switched on, at nought when none of their MRs asked for your review
+- The Overview tiles fill the width of the window
+
 ## 1.4.0 (2026-11-18)
 
 ### New
