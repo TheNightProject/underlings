@@ -55,16 +55,33 @@ function setupBanner() {
     el('div', { class: 'actions' }, button('Done', 'check', finishSetup, true))));
 }
 
+const repoOfKey = (key) => key.replace(/[!#]\d+$/, '');
+
+// Narrowed to one repo, only that repo's MRs show, and the line under the chips says what else is waiting.
 function needsList(a, d) {
   const email = a.email ?? [];
   const slack = a.slack ?? [];
   if (!a.cards.length && !a.agents.length && !a.system.length && !email.length && !slack.length) return empty('Nothing is waiting on you.');
-  return NEEDS_GROUPS.map(([group, title]) => {
-    const cards = group === 'agents' ? [] : group === 'email' ? email.map((i) => slot('emailNeedsCard', i)) : group === 'slack' ? slack.map((i) => slot('slackNeedsCard', i)) : group === 'system' ? a.system.map(systemCard) : a.cards.filter((c) => c.group === group).map((c) => needsCard(c, d));
+  const repos = [...new Set(a.cards.map((c) => repoOfKey(c.key)))];
+  const repo = repos.includes(ui.needsRepo) ? ui.needsRepo : null;
+  const groups = NEEDS_GROUPS.map(([group, title]) => {
+    if (repo && !['others', 'mine'].includes(group)) return null;
+    const cards = group === 'agents' ? [] : group === 'email' ? email.map((i) => slot('emailNeedsCard', i)) : group === 'slack' ? slack.map((i) => slot('slackNeedsCard', i)) : group === 'system' ? a.system.map(systemCard) : a.cards.filter((c) => c.group === group && (!repo || repoOfKey(c.key) === repo)).map((c) => needsCard(c, d));
     const agents = group === 'agents' ? agentCards(a.agents, d) : [];
     const shown = [...cards, ...agents];
     return shown.length ? el('section', { class: 'section needs-group', 'data-group': group }, el('h2', {}, title), el('div', { class: 'list' }, shown)) : null;
   });
+  return [needsRepoFilter(a, repos, repo, email.length + slack.length), ...groups];
+}
+
+function needsRepoFilter(a, repos, repo, messages) {
+  if (repos.length < 2) return null;
+  const count = (r) => a.cards.filter((c) => repoOfKey(c.key) === r).length;
+  const pick = (r) => { ui.needsRepo = r; render(); };
+  const elsewhere = a.cards.length - (repo ? count(repo) : a.cards.length) + a.agents.length + a.system.length + messages;
+  return el('div', { class: 'needs-repos' },
+    chips([[null, 'All repos ' + a.cards.length], ...repos.sort((x, y) => count(y) - count(x)).map((r) => [r, short(r) + ' ' + count(r)])], repo, pick, 'needs-repo-'),
+    repo && elsewhere ? el('p', { class: 'meta' }, elsewhere + ' more waiting elsewhere. ', el('button', { type: 'button', class: 'link', onclick: () => pick(null) }, 'All repos')) : null);
 }
 
 function reasonPill(r) {

@@ -232,3 +232,21 @@ test('with the default row on, a person with no row follows it, and Off on their
   await page.settle();
   assert.deepEqual(page.posts.find(([p]) => p === '/api/matrix/level')[1], { username: 'judy', level: 'off' });
 });
+
+test('with MRs in more than one repo, a repo is picked to see only its MRs, and All repos brings the rest back', async () => {
+  const third = 'acme/engine!1130';
+  const page = await needsPage({ snap: snapshot({ cards: [card(KEY, 'others', [reason('replied', 'Judy replied')]), card(third, 'others', [reason('replied', 'Judy replied')]), card(OWN, 'mine', [reason('red', 'the pipeline failed')])], slack: [] }) });
+  const chipLabels = () => page.$$('#main .needs-repos .chip').map((c) => [c.textContent, c.getAttribute('aria-pressed')]);
+  assert.deepEqual(chipLabels(), [['All repos 3', 'true'], ['engine 2', 'false'], ['portal 1', 'false']]);
+  page.document.getElementById('needs-repo-acme/engine').click();
+  assert.deepEqual(page.$$('#main .need-card').map((c) => c.dataset.key), [KEY, third]);
+  assert.deepEqual(page.$$('#main .needs-group h2').map((h) => h.textContent), ['Waiting on you']);
+  assert.match(page.$('#main .needs-repos .meta').textContent, /^1 more waiting elsewhere\./);
+  buttonIn(page.$('#main .needs-repos .meta'), 'All repos').click();
+  assert.equal(page.$$('#main .need-card').length, 3);
+});
+
+test('with every MR in one repo there is nothing to pick between', async () => {
+  const page = await needsPage({ snap: snapshot({ cards: [card(KEY, 'others', [reason('replied', 'Judy replied')])] }) });
+  assert.equal(page.$('#main .needs-repos'), null);
+});
