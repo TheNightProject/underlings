@@ -236,7 +236,7 @@ function viewRuns(d) {
   return [
     header('Review runs', 'The latest review, fix or ticket agent on each MR or ticket, newest first, with what it last said.'),
     d.m.available ? null : slot('engineBanner', d.m),
-    runPlaces.error ? banner('Could not check the review workspaces: ' + runPlaces.error, true) : null,
+    runPlaces.error ? banner('Could not check what clean-up would remove: ' + runPlaces.error, true) : null,
     d.m.runs.length ? el('div', { class: 'list' }, d.m.runs.map((r) => runRow(r, d, places[r.key]))) : empty('No review runs recorded.'),
   ];
 }
@@ -327,5 +327,5 @@ function runActions(r, d, subject, place) {
 
 function runRemoveButton(place) {
   const id = 'run-rm:' + place.id;
-  return guarded(id, 'Remove workspace', 'trash', 'Remove ' + place.name + '?', () => busyAct('/api/agents/cleanup', { remove: [place.id], close: [] }, id).finally(() => { runPlaces.at = 0; }));
+  return guarded(id, 'Remove', 'trash', 'Remove ' + place.name + '?', () => busyAct('/api/agents/cleanup', { remove: [place.id], close: [] }, id).finally(() => { runPlaces.at = 0; }));
 }

@@ -72,7 +72,7 @@ test('once every comment is up and nothing is decided, the MR row asks for a ver
   assert.match(card.textContent, /1 major/);
   assert.match(card.textContent, /2 minor/);
   assert.ok(cardButton(p, 'Approve') && cardButton(p, 'Request changes') && cardButton(p, 'Later'));
-  assert.match(card.textContent, /Either one closes the review workspace/);
+  assert.match(card.textContent, /Either one removes the review agent/);
   assert.deepEqual(p.errors, []);
 });
 
@@ -119,7 +119,7 @@ test('approving takes two clicks, names the MR and the workspace it closes, and 
   const p = await page();
   cardButton(p, 'Approve').click();
   const armed = p.$$('#main .decide button.armed')[0];
-  assert.equal(armed.textContent, 'Approve !7 and close the review workspace?');
+  assert.equal(armed.textContent, 'Approve !7 and remove the review agent?');
   assert.deepEqual(p.sent, []);
   armed.click();
   await p.settle(20);
@@ -130,14 +130,14 @@ test('requesting changes is armed the same way, and says nothing of closing whil
   const p = await page(snapshot({ rows: [row({ agent: 'working' })] }));
   cardButton(p, 'Request changes').click();
   assert.equal(p.$$('#main .decide button.armed')[0].textContent, 'Request changes on !7?');
-  assert.match(cards(p)[0].textContent, /still working, so the workspace stays open/);
+  assert.match(cards(p)[0].textContent, /still working, so it stays/);
 });
 
 test('with tidying off the verdict closes nothing and the card does not claim it will', async () => {
   const p = await page(snapshot(), 'merge-requests', false);
   cardButton(p, 'Approve').click();
   assert.equal(p.$$('#main .decide button.armed')[0].textContent, 'Approve !7?');
-  assert.doesNotMatch(cards(p)[0].textContent, /closes the review workspace/);
+  assert.doesNotMatch(cards(p)[0].textContent, /removes the review agent/);
 });
 
 test('Later is kept by the worker, so the question stays away after a reload and in a second tab until something new is posted', async () => {

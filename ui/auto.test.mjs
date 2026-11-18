@@ -250,7 +250,7 @@ test('Review runs shows the latest run on each MR or ticket, its conversation wh
   assert.match(page.$('#main .head p').textContent, /^The latest review, fix or ticket agent on each MR or ticket, newest first, with what it last said\.$/);
   const cards = page.$$('#main .row.run');
   assert.deepEqual(cards.map((c) => c.querySelector('.pill').textContent), ['working', 'ended', 'launch failed', 'ended', 'working']);
-  assert.deepEqual(cards.map((c) => buttonsIn(c, '', 'Remove workspace').length), [0, 1, 0, 1, 0], 'its MR closed or not, a run offers Remove where clean-up would remove it');
+  assert.deepEqual(cards.map((c) => buttonsIn(c, '', 'Remove').length), [0, 1, 0, 1, 0], 'its MR closed or not, a run offers Remove where clean-up would remove it');
   assert.equal(cards[0].textContent.includes('review-Engine-7 stays: an agent in it is still working'), true);
   assert.equal(cards[0].querySelectorAll('.meta')[1].textContent, '~/ws');
   assert.ok(buttonsIn(page, '#main .row.run', 'Conversation').length === 1, 'the live run shows its agent\'s conversation');
@@ -264,7 +264,7 @@ test('Review runs shows the latest run on each MR or ticket, its conversation wh
   buttonsIn(page, '#main', 'Stop review-Engine-7?')[0].click();
   buttonsIn(page, '#main', 'Retry')[0].click();
   buttonsIn(page, '#main', 'Retry the review of !88?')[0].click();
-  buttonsIn(page.$$('#main .row.run')[3], '', 'Remove workspace')[0].click();
+  buttonsIn(page.$$('#main .row.run')[3], '', 'Remove')[0].click();
   buttonsIn(page, '#main', 'Remove review-Portal-90?')[0].click();
   await page.settle(50);
   assert.deepEqual(page.writes, [

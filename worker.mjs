@@ -4,7 +4,7 @@ import http from 'node:http';
 import module from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { configDir, migrateHome, stateDir } from './lib/home.mjs';
+import { migrateHome, sharedConfigDir, stateDir } from './lib/home.mjs';
 import { APP_NAME, branded } from './lib/product.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -34,7 +34,7 @@ let log = () => {};
 export default async function activate(ctx) {
   log = (text) => ctx.log(text);
   movedHome(ctx);
-  config = { port: 47321, ...(await readJson(join(configDir(), 'config.json'), {})) };
+  config = { port: 47321, ...(await readJson(join(sharedConfigDir(), 'config.json'), {})) };
   desktop = ctx.desktop ?? null;
   if (desktop?.port) config.port = desktop.port;
   token = await loadToken();

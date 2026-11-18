@@ -92,7 +92,7 @@ async function collectWorkspaces(argv: string[], json: boolean): Promise<void> {
   }
   if (!argv.includes('--yes')) {
     process.stdout.write(
-      `\n${candidates.length} workspace(s) would be closed. Re-run with --yes to do it.\n`,
+      `\n${candidates.length} review agent(s) would be removed. Re-run with --yes to do it.\n`,
     );
     return;
   }

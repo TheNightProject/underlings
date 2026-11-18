@@ -30,7 +30,7 @@ beforeEach(() => {
   changeSettings((s) => ({ ...s, gitlab: DEFAULT_GITLAB }));
 });
 
-const useHost = (host: string) => changeSettings((s) => ({ ...s, gitlab: { host } }));
+const useHost = (host: string) => changeSettings((s) => ({ ...s, gitlab: { ...s.gitlab, host } }));
 
 test('with no host set every URL is gitlab.com', () => {
   assert.deepEqual([gitlabHost(), restUrl(), graphqlUrl()], ['https://gitlab.com', 'https://gitlab.com/api/v4', 'https://gitlab.com/api/graphql']);

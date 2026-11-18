@@ -73,7 +73,7 @@ async function retirePreviousReview(mr: Mr): Promise<string | null> {
     await removeWorktree(previous.id);
     return null;
   } catch (e) {
-    return `the previous review workspace stays: ${e instanceof Error ? e.message : String(e)}`;
+    return `the previous review agent stays: ${e instanceof Error ? e.message : String(e)}`;
   }
 }
 

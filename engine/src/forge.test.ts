@@ -163,11 +163,11 @@ test("the stats' reads are GETs with only the token, every page followed up to f
   assert.deepEqual(asked.map((a) => [a.method, a.headers, a.body, a.timed]), Array(5).fill(['GET', { 'PRIVATE-TOKEN': 'not-a-real-token' }, null, false]));
   assert.equal(asked[0]?.url, 'https://gitlab.com/api/v4/merge_requests?scope=all&per_page=100&page=1&state=merged&author_username=sybil&updated_after=2026-10-01T00%3A00%3A00.000Z');
   asked.length = 0;
-  changeSettings((s) => ({ ...s, gitlab: { host: 'https://git.acme.test' } }));
+  changeSettings((s) => ({ ...s, gitlab: { ...s.gitlab, host: 'https://git.acme.test' } }));
   answer = () => json([]);
   await gitlabForge.reviewedBy('sybil', '2026-10-01T00:00:00.000Z');
   assert.deepEqual(asked.map((a) => a.url), ['https://git.acme.test/api/v4/merge_requests?scope=all&per_page=100&page=1&reviewer_username=sybil&updated_after=2026-10-01T00%3A00%3A00.000Z']);
-  changeSettings((s) => ({ ...s, gitlab: { host: 'https://gitlab.com' } }));
+  changeSettings((s) => ({ ...s, gitlab: { ...s.gitlab, host: 'https://gitlab.com' } }));
 });
 
 test("the ticket suggestions' read is one timed GET per group, kept only where the ticket is the MR's own", async () => {
