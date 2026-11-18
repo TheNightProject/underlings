@@ -232,8 +232,10 @@ function faviconData(count) {
   return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect x="2" y="4" width="26" height="24" rx="6" fill="%234f6bed"/>' + dot + '</svg>';
 }
 
+// With more than one workspace, each window says whose it is, so the Window menu and Cmd+` tell them apart.
 function tabBadge(count) {
-  const title = count ? '(' + count + ') ' + APP_NAME : APP_NAME;
+  const here = (state?.workspaces?.workspaces?.length ?? 0) > 1 ? state.workspaces.workspaces.find((w) => w.here)?.name : null;
+  const title = (count ? '(' + count + ') ' : '') + APP_NAME + (here ? ' · ' + here : '');
   if (document.title !== title) document.title = title;
   const link = document.getElementById('favicon');
   const want = count ? 'dot' : 'plain';

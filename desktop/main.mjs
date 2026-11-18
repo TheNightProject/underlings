@@ -19,9 +19,7 @@ import { createViewer } from './viewer.mjs';
 
 const APP_DIR = dirname(fileURLToPath(import.meta.url));
 const WORKER_DIR = app.isPackaged ? join(process.resourcesPath, 'worker') : dirname(APP_DIR);
-const WINDOW_FILE = join(app.getPath('userData'), 'window.json');
 const CLAUDE_FILE = join(app.getPath('userData'), 'claude-window.json');
-const TERMINAL_FILE = join(app.getPath('userData'), 'terminal-window.json');
 const TERMINAL_SIZE = { width: 920, height: 640, minWidth: 480, minHeight: 300 };
 const VIEWER_FILE = join(app.getPath('userData'), 'artifact-window.json');
 const require = createRequire(import.meta.url);
@@ -46,15 +44,16 @@ const PERMISSIONS = new Set(['notifications', 'clipboard-sanitized-write']);
 let host;
 let supervisor;
 let workspaces = [];
-// The workspace whose page the window shows, and the page each worker gave when it started.
+// The workspace whose window was in front last, and the page each worker gave when it started.
 let active = DEFAULT_ID;
 const pages = new Map();
 const counts = new Map();
 let admin;
-let win = null;
-let termWin = null;
 let claudeOnTop = true;
-let page = null;
+let viewer;
+let overlay;
+// Each workspace has a window of its own, made the first time its page is shown, and the Claude Code window beside it.
+const views = new Map();
 let tray = null;
 let trayState = '';
 let quitting = false;
@@ -63,8 +62,8 @@ let startHidden = false;
 const terminals = new Map();
 
 if (!app.requestSingleInstanceLock()) app.exit(0);
-app.on('second-instance', reveal);
-app.on('activate', reveal);
+app.on('second-instance', () => reveal());
+app.on('activate', () => reveal());
 // The app lives in the menu bar, so closing or swapping its last window is never a quit.
 app.on('window-all-closed', () => {});
 app.on('before-quit', () => {
@@ -87,11 +86,13 @@ async function start() {
   session.defaultSession.setPermissionRequestHandler((contents, permission, allow) => allow(PERMISSIONS.has(permission)));
   claudeOnTop = readSaved(CLAUDE_FILE).onTop !== false;
   listenToTerminal();
-  const viewer = artifactViewer();
-  const overlay = meetingOverlay();
+  viewer = artifactViewer();
+  overlay = meetingOverlay();
+  // Each worker is given these for its own workspace by desktopFor; here they stand for whichever is in front.
   const windows = {
-    showPage, focus: reveal, quit: () => app.quit(), popOut, dockClaude, claudeOnTop: keepClaudeOnTop, claudeState, openTerminal: () => {}, restartTerminal: () => {}, pasteTerminal: () => {}, onTerminalTyped: () => () => {}, terminalAssets: terminalAssets(),
-    openArtifact: viewer.open, openArtifactCopy: (spec) => openArtifactCopy(viewer, spec), showOverlay: () => overlay.show(windowUrl('meeting')), closeOverlay: overlay.close,
+    showPage: (url) => showPageIn(active, url), focus: () => reveal(), quit: () => app.quit(), popOut: () => popOut(active), dockClaude: () => dockClaude(active), claudeOnTop: keepClaudeOnTop, claudeState: () => claudeState(active),
+    openTerminal: () => {}, restartTerminal: () => {}, pasteTerminal: () => {}, onTerminalTyped: () => () => {}, terminalAssets: terminalAssets(),
+    openArtifact: viewer.open, openArtifactCopy: (spec) => openArtifactCopy(spec, active), showOverlay: () => overlay.show(windowUrl('meeting', active)), closeOverlay: overlay.close,
   };
   host = createHost({ Notification, openExternal: (url) => shell.openExternal(url), window: windows, logDir: LOG_DIR });
   logMoves(MOVED);
@@ -148,6 +149,12 @@ function desktopFor(workspace) {
     ...host.ctx.desktop,
     port: own ? workspace.port : undefined,
     showPage: (url) => showPageOf(workspace, url),
+    focus: () => reveal(workspace.id),
+    popOut: () => popOut(workspace.id),
+    dockClaude: () => dockClaude(workspace.id),
+    claudeWindow: () => claudeState(workspace.id),
+    openArtifactCopy: (spec) => openArtifactCopy(spec, workspace.id),
+    showOverlay: () => overlay.show(windowUrl('meeting', workspace.id)),
     notify: (banner) => host.ctx.desktop.notify(workspaces.length > 1 ? { ...banner, title: `${workspace.name}: ${banner.title}` } : banner),
     openTerminal: (spec) => openTerminal(workspace, spec),
     restartTerminal: (spec) => restartTerminal(workspace, spec),
@@ -165,7 +172,8 @@ function desktopFor(workspace) {
 // macOS's own picker, over the window, so a folder is picked rather than typed.
 async function chooseFolder({ from } = {}) {
   const options = { title: 'Choose a folder', defaultPath: from || app.getPath('home'), properties: ['openDirectory', 'createDirectory'] };
-  const { canceled, filePaths } = win && !win.isDestroyed() ? await dialog.showOpenDialog(win, options) : await dialog.showOpenDialog(options);
+  const parent = windowsOf(active).win;
+  const { canceled, filePaths } = parent && !parent.isDestroyed() ? await dialog.showOpenDialog(parent, options) : await dialog.showOpenDialog(options);
   return { chosen: canceled ? null : (filePaths[0] ?? null) };
 }
 
@@ -181,14 +189,21 @@ function workspacesView(asking) {
 function switchToId(id) {
   const workspace = workspaces.find((w) => w.id === id);
   if (!workspace) throw Object.assign(new Error(`there is no workspace ${id}`), { status: 404 });
-  if (id === active) {
-    reveal();
-    return { ok: true, text: `${workspace.name} is in front` };
-  }
   const at = pages.get(id);
-  if (!at) throw Object.assign(new Error(`${workspace.name} has not started yet`), { status: 409 });
-  switchTo(workspace, at.origin + at.pathname + at.search);
-  return { ok: true, text: `Switched to ${workspace.name}` };
+  const v = windowsOf(id);
+  if (!v.win && !at) throw Object.assign(new Error(`${workspace.name} has not started yet`), { status: 409 });
+  active = id;
+  startHidden = false;
+  // Never seen before in this window, so it opens on the page without the intro a cold start plays.
+  if (!v.win) {
+    const url = new URL(at.origin + at.pathname + at.search);
+    v.page = new URL(url);
+    url.searchParams.set('switched', '1');
+    v.win = createWindow(id, url.href);
+  }
+  reveal(id);
+  refreshTray();
+  return { ok: true, text: `Showing ${workspace.name}` };
 }
 
 async function removeWorkspace(body) {
@@ -197,6 +212,10 @@ async function removeWorkspace(body) {
   counts.delete(body.id);
   terminals.get(body.id)?.terminal.end();
   terminals.delete(body.id);
+  const v = views.get(body.id);
+  v?.termWin?.destroy();
+  v?.win?.destroy();
+  views.delete(body.id);
   if (active === body.id) switchToId(DEFAULT_ID);
   return answer;
 }
@@ -219,34 +238,21 @@ function logFor(workspace) {
   return workspace.id === DEFAULT_ID ? host.ctx.log : logTo(LOG_DIR, `${FOLDER}-${workspace.id}`);
 }
 
-// A worker shows its page once as it starts, which only Default's opens; after that, a page asked for is a switch to its workspace.
+const windowsOf = (id = active) => {
+  if (!views.has(id)) views.set(id, { page: null, win: null, termWin: null });
+  return views.get(id);
+};
+
+const fileFor = (kind, id) => (id === DEFAULT_ID ? join(app.getPath('userData'), `${kind}.json`) : join(app.getPath('userData'), `${kind}-${id}.json`));
+
+// A worker shows its page once as it starts, which only Default's opens; after that, a page asked for brings its workspace's window forward.
 function showPageOf(workspace, url) {
   const starting = supervisor.get(workspace.id)?.state === 'starting';
   if (starting) pages.set(workspace.id, new URL(url));
-  if (starting && win && workspace.id === active) return { reused: true };
-  if (workspace.id === active) return showPage(url);
-  if (starting) return { reused: false };
-  return switchTo(workspace, url);
-}
-
-// The window's preloads are told the page's origin when it is made, so a page from another worker gets windows of its own.
-function switchTo(workspace, url) {
+  if (starting && windowsOf(workspace.id).win) return { reused: true };
+  if (starting && workspace.id !== DEFAULT_ID) return { reused: false };
   active = workspace.id;
-  page = new URL(url);
-  for (const { terminal } of terminals.values()) ['panel', 'window'].forEach((id) => terminal.detach(id));
-  const [oldWin, oldTermWin] = [win, termWin];
-  if (oldWin) writeFileSync(WINDOW_FILE, JSON.stringify({ ...readSaved(WINDOW_FILE), ...oldWin.getNormalBounds() }));
-  startHidden = false;
-  const switched = new URL(url);
-  switched.searchParams.set('switched', '1');
-  win = createWindow(switched.href);
-  termWin = null;
-  reveal();
-  oldTermWin?.destroy();
-  oldWin?.destroy();
-  if (oldTermWin) shareClaudeState();
-  refreshTray();
-  return { reused: false };
+  return showPageIn(workspace.id, url);
 }
 
 async function askForAnotherPort(taken) {
@@ -264,17 +270,19 @@ async function askForAnotherPort(taken) {
   return response === 0 ? free : null;
 }
 
-function showPage(url) {
-  if (win) {
-    reveal();
+function showPageIn(id, url) {
+  const v = windowsOf(id);
+  if (v.win) {
+    reveal(id);
     return { reused: true };
   }
-  page = new URL(url);
-  win = createWindow(url);
+  v.page = new URL(url);
+  v.win = createWindow(id, url);
   return { reused: false };
 }
 
-function reveal() {
+function reveal(id = active) {
+  const { win } = windowsOf(id);
   if (!win) return;
   if (win.isMinimized()) win.restore();
   win.show();
@@ -283,10 +291,10 @@ function reveal() {
 
 const SAFE_PAGE = { contextIsolation: true, nodeIntegration: false, sandbox: true };
 
-function keepOnPage(w, file) {
+function keepOnPage(w, file, id) {
   w.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   w.webContents.on('will-navigate', (event, to) => {
-    if (new URL(to).origin !== page.origin) event.preventDefault();
+    if (new URL(to).origin !== windowsOf(id).page?.origin) event.preventDefault();
   });
   w.on('close', (event) => {
     writeFileSync(file, JSON.stringify({ ...readSaved(file), ...w.getNormalBounds() }));
@@ -296,9 +304,16 @@ function keepOnPage(w, file) {
   });
 }
 
-function createWindow(url) {
-  const w = new BrowserWindow({ width: 1400, height: 900, ...savedBounds(WINDOW_FILE), show: !startHidden, title: APP_NAME, webPreferences: terminalPage() });
-  keepOnPage(w, WINDOW_FILE);
+// The one in front is the one menus, shortcuts and the terminal act for.
+function createWindow(id, url) {
+  const file = fileFor('window', id);
+  const w = new BrowserWindow({ width: 1400, height: 900, ...savedBounds(file), show: !startHidden, title: APP_NAME, webPreferences: terminalPage(id) });
+  keepOnPage(w, file, id);
+  w.on('focus', () => {
+    if (active === id) return;
+    active = id;
+    refreshTray();
+  });
   w.loadURL(url);
   return w;
 }
@@ -317,18 +332,19 @@ function savedBounds(file) {
 }
 
 // The Claude Code window's page attaches itself when it shows, which takes the session from the panel.
-function popOut() {
-  if (!page) throw new Error('the worker has not shown its page yet');
-  termWin ??= createTerminalWindow();
-  termWin.show();
-  termWin.focus();
+function popOut(id) {
+  const v = windowsOf(id);
+  if (!v.page) throw new Error('the worker has not shown its page yet');
+  v.termWin ??= createTerminalWindow(id);
+  v.termWin.show();
+  v.termWin.focus();
   app.focus({ steal: true });
-  shareClaudeState();
+  shareClaudeState(id);
   return { shown: true };
 }
 
-function terminalPage() {
-  return { ...SAFE_PAGE, preload: join(APP_DIR, 'terminal-preload.cjs'), additionalArguments: [`--cc-origin=${page.origin}`] };
+function terminalPage(id) {
+  return { ...SAFE_PAGE, preload: join(APP_DIR, 'terminal-preload.cjs'), additionalArguments: [`--cc-origin=${windowsOf(id).page.origin}`] };
 }
 
 // Above every window and on every Space, full screen apps included, which is what lets it be summoned over anything.
@@ -339,26 +355,26 @@ function floatOnTop(w, on) {
 
 function keepClaudeOnTop(on) {
   claudeOnTop = on;
-  if (termWin) floatOnTop(termWin, on);
+  for (const { termWin } of views.values()) if (termWin) floatOnTop(termWin, on);
   writeFileSync(CLAUDE_FILE, JSON.stringify({ ...readSaved(CLAUDE_FILE), onTop: on }));
-  shareClaudeState();
-  return claudeState();
+  for (const id of views.keys()) shareClaudeState(id);
+  return claudeState(active);
 }
 
-function dockClaude() {
-  termWin?.hide();
-  reveal();
-  shareClaudeState();
-  return claudeState();
+function dockClaude(id) {
+  windowsOf(id).termWin?.hide();
+  reveal(id);
+  shareClaudeState(id);
+  return claudeState(id);
 }
 
-function claudeState() {
-  return { shown: Boolean(termWin?.isVisible()), onTop: claudeOnTop };
+function claudeState(id = active) {
+  return { shown: Boolean(windowsOf(id).termWin?.isVisible()), onTop: claudeOnTop };
 }
 
-// Each worker reads this without waiting, so it is handed every change.
-function shareClaudeState() {
-  supervisor?.keep('claudeWindow', claudeState());
+// Each worker reads this without waiting, so it is handed every change to its own.
+function shareClaudeState(id) {
+  supervisor?.get(id)?.bridge.keep('claudeWindow', claudeState(id));
 }
 
 // The pty lives here, not in either view, so hiding or closing one leaves Claude Code running.
@@ -379,11 +395,11 @@ function terminalOf(id) {
 }
 
 function openTerminal(workspace, spec) {
-  if (!page) throw new Error('the worker has not shown its page yet');
-  if (workspace.id !== active) switchToId(workspace.id);
+  const v = windowsOf(workspace.id);
+  if (!v.win || workspace.id !== active) switchToId(workspace.id);
   terminalOf(workspace.id).terminal.start(spec);
-  if (!termWin?.isVisible()) return reveal();
-  termWin.focus();
+  if (!v.termWin?.isVisible()) return reveal(workspace.id);
+  v.termWin.focus();
   app.focus({ steal: true });
 }
 
@@ -397,21 +413,24 @@ function onTerminalTyped(workspace, fn) {
   return () => typed.delete(fn);
 }
 
-function createTerminalWindow() {
-  const w = new BrowserWindow({ ...TERMINAL_SIZE, ...savedBounds(TERMINAL_FILE), show: false, title: 'Claude Code', fullscreenable: false, webPreferences: terminalPage() });
+function createTerminalWindow(id) {
+  const file = fileFor('terminal-window', id);
+  const name = workspaces.length > 1 ? workspaces.find((w) => w.id === id)?.name : null;
+  const w = new BrowserWindow({ ...TERMINAL_SIZE, ...savedBounds(file), show: false, title: name ? `Claude Code: ${name}` : 'Claude Code', fullscreenable: false, webPreferences: terminalPage(id) });
   floatOnTop(w, claudeOnTop);
-  keepOnPage(w, TERMINAL_FILE);
+  keepOnPage(w, file, id);
   w.on('page-title-updated', (event) => event.preventDefault());
   w.on('closed', () => {
-    terminals.get(active)?.terminal.detach('window');
-    termWin = null;
-    shareClaudeState();
+    terminals.get(id)?.terminal.detach('window');
+    windowsOf(id).termWin = null;
+    shareClaudeState(id);
   });
-  w.loadURL(windowUrl('terminal'));
+  w.loadURL(windowUrl('terminal', id));
   return w;
 }
 
-function windowUrl(kind) {
+function windowUrl(kind, id = active) {
+  const page = windowsOf(id).page ?? pages.get(id);
   if (!page) throw new Error('the worker has not shown its page yet');
   const url = new URL(page);
   url.searchParams.set('window', kind);
@@ -439,15 +458,29 @@ function terminalAssets() {
 
 const live = (w) => (w && !w.isDestroyed() ? w.webContents : null);
 
+// Each window talks to its own workspace's Claude Code, found by which window sent it and from which page.
+function senderOf(event) {
+  for (const [id, v] of views) {
+    const view = bridgeView(event, { panel: live(v.win), window: live(v.termWin) }, v.page?.origin);
+    if (view) return { id, view };
+  }
+  return null;
+}
+
 function listenToTerminal() {
-  const viewOf = (event) => bridgeView(event, { panel: live(win), window: live(termWin) }, page?.origin);
   const sendTo = (contents) => (data) => !contents.isDestroyed() && contents.send('terminal:data', data);
   ipcMain.on('terminal:attach', (event, cols, rows) => {
-    const id = viewOf(event);
-    if (id) terminalOf(active).terminal.attach(id, sendTo(event.sender), cols, rows);
+    const from = senderOf(event);
+    if (from) terminalOf(from.id).terminal.attach(from.view, sendTo(event.sender), cols, rows);
   });
-  ipcMain.on('terminal:write', (event, data) => terminalOf(active).terminal.write(viewOf(event), data));
-  ipcMain.on('terminal:resize', (event, cols, rows) => terminalOf(active).terminal.resize(viewOf(event), cols, rows));
+  ipcMain.on('terminal:write', (event, data) => {
+    const from = senderOf(event);
+    if (from) terminalOf(from.id).terminal.write(from.view, data);
+  });
+  ipcMain.on('terminal:resize', (event, cols, rows) => {
+    const from = senderOf(event);
+    if (from) terminalOf(from.id).terminal.resize(from.view, cols, rows);
+  });
 }
 
 function artifactViewer() {
@@ -465,7 +498,8 @@ function artifactViewer() {
   });
 }
 
-function openArtifactCopy(viewer, spec) {
+function openArtifactCopy(spec, id) {
+  const page = windowsOf(id).page ?? pages.get(id);
   if (!page) throw new Error('the worker has not shown its page yet');
   return viewer.openCopy({ ...spec, origin: page.origin });
 }

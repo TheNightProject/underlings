@@ -104,3 +104,10 @@ test('Jump to offers every other workspace, with what waits there', async () => 
   const entries = JSON.parse(page.run('JSON.stringify(paletteEntries({}).filter((x) => x.group === "Workspaces").map((x) => [x.label, x.detail]))'));
   assert.deepEqual(entries, [['Switch to Side project', '3 waiting on you · cswap account 2']]);
 });
+
+test('with two workspaces each window\'s title names its own, and with one it is the app\'s name alone', async () => {
+  const two = await workspacesPage([DEFAULT, SIDE]);
+  assert.equal(two.document.title, 'Underlings · Work');
+  const one = await workspacesPage([DEFAULT]);
+  assert.equal(one.document.title, 'Underlings');
+});

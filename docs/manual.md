@@ -181,7 +181,9 @@ workspace has agents running, and never offers Default. A removed workspace's fo
 you delete them.
 
 With two or more, the **switcher** at the top of the rail names the one you are in and counts what
-waits in the others; pick one to bring its page to the window. They are in Jump to as **Switch to**,
+waits in the others; pick one to bring its own window forward. Each workspace has a window of its
+own, opened the first time you go to it and kept after that, so you can keep two side by side, and
+each window's title names its workspace. They are in Jump to as **Switch to**,
 and in the menu bar menu with each one's count. Each workspace has its own Claude Code in the
 terminal, running as its account, and switching keeps the others running.
 
