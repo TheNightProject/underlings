@@ -41,6 +41,7 @@
     "needs-you": [
       "Needs you",
       "Every MR waiting on you, with every reason it is, oldest first within each group. Agents on no MR, then email and Slack, come last.",
+      "All repos 5engine 2web 2cli 1",
       "Waiting on you",
       "mentionedABC-101 Cache the token lookup",
       "engine!7 · ivan mentioned you · 19 h ago",
