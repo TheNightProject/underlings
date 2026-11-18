@@ -67,6 +67,15 @@ test('the full-auto prompt tells the agent its tag, that the merge request is da
   assert.ok(!reReviewPrompt({ webUrl: URL, me: 'me', since: null, head: 'h' }).includes('finish_review'), 'a re-review belongs to no pass');
 });
 
+test('a pull request\'s prompts tell the agent to mark each reply as GitHub\'s and name no project number, and a merge request\'s are as they were', () => {
+  const PR = 'https://github.com/acme-co/web/pull/12';
+  for (const prompt of [autoReviewPrompt({ webUrl: PR, passId: 'p-1', me: 'frank-gh', provider: 'github' }), reReviewPrompt({ webUrl: PR, me: 'frank-gh', since: null, head: 'h', provider: 'github' })]) {
+    assert.ok(prompt.includes('plus "provider":"github", projectPath (owner/repo) and iid (the pull request number).'), prompt);
+    assert.ok(!prompt.includes('projectId'), prompt);
+  }
+  assert.ok(autoReviewPrompt({ webUrl: URL, passId: 'p-1', me: 'me' }).includes('plus projectPath, projectId and iid.'));
+});
+
 test('the ticket prompt puts the self review before the merge request, the skill or your own', () => {
   for (const command of ['', '/check']) {
     useCommands({ selfReviewCommand: command });

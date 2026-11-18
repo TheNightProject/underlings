@@ -1,5 +1,5 @@
 import { forgeOf, GITLAB, type ActivityEvent, type MrBrief } from '../data/forge.js';
-import { ticketsMovedBy } from '../data/jira.js';
+import { ticketsMovedBy } from '../ticketsource.js';
 import { eachAtMost, eventWindow } from '../standup/build.js';
 import { addDays, DAY, dayIn, startOfDay, timeZone } from '../locale.js';
 import { idKey, keyOf } from '../refs.js';

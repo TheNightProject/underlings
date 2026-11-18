@@ -105,6 +105,14 @@ test('the brief for one thread names the MR, its ticket and branches, and quotes
   assert.match(text, /raise a ABC ticket under the epic ABC-1234 belongs to, assigned to me, and note its key\./);
 });
 
+test('on a GitHub pull request the brief says to reply, resolve and ask again with gh, on the GraphQL thread ids it quotes', () => {
+  const path = 'acme-co/web';
+  const github = fixBrief({ mr: mr({ provider: 'github', projectPath: path, iid: 12, webUrl: 'https://github.com/acme-co/web/pull/12' }), targetBranch: 'main', threads: [{ ...THREADS[0]!, id: 'PRRT_kwDOAA' }], checkout: CHECKOUT });
+  assert.match(github, /^\[Thread 1\] id PRRT_kwDOAA, opened by ivan/m);
+  assert.ok(github.includes('This is a GitHub pull request: use gh. Reply with gh api graphql and addPullRequestReviewThreadReply, resolve with resolveReviewThread, each on the thread id above, and ask again with gh pr edit 12 --repo acme-co/web --add-reviewer <login>.'), github);
+  assert.ok(!brief([THREADS[0]!]).includes('gh '), 'a merge request\'s brief says nothing of gh');
+});
+
 test('a follow-up ticket goes to the default project in the template\'s headings, and with neither the brief names no project', () => {
   changeSettings((s) => ({ ...s, jira: { ...s.jira, defaultProject: 'OPS', ticketTemplate: '# Context\n# Change' } }));
   try {

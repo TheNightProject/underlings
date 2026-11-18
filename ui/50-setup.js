@@ -158,21 +158,60 @@ function githubTokenFix(c) {
   ];
 }
 
+// Only the app has a picker; in a browser tab the typed field is the way.
+function folderButton(id, current, save) {
+  if (state?.shell !== 'app') return null;
+  const choose = async () => {
+    ui.busy.add(id);
+    render(true);
+    try {
+      const { chosen } = await api('/api/choose-folder', { from: current ?? '' });
+      if (chosen) await save(chosen);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      ui.busy.delete(id);
+      render(true);
+    }
+  };
+  return el('button', { id, type: 'button', disabled: ui.busy.has(id), onclick: choose }, icon('folder'), ui.busy.has(id) ? 'Choosing…' : 'Choose…');
+}
+
 function saveSettingFrom(key, id) {
   return async (value) => setupSaved(await matrixAct('settings', { patch: { [key]: String(value).trim() } }, 'setup-' + key), id);
 }
 
+const TICKET_SOURCES = [['jira', 'Jira'], ['github', 'GitHub Issues'], ['off', 'Off']];
+
+// One check for whichever tracker tickets come from, with the one field that tracker needs.
 function setupJiraFix(c) {
+  const source = c.source ?? 'jira';
   const missingAcli = c.state === 'fail' && !c.command;
-  return el('div', { class: 'setup-fix' },
-    setupField('setup-jira', 'Atlassian site', c.site, 'yours.atlassian.net', saveSettingFrom('jiraSite', 'setup-jira'), 'setup-jiraSite'),
-    c.command ? setupCommand(c.command) : null,
-    missingAcli ? outside(c.link, 'Install acli') : null);
+  return el('div', { class: 'setup-fix setup-tickets' },
+    setupTicketSource(source),
+    source === 'jira' ? [
+      setupField('setup-jira', 'Atlassian site', c.site, 'yours.atlassian.net', saveSettingFrom('jiraSite', 'setup-jira'), 'setup-jiraSite'),
+      c.command ? setupCommand(c.command) : null,
+      missingAcli ? outside(c.link, 'Install acli') : null,
+    ] : null,
+    source === 'github' ? [
+      setupField('setup-github-project', 'GitHub Project', c.project, 'acme/3 or its link', saveSettingFrom('tickets.githubProject', 'setup-github-project'), 'setup-tickets.githubProject'),
+      el('p', { class: 'hint' }, 'The Project whose Status field gives the ticket board its columns. Blank moves issues between Open and Closed.'),
+    ] : null);
+}
+
+function setupTicketSource(source) {
+  const pick = async (value) => setupSaved(await matrixAct('settings', { patch: { 'tickets.source': value } }, 'setup-tickets.source'), 'setup-ticket-source');
+  return el('span', { class: 'setup-field' },
+    el('label', { for: 'setup-ticket-source' }, 'Tickets from'),
+    el('select', { id: 'setup-ticket-source', disabled: ui.busy.has('setup-tickets.source'), onchange: (e) => pick(e.target.value) },
+      TICKET_SOURCES.map(([value, label]) => el('option', { value, selected: value === source }, label))));
 }
 
 function setupWorkspaceFix(c) {
   return el('div', { class: 'setup-fix' },
     setupField('setup-root', 'Code folder', c.root, '/Users/you/code', saveSettingFrom('workspaceRoot', 'setup-root'), 'setup-workspaceRoot'),
+    folderButton('setup-root-choose', c.root, saveSettingFrom('workspaceRoot', 'setup-root')),
     c.names?.length ? el('p', { class: 'hint setup-names' }, c.names.join(', ') + (c.checkouts > c.names.length ? ' and ' + (c.checkouts - c.names.length) + ' more' : '')) : null);
 }
 
@@ -241,7 +280,7 @@ async function finishSetupView() {
 
 function setupSettingsGroup() {
   return el('section', { class: 'section settings-group', id: 'setup-settings' }, el('h2', {}, 'Setup'),
-    el('p', { class: 'hint' }, 'Checks Claude Code, your GitLab token, GitHub, Jira, the code folder, the agent commands, the Underlings skills and the artifact hook, with a fix for each.'),
+    el('p', { class: 'hint' }, 'Checks Claude Code, your GitLab token, GitHub, where tickets come from, the code folder, the agent commands, the Underlings skills and the artifact hook, with a fix for each.'),
     el('div', {}, el('a', { class: 'fix-link', ...inPage('#setup') }, icon('list-checks'), 'Open Setup')));
 }
 

@@ -1,0 +1,20 @@
+.ws-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--ws, var(--accent)); }
+.ws-blue { --ws: #6f93ff; } .ws-green { --ws: #4cc38a; } .ws-amber { --ws: #e7a53c; } .ws-rose { --ws: #f0708a; }
+.ws-violet { --ws: #b18cff; } .ws-teal { --ws: #3fc1c4; } .ws-slate { --ws: #8a94a6; }
+
+.switcher { position: relative; padding: 0 6px 8px; }
+.switcher-button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 9px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--fg); text-align: left; }
+.switcher-button:hover { background: var(--hover); }
+.switcher-button .ws-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.switcher-menu { position: absolute; z-index: 30; left: 6px; right: 6px; top: calc(100% - 4px); display: flex; flex-direction: column; padding: 4px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--raised); box-shadow: var(--menu-shadow); }
+.switcher-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 0; border-radius: 7px; background: transparent; color: var(--fg); text-align: left; text-decoration: none; }
+.switcher-item:hover { background: var(--hover); }
+.switcher-item[aria-checked="true"] { background: var(--accent-soft); }
+.switcher-item .ws-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.switcher-item.manage { color: var(--muted); border-top: 1px solid var(--line); border-radius: 0 0 7px 7px; margin-top: 2px; }
+
+.workspace-row .row-head { align-items: center; }
+.workspace-edit, .workspace-create { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; }
+.workspace-edit label, .workspace-create label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.workspace-copy { display: inline-flex; align-items: center; gap: 6px; }
+.workspace-create .hint { flex-basis: 100%; margin: 0; }

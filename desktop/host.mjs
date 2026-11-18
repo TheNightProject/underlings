@@ -155,8 +155,8 @@ function bindOne(globalShortcut, accelerator, handler) {
   }
 }
 
-function logTo(dir) {
-  const file = join(dir, `${FOLDER}.log`);
+export function logTo(dir, name = FOLDER) {
+  const file = join(dir, `${name}.log`);
   let writing = mkdir(dir, { recursive: true });
   return (text) => {
     writing = writing.then(() => appendFile(file, `${new Date().toISOString()} ${text}\n`)).catch(() => {});
@@ -168,7 +168,7 @@ export async function nextFreePort(taken) {
   return null;
 }
 
-function isFree(port) {
+export function isFree(port) {
   return new Promise((resolve) => {
     const probe = net.createServer().once('error', () => resolve(false));
     probe.listen(port, '127.0.0.1', () => probe.close(() => resolve(true)));

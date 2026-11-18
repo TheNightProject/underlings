@@ -15,7 +15,8 @@ function terminalKnowing({ mrs = [], tickets = [], agents = [], jiraSite = null,
     paths,
     githubPaths: pathsOn('github'),
     groups: new Set([...paths].map((p) => p.split('/')[0])),
-    projects: new Set([...projects, ...[...tickets, ...agents.map((a) => a.ticket)].filter(Boolean).map((k) => k.split('-')[0])]),
+    projects: new Set([...projects, ...[...tickets, ...agents.map((a) => a.ticket)].filter((k) => k && !GITHUB_ISSUE.test(k)).map((k) => k.split('-')[0])]),
+    issues: new Set([...tickets, ...agents.map((a) => a.ticket)].filter((k) => k && GITHUB_ISSUE.test(k))),
     agents,
     jiraSite,
   };
@@ -73,6 +74,7 @@ function terminalPrRef(text, project, iid, known) {
   const owners = project.includes('/') ? [project] : [...known.githubPaths].filter((p) => p.split('/').pop() === project);
   if (owners.length !== 1) return null;
   const key = keyOf({ provider: 'github', projectPath: owners[0], iid });
+  if (known.issues.has(key)) return { kind: 'ticket', key, url: null, text };
   return isKey(key) ? { kind: 'mr', key, url: null, text } : null;
 }
 
@@ -145,6 +147,7 @@ function terminalAgentWords(a) {
 
 function terminalUrlFor(ref, known) {
   if (ref.url) return ref.url;
+  if (ref.kind === 'ticket' && GITHUB_ISSUE.test(ref.key)) return githubWeb() + '/' + ref.key.replace('#', '/issues/');
   if (ref.kind === 'ticket') return known.jiraSite ? 'https://' + known.jiraSite + '/browse/' + ref.key : null;
   const parts = keyParts(ref.key);
   // GitHub sends an issue link on to the pull request when the number is one, so a number it cannot tell apart still lands.
@@ -158,9 +161,9 @@ function terminalAction(ref, known, { outside = false } = {}) {
   if (outside && url) return go('browser', 'open it in your browser');
   const agent = terminalAgentFor(ref, known.agents);
   if (agent) return go('agent', terminalAgentWords(agent), { handle: agent.handle });
-  if (ref.kind === 'ticket' && known.projects.has(ref.key.split('-')[0])) return go('ticket', 'open the ticket (no agent yet)', { key: ref.key });
+  if (ref.kind === 'ticket' && (known.issues.has(ref.key) || known.projects.has(ref.key.split('-')[0]))) return go('ticket', 'open the ticket (no agent yet)', { key: ref.key });
   if (ref.kind === 'mr' && known.mrs.has(ref.key)) return go('mr', keyProvider(ref.key) === 'github' ? 'open the pull request' : 'open the MR', { key: ref.key });
-  return go('browser', ref.kind === 'ticket' ? 'open it in Jira' : 'open it on ' + forgeName(ref.key));
+  return go('browser', ref.kind !== 'ticket' ? 'open it on ' + forgeName(ref.key) : GITHUB_ISSUE.test(ref.key) ? 'open it on GitHub' : 'open it in Jira');
 }
 
 function terminalTarget(action) {

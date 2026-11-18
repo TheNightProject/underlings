@@ -21,9 +21,9 @@ The ticket key comes first, then optionally `tier=low` (the default is `tier=hig
 
 ## 1. Intake
 
-1. Read the ticket with its comments and links. Through `acli`: `acli jira workitem view <KEY> --fields '*all' --json`. Use an Atlassian MCP server instead if one is connected.
+1. Read the ticket with its comments and links. A Jira key such as `ABC-123` goes through `acli`: `acli jira workitem view <KEY> --fields '*all' --json`, or an Atlassian MCP server if one is connected. A GitHub issue, `owner/repo#12`, goes through `gh issue view 12 --repo owner/repo --comments`.
 2. Find the repositories it touches among the checkouts you were given (otherwise the folders with a `.git` under the workspace root, Underlings' Settings, Workspace), any open merge requests or branches that already name the ticket (the forge's API with the token in your environment, `$GITLAB_TOKEN` for GitLab), and any design records or docs the ticket names.
-3. Move the ticket to the status your workflow uses for work started, usually In Progress: `acli jira workitem transition --key <KEY> --status "<status>" --yes`.
+3. Move the ticket to the status your workflow uses for work started, usually In Progress: `acli jira workitem transition --key <KEY> --status "<status>" --yes` for Jira. A GitHub issue moves by its GitHub Project's Status field, through `gh project item-edit`, when it is on one; otherwise it stays open.
 
 ## 2. Plan
 

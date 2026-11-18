@@ -7,7 +7,7 @@ const NEEDS_SHOWN = 5;
 const HERE_GROUPS = ['Merge request', 'Drawer', 'This view'];
 const PALETTE_ORDER = ['Merge request', 'Drawer', 'This view', 'Go to', 'Merge requests', 'Tickets', 'Email', 'Slack', 'Agents', 'People', 'Artifacts', 'Actions', 'Settings', 'Everywhere'];
 const PALETTE_PREFIXES = { '>': ['Actions', 'Settings', 'Merge request', 'Drawer', 'This view', 'Everywhere'], '!': ['Merge requests'], '@': ['People'], '#': ['Go to'] };
-const ENTITY_KINDS = [mrEntries, ticketEntries, emailEntries, slackEntries, agentEntries, peopleEntries, artifactEntries, settingEntries];
+const ENTITY_KINDS = [mrEntries, ticketEntries, emailEntries, slackEntries, agentEntries, peopleEntries, artifactEntries, settingEntries, (d) => workspaceEntries(d)];
 const SHORTCUT_GROUPS = ['Everywhere', 'Go to', 'Lists', 'Merge request', 'Drawer', 'This view'];
 const KEY_GLYPHS = { ArrowDown: '↓', ArrowUp: '↑' };
 const ACCELERATOR_GLYPHS = { CommandOrControl: '⌘', CmdOrCtrl: '⌘', Command: '⌘', Cmd: '⌘', Control: '⌃', Ctrl: '⌃', Alt: '⌥', Option: '⌥', Shift: '⇧' };

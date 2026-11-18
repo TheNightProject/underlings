@@ -99,9 +99,15 @@ export interface GithubSettings {
   host: string;
 }
 
+export type TicketSourceChoice = 'jira' | 'github' | 'off';
+
 export interface TicketSettings {
   /** Repo paths whose merged MRs move a ticket straight to finished rather than QA. */
   noQaPaths: string;
+  /** Jira reads nothing until jiraSite is set, and GitHub nothing until github.on. */
+  source: TicketSourceChoice;
+  /** owner/number of the GitHub Project whose Status field holds the board's columns. */
+  githubProject: string;
 }
 
 export const DEFAULT_GITLAB_HOST = 'https://gitlab.com';
@@ -110,7 +116,7 @@ export const DEFAULT_GITHUB_API = 'https://api.github.com';
 export const DEFAULT_JIRA: JiraSettings = { projects: '', defaultProject: '', statuses: '', doneStatuses: '', issueType: 'Task', ticketTemplate: '' };
 export const DEFAULT_GITLAB: GitlabSettings = { on: true, host: DEFAULT_GITLAB_HOST };
 export const DEFAULT_GITHUB: GithubSettings = { on: false, scope: 'involved', repos: '', host: DEFAULT_GITHUB_API };
-export const DEFAULT_TICKETS: TicketSettings = { noQaPaths: '' };
+export const DEFAULT_TICKETS: TicketSettings = { noQaPaths: '', source: 'jira', githubProject: '' };
 
 export interface AgentCommands {
   reviewCommand: string;
@@ -285,6 +291,27 @@ const tidyProjects = (text: string): string | null => (typedWords(text).every((w
 const tidyProject = (text: string): string | null => (text.trim() === '' || projectList(text).length === 1 ? (projectList(text)[0] ?? '') : null);
 const tidyOneLine = (text: string): string => text.replace(/\s+/g, ' ').trim();
 
+export interface ProjectRef {
+  owner: string;
+  number: number;
+}
+
+const PROJECT_LINK = /\/(?:orgs|users)\/([\w.-]+)\/projects\/([1-9]\d*)(?:[/?#]|$)/;
+const PROJECT_SHORT = /^([\w.-]+)\s*[/#\s]\s*([1-9]\d*)$/;
+
+/** A Project's link, or its owner and number as acme/3. */
+export function projectRefOf(text: string | null | undefined): ProjectRef | null {
+  const typed = String(text ?? '').trim();
+  const found = PROJECT_LINK.exec(typed) ?? PROJECT_SHORT.exec(typed);
+  return found ? { owner: found[1] as string, number: Number(found[2]) } : null;
+}
+
+function tidyProjectRef(text: string): string | null {
+  if (!text.trim()) return '';
+  const ref = projectRefOf(text);
+  return ref ? `${ref.owner}/${ref.number}` : null;
+}
+
 export const NESTED_ROWS: NestedRow[] = [
   {
     key: 'jira.projects',
@@ -326,6 +353,20 @@ export const NESTED_ROWS: NestedRow[] = [
     label: 'Ticket template',
     hint: 'lines starting # are the headings every drafted ticket has, in order. Anything else is said to Claude as it is written. Blank lets Claude write the description freely.',
     kind: 'lines',
+  },
+  {
+    key: 'tickets.source',
+    label: 'Tickets from',
+    hint: 'where Tickets, Make a ticket and kickoff agents read and write tickets. Jira needs the Jira site, GitHub Issues needs GitHub switched on, and Off asks neither.',
+    kind: 'choice',
+    choices: [['jira', 'Jira'], ['github', 'GitHub Issues'], ['off', 'Off']],
+  },
+  {
+    key: 'tickets.githubProject',
+    label: 'GitHub Project',
+    hint: 'the GitHub Project whose Status field gives the ticket board its columns and moves, as its link or owner/number such as acme/3. Blank, or an issue not in it, moves between Open and Closed.',
+    kind: 'text',
+    tidy: tidyProjectRef,
   },
   {
     key: 'tickets.noQaPaths',

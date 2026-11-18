@@ -25,13 +25,12 @@ beforeEach(() => {
   changeSettings((s) => ({ ...s, github: { ...DEFAULT_GITHUB, on: true } }));
 });
 
-test('GitHub can do none of what it cannot yet, and says so by flag: no hold, no taking an approval back, no log for another app\'s check', () => {
+test('GitHub says by flag what it cannot do: no log or retry for another app\'s check, no to-dos, and no resolving a plain comment', () => {
   assert.deepEqual(githubForge.caps, {
-    hold: false, withdrawApproval: false, rebase: false, autoMerge: false, jobLogs: 'actions', retry: false, todos: false, generalThreads: false, post: false, agents: false, ownMr: false,
+    hold: true, withdrawApproval: true, rebase: true, autoMerge: true, jobLogs: 'actions', retry: 'actions', todos: false, generalThreads: false, post: true, agents: true, ownMr: true,
   });
-  assert.throws(() => needs(githubForge, 'hold', 'hold a merge'), { message: 'GitHub has no way to hold a merge' });
-  assert.throws(() => needs(githubForge, 'post', 'send anything to it from here yet'), /^Error: GitHub has no way to send anything/);
-  assert.doesNotThrow(() => needs(githubForge, 'jobLogs', 'read a log'));
+  assert.throws(() => needs(githubForge, 'todos', 'read to-dos'), { message: 'GitHub has no way to read to-dos' });
+  for (const cap of ['hold', 'ownMr', 'agents', 'jobLogs', 'retry'] as const) assert.doesNotThrow(() => needs(githubForge, cap, 'do it'));
 });
 
 test('a flag GitLab leaves out is one it can do, so the flags it always had read as they did', () => {
@@ -41,15 +40,9 @@ test('a flag GitLab leaves out is one it can do, so the flags it always had read
   }
 });
 
-test('every write GitHub cannot yet do says it comes in a later version, and asks GitHub nothing', async () => {
+test('the reads of one pull request\'s activity, which only the standup and the game ask, say they come in a later version, and ask GitHub nothing', async () => {
   const forge = forgeOf(REF);
-  const tries = [
-    forge.postFinding({ id: 'q1' } as never, 'single' as never), forge.reply(REF, 'PRRT_1', 'ok'), forge.resolve(REF, 'PRRT_1', true), forge.note(REF, 'hi'), forge.approve(REF, true),
-    forge.hold(REF, true), forge.merge(REF, { sha: 'a', whenGreen: false } as never), forge.cancelAutoMerge(REF), forge.rebase(REF), forge.rebaseState(REF), forge.ready(REF),
-    forge.setReviewers(REF, ['trent']), forge.rerequest(REF, 'trent'), forge.retryJob(REF, 7001), forge.retryChecks(REF, 9001),
-  ];
-  const settled = await Promise.allSettled(tries);
-  assert.equal(settled.length, 15);
+  const settled = await Promise.allSettled([forge.brief(REF), forge.approvers(REF)]);
   for (const result of settled) {
     assert.equal(result.status, 'rejected');
     assert.match(String((result as PromiseRejectedResult).reason.message), /^GitHub: .+ from here comes in a later version\. Do it on GitHub for now$/);
@@ -69,12 +62,12 @@ test('who you are on GitHub is the login and the name the token belongs to', asy
   assert.equal(await githubForge.myName?.(), 'Frank Foster');
 });
 
-test('full auto never takes a GitHub pull request, whoever wrote it and whatever the default row says', () => {
+test('full auto takes a GitHub pull request by its author\'s row, or the default row when it asks for you', () => {
   const rules = peopleRules('*:shadow, ivan:comments');
-  assert.equal(levelForMr(mr({ author: 'ivan' }), 'frank', rules), 'comments');
-  assert.equal(levelForMr(mr({ author: 'judy' }), 'frank', rules), 'shadow');
-  assert.equal(levelForMr({ ...mr({ author: 'ivan' }), provider: 'github' }, 'frank', rules), null);
-  assert.equal(levelForMr({ ...mr({ author: 'judy' }), provider: 'github' }, 'frank', rules), null);
+  const pr = (author: string) => ({ ...mr({ author, reviewers: ['frank-gh'] }), provider: 'github' as const });
+  assert.equal(levelForMr(pr('ivan'), 'frank-gh', rules), 'comments');
+  assert.equal(levelForMr(pr('judy'), 'frank-gh', rules), 'shadow');
+  assert.equal(levelForMr(pr('judy'), 'frank', rules), null, 'one that asks someone else is not reviewed on request');
 });
 
 test('a watched GitHub pull request remembers it is one, so whether it has closed is asked of GitHub, and a GitLab watch is stored as it was', async () => {

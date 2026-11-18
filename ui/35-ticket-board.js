@@ -1,9 +1,11 @@
 const TICKET_LANES = ['To Do', 'In Progress', 'Peer Review', 'QA', 'Blocked'];
 const TICKET_DRAG = 'application/x-cc-ticket';
 
-function ticketLanes(tickets) {
-  const others = [...new Set(tickets.map((x) => x.status))].filter((s) => !TICKET_LANES.includes(s)).sort();
-  return [...TICKET_LANES, ...others];
+// A source that names its columns, as a GitHub Project does, gives them in its own order; the rest follow.
+function ticketLanes(tickets, columns = ui.tickets.data?.columns) {
+  const named = columns?.length ? columns : TICKET_LANES;
+  const others = [...new Set(tickets.map((x) => x.status))].filter((s) => !named.includes(s)).sort();
+  return [...named, ...others];
 }
 
 const ticketLane = (x) => (ui.tickets.pending?.key === x.key ? ui.tickets.pending.to : x.status);

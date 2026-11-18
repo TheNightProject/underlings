@@ -107,8 +107,8 @@ every check once more.
 | Claude Code | `claude auth status` says signed in | a link to install it, or `claude auth login` to copy |
 | GitLab token | on by default: GitLab, at gitlab.com or your **GitLab host**, knows the token and it has the `api` scope. Switched off, it is optional and asks nothing | the switch, a link that makes one with `api` ticked, a field to paste it, and the host field |
 | GitHub | optional, and off until you switch it on here: the token in use is known to GitHub, with `repo` and `read:org` | the switch, a link that makes a token, a field to paste one, and `gh auth refresh -s` for a token gh holds |
-| Jira | optional: a site is set, `acli` is on the PATH and `acli jira auth status` says signed in | the site field, a link to install `acli`, or `acli jira auth login --web` to copy |
-| Code folder | the folder exists and has at least one git checkout in it, counted | the folder field |
+| Tickets | optional, by **Tickets from**: for Jira, a site is set, `acli` is on the PATH and `acli jira auth status` says signed in; for GitHub Issues, GitHub is on and the **GitHub Project**, when one is named, can be read, its columns listed | the Tickets from picker, then for Jira the site field, a link to install `acli`, or `acli jira auth login --web` to copy, and for GitHub Issues the Project field |
+| Code folder | the folder exists and has at least one git checkout in it, counted | the folder field, and **Choose…** for the Mac's folder picker |
 | Agent commands | always: each is the Underlings skill or your own | a field for each, see Agent skills |
 | Underlings skills | optional: the plugin is installed in your own Claude Code, at the version this app ships | the two commands it will run, shown first, with **Install the skills**, **Update the skills** or **Remove them**, see Agent skills |
 | Artifact hook | a `PostToolUse` hook in `~/.claude/settings.json` runs `record-artifact.mjs` | **Install the hook**, see Recording artifacts |
@@ -118,25 +118,27 @@ its first error about the token, with a link here, rather than after a failed Re
 ask GitLab, Claude Code and `acli` only when Setup is open, never on a timer.
 
 With **GitLab** switched off, in Setup or under Settings, nothing at all is asked of GitLab and no
-token is needed. The list then has only your GitHub pull requests, and full auto, which reviews
-only GitLab merge requests so far, stops and says why.
+token is needed. The list then has only your GitHub pull requests, and full auto reviews those.
+With GitHub off too, full auto has nothing to review, and says so.
 
 ## GitHub
 
-Your pull requests on GitHub sit in the same Merge requests list as your GitLab ones, read only
-for now: read one, its diff, reviews, checks and Actions logs here, and open it on GitHub to act
-on it. It is off until you switch it on in Setup or under Settings. Being signed in to `gh` never
-turns it on, and while it is off nothing is asked of GitHub.
+Your pull requests on GitHub sit in the same Merge requests list as your GitLab ones, and take
+the same actions: read one, its diff, reviews, checks and Actions logs, review it with an agent,
+post, approve, hold, merge and fix it from here. It is off until you switch it on in Setup or under
+Settings. Being signed in to `gh` never turns it on, and while it is off nothing is asked of GitHub.
 
 - **The token** is the first of one pasted in Setup (kept in `~/.config/underlings/github-token`,
   readable only by you), `GITHUB_TOKEN` or `GH_TOKEN` from your shell profile, and `gh auth
   token`, which is held in memory and never written. Setup says which is in use, who it is and its
   scopes: `repo` and `read:org` for a classic token or gh. A fine-grained token lists none, so give
-  it read access to pull requests, contents, checks, commit statuses and Actions; it covers one
-  owner. An organisation that enforces single sign-on answers with where to authorise the token,
+  it read access to contents, checks and commit statuses, and read and write access to pull
+  requests and Actions, which posting, merging and running jobs again need; it covers one owner. An organisation that enforces single sign-on answers with where to authorise the token,
   and Setup says so. Agents are never given it.
 - **Which pull requests** is **Involving me** by default: one search reads every open one you
-  wrote, are assigned, are asked to review or are mentioned in, whichever organisation it is in.
+  wrote, are assigned, are asked to review, are mentioned in or have reviewed, whichever
+  organisation it is in. Any review you send takes GitHub's request for it away, so a pull request
+  you have commented on stays in the list.
   **My organisations** also reads every open one in the repos pushed to in the last 90 days in
   your organisations. **GitHub repos** narrows either, as Repos does, over `owner/repo`.
 - **GitHub Enterprise Server** is the **GitHub API** setting, such as
@@ -145,14 +147,89 @@ turns it on, and while it is off nothing is asked of GitHub.
   GitHub does not count, a wait for `retry-after` or the reset, and no sleeping through a wait
   of more than a minute. Hover GitHub on the status line for how many requests are left.
 - **One list.** Each forge is read at once and has its own account, error banner and Needs you
-  card, so one failing leaves the other's rows. A GitHub row shows a mark and `owner/repo#12`, and
-  what GitHub cannot do here yet, posting, approving, holding, merging, retries and agents, is
-  hidden, with Full auto never taking a GitHub pull request. GitHub's states read as the codes
-  the page already shows: a pull request that branch rules block says so, one GitHub has not
-  yet worked out says it is checking, and a check from another app has a link in place of a log.
+  card, so one failing leaves the other's rows. A GitHub row shows a mark and `owner/repo#12`.
+  GitHub's states read as the codes the page already shows: a pull request that branch rules block
+  says so, one GitHub has not yet worked out says it is checking, and a check from another app has
+  a link in place of a log.
+- **Posting.** A finding on a line opens a review thread on that line of the head; one on the
+  change as a whole, or on a line the diff no longer shows, is a comment on the conversation, the
+  latter with its `path:line` first. A reply goes on its thread, and resolving is GitHub's own.
+  A review's words and a conversation comment are not threads on GitHub: a reply to one is a
+  comment of its own, and neither can be resolved.
+- **Approving and holding.** Approving is an approving review. A hold is a review that requests
+  changes, with the hold's reason as its text, so nothing else is posted; it blocks the merge
+  wherever the branch rules ask for reviews, as GitLab's does where approvals are required.
+  Lifting a hold, or taking an approval back, dismisses that review with the reason, which needs
+  write access, and on a protected branch that limits who may dismiss, to be one of them.
+  Approving over your own hold lifts it, as GitHub does.
+- **Your own pull requests.** **Merge** sends the head you saw and merges the way GitHub's own
+  button would: your last choice, or the repo's default, among the ways the repo allows. **Merge
+  when green** is GitHub's auto-merge, which the repo must allow, and cancelling turns it off.
+  **Update branch** stands in for Rebase: GitHub merges the target in, and the row waits until
+  the head moves. **Mark ready**, choosing reviewers and asking again work as on GitLab; someone
+  who has reviewed stays a reviewer and is asked again only by **Ask again**.
+- **Checks.** A failed or cancelled Actions job runs again on its own, and **Retry failed jobs**
+  runs again the failed jobs of every Actions run on the head. A check from another app is run
+  again only on the page it links to.
+- **Agents and full auto.** Review agents read a pull request with `gh`, so it must be signed in,
+  and queue what they find as GitHub's. A fix agent cuts its checkout from `origin/<branch>`, so a
+  pull request from a fork is not fixed here, and replies, resolves and asks again with `gh`. Full
+  auto takes a pull request by its author's row in People, or on request when it asks for your
+  GitHub login, and the People table lists pull request authors too. A login on one forge is never
+  taken for you on the other, so a name shared by two people is one row in People for both.
 - **References.** `owner/repo#12` and pull request links open the drawer, in a description and
   in Claude Code's terminal; there `repo#12` links when one known GitHub repo has that name, and
-  a bare `#12` never does. Inside a pull request, `#12` is that repo's.
+  a bare `#12` never does. Inside a pull request, `#12` is that repo's. While tickets come from
+  GitHub Issues, an `owner/repo#12` that your tickets list opens the ticket drawer instead, as an
+  issue and a pull request share their repo's numbers.
+- **Issues as tickets.** **Tickets from**, under Ticket settings, set to GitHub Issues makes your
+  GitHub issues the tickets, as Tickets describes. It needs GitHub on; with GitHub off, Tickets
+  says so and nothing is asked. The token needs `repo` for private repos, and `project` (or
+  `read:project` to read alone) for a GitHub Project; a fine-grained token needs read and write
+  access to issues and, for an organisation's Project, to its projects.
+
+## Workspaces
+
+Each workspace is a separate Underlings: its own settings, tokens, Claude account, agents, queue
+and stats, all running at once, so polling and full auto carry on in the ones you are not looking
+at. What is about you is shared by all of them: your profile, time and region, the game, updates,
+the window and the shortcuts.
+
+- **Default** is the setup you already have, in the same folders and on the same port.
+- **Another workspace** keeps its settings in `~/.config/underlings/workspaces/<id>/` and its
+  state in `~/.local/state/underlings/workspaces/<id>/`. It never takes a GitLab or GitHub token,
+  a state folder or a Claude login from your shell profile, so paste its tokens in its own Setup.
+- **Its Claude account** is a cswap account number. Its worker, its agents, the terminal and the
+  Slack and email reads all run in that account's config folder. Blank is the default login.
+- Each runs in a process of its own, and the app starts one again if it stops: after 2 s, then
+  15 s, then a minute, and not after that. Its log is `~/Library/Logs/Underlings/underlings-<id>.log`.
+- A banner says which workspace it came from, and clicking it shows that workspace in the window.
+  The menu bar count adds up every workspace, and **Pause full auto** there pauses them all.
+- Only Default checks for updates on its own.
+
+**Workspaces**, under Reviews in the rail, lists them all. Make one there with a name, a cswap
+account and a colour, starting fresh or copying another's settings: a copy takes how it reads and
+shows things, never its tokens, its Setup or its history. Rename, recolour or change the account of
+any of them; a new account starts its worker again. **Remove** asks to be sure, is refused while the
+workspace has agents running, and never offers Default. A removed workspace's folders stay until
+you delete them.
+
+With two or more, the **switcher** at the top of the rail names the one you are in and counts what
+waits in the others; pick one to bring its own window forward. Each workspace has a window of its
+own, opened the first time you go to it and kept after that, so you can keep two side by side, and
+each window's title names its workspace. They are in Jump to as **Switch to**,
+and in the menu bar menu with each one's count. Each workspace has its own Claude Code in the
+terminal, running as its account, and switching keeps the others running.
+
+They are kept in `~/.config/underlings/workspaces.json`, read when the app starts:
+
+```json
+{ "workspaces": [{ "id": "side-project", "name": "Side project", "port": 47322, "account": "2", "colour": "rose" }] }
+```
+
+An id is lower case letters, digits and dashes, and each port is the workspace's own. An entry
+with the id `default` names Default and gives it an account and a colour. One that cannot run as
+written is left out, and the log says why.
 
 ## Keys
 
@@ -635,7 +712,7 @@ capturing what each review agent has on screen.
   every 30 s, and no worker sends it meanwhile.
 - **Pause** stops launches, sends and auto re-review at the next item. Run output is still read.
 - **Readiness.** It drives only with an engine build that has the lock, a Code folder to launch
-  into, and `GITLAB_TOKEN`. The strip at the foot of the rail says which is missing, and the Full
+  into, and `GITLAB_TOKEN` or GitHub switched on. The strip at the foot of the rail says which is missing, and the Full
   auto view offers the fix. `UNDERLINGS_STATE_DIR` and `GITLAB_TOKEN` are read from your shell profile
   before the engine loads, so every copy of the app shares one state folder.
 - **Reload and deactivate.** A code reload hands the same seat to the new code, so the lock never
@@ -697,9 +774,16 @@ NIT, NAB or Consider you are leaving out of the MR:
   failed after the ticket existed is offered again on its own, and a ticket whose key `acli` did
   not print is shown under its epic, to be found there and answered by hand.
 
+While tickets come from GitHub Issues the ticket is a GitHub issue, under a parent issue or in a
+repo, and `acli` is never sought; Tickets, GitHub Issues, says how.
+
 ## Tickets
 
-With no Jira site set, Tickets says it is off and asks Jira nothing; Setup sets the site.
+Tickets come from Jira or from GitHub Issues, by **Tickets from** under Ticket settings or in
+Setup; Jira is the default. With Jira and no site set, with GitHub Issues and GitHub off, or with
+Off, Tickets says it is off and why, and asks nothing; Setup puts each right. QA needs Jira, and
+says so while tickets come from GitHub Issues. What follows is Jira; the GitHub Issues section
+below says what differs.
 
 **Tickets**, under Work in the rail, lists your open tickets in **Your projects**, or in every project
 while that is blank (anything not in a **Finished status**, or outside Jira's Done category while
@@ -750,6 +834,31 @@ counts only when the key is the first in its title. **Sync statuses** lists ever
 with its own **Move**, and **Apply all** sends them one at a time through the same action, so each
 line says whether it moved, was skipped because its status changed, or was refused, and why.
 
+### GitHub Issues
+
+- **Your tickets** are the open issues assigned to you, as in Jira, from one GraphQL search,
+  narrowed by **GitHub repos** as pull requests are. A key is
+  `owner/repo#12`. An issue's parent issue is its epic, and the open pull requests that close it
+  are its MRs, beside any MR that names it.
+- **The board** is a GitHub Project (v2), named under Ticket settings as **GitHub Project**, by
+  its link or as `owner/number` such as `acme/3`. Its single-select field named Status gives the
+  columns, in its order, and an issue's status is its value there, or No Status when it has none.
+  A move sets that value with `updateProjectV2ItemFieldValue`; a column the Project lacks is
+  refused. The Project is read once every five minutes. An issue in Done, or in a **Finished
+  status** of yours, leaves the list, as does one that closes.
+- **Off the Project**, or with none named, an issue is Open or Closed, and those are its only
+  moves: Closed closes it, Open reopens it.
+- **Make a ticket** takes a parent issue, `owner/repo#12`, or a repo, `owner/repo`, in place of
+  an epic. The issue is opened in that repo, assigned to you, with the template's headings as
+  Markdown headings; it is then put under the parent as a sub-issue and on the Project, best
+  effort, so a link GitHub refuses leaves the issue made and unlinked.
+- **Start with an agent** works as it does for Jira, on the `owner/repo#12` key. The kickoff skill
+  reads the issue with `gh issue view`, and the agent is told to stop and ask you before any push,
+  pull request, move of the issue or comment.
+- **Standup** lists your issues closed that day under Tickets moved, as Closed, since GitHub keeps
+  no history of a Project's Status, and as in progress your issues whose Status names progress,
+  which needs a Project. The game counts an issue of yours closing as finished work.
+
 ## Standup
 
 **Standup**, under Work in the rail, works out your standup with no questions asked and lets you
@@ -759,7 +868,8 @@ again** reads everything afresh. The day picker and its arrows step over your da
 
 - **Yesterday**: the MRs you merged and opened that day, from your own GitLab events (an MR
   someone else merged for you counts, and one opened and merged the same day is said once); the
-  tickets you moved to QA, Done, Closed or Resolved, from Jira through `acli`; your meetings;
+  tickets you moved to QA, Done, Closed or Resolved, from Jira through `acli` (or your issues
+  closed that day, from GitHub Issues); your meetings;
   and the other people's MRs you commented on or approved, one line each with the count,
   grouped by ticket with the busiest ticket first and those with no ticket last. Your own MRs
   are never reviews.
@@ -972,6 +1082,8 @@ anything that writes, then proposes your reply. One click starts it, since start
 **QA**, under Team in the rail, shows every ticket waiting for testing across the team and where
 it is piling up. It starts switched off, and once on it waits, saying what to set, until it has
 the JQL for your tickets in QA, such as `project = ABC AND status = QA`, in Settings under QA.
+It needs Jira: while tickets come from GitHub Issues it says so and reads nothing, as GitHub has
+no search of the team's tickets by status and no history of their moves.
 Each ticket is joined to the MRs merged in the last 60 days that name it in their title or branch,
 in any case, in the **Groups** set there, or the groups your open MRs are in while that is blank.
 
@@ -1393,11 +1505,13 @@ Settings, where only the page edits them:
 | `jira.doneStatuses` | blank, Jira's Done category | the statuses that mean finished, the first being where the game counts finished work |
 | `jira.issueType` | `Task` | the type of a ticket raised from a review thread, an email or a Slack message |
 | `jira.ticketTemplate` | blank, free text | lines starting `#` are the headings a drafted ticket has, in bold in Jira; the rest is said to Claude as written |
+| `tickets.source` | `jira` | where tickets come from: `jira`, `github` for GitHub Issues, or `off` |
+| `tickets.githubProject` | blank | the GitHub Project whose Status field gives the board its columns, as `owner/number` |
 | `tickets.noQaPaths` | blank | repo paths whose merged MRs suggest finished rather than QA |
 | `gitlab.host` | `https://gitlab.com` | every GitLab REST and GraphQL call, the token link and the MR links on the page |
 
-A key anywhere is `[A-Z][A-Z0-9]+-[1-9]\d*`, one pattern shared by the page, the worker and the
-engine; in free text only a key whose project your MRs, tickets, agents or `jira.projects` use
+A key anywhere is `[A-Z][A-Z0-9]+-[1-9]\d*`, or for a GitHub issue `owner/repo#12`, each one
+pattern shared by the page, the worker and the engine; in free text only a key whose project your MRs, tickets, agents or `jira.projects` use
 becomes a link, so UTF-8 and SHA-256 stay text.
 
 ## Layout
@@ -1427,7 +1541,8 @@ GitLab and the review engine are stubbed (`lib/testkit.mjs` is the stand-in engi
 between runs for real, the worker included, on a port of its own with a temporary home folder.
 GitHub is faked the same way, by `engine/src/fixtures/github/fakegithub.mjs`: it answers REST and
 GraphQL from a world, records every call, injects the failures GitHub makes (401, single sign-on,
-limits, 429, 502) and refuses any other host. `gh` is never run for real: the engine tests point
+limits, 429, 502) and refuses any other host. It takes the writes too, posting, reviews and
+dismissals, merges, auto-merge, Update branch, reviewers and re-runs, and refuses them as GitHub does. `gh` is never run for real: the engine tests point
 `UNDERLINGS_GH_BIN` at a stand-in and the worker tests fake `child_process`. `npm run test:golden`
 runs the GitLab baselines twice, the second with GitHub switched on against a GitHub with nothing
 for you, and neither run may write them.

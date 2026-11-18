@@ -70,3 +70,9 @@ test('the demo has merge requests, queued findings, tickets, messages and a cale
   assert.ok((await get('/api/slack')).items.length >= 4);
   assert.ok((await get('/api/email')).threads.length >= 3);
 });
+
+test('the demo has a second workspace to switch to, with something waiting in it', async () => {
+  const { workspaces } = await get('/api/state');
+  assert.deepEqual(workspaces.workspaces.map((w) => [w.name, w.here]), [['Acme', true], ['Side project', false]]);
+  assert.ok(workspaces.workspaces[1].count > 0);
+});

@@ -550,3 +550,11 @@ test('a branch label is written when its step lights and not on every frame afte
   assert.ok(label.childNodes[0] === text, 'the same text node');
   assert.equal(p.$('#intro .intro-branch[data-step="needs"]').classList.contains('is-on'), false, 'Needs you is not lit yet');
 });
+
+test('a page opened by switching workspace does not play the intro, though it has never played in that workspace', async () => {
+  const p = await openPage({ search: '?t=test&switched=1', storage: store() });
+  p.window.sessionStorage = store();
+  p.window.matchMedia = () => ({ matches: false });
+  assert.equal(p.window.introBoot(fakeClock().clock), false);
+  assert.equal(shown(p), 0);
+});

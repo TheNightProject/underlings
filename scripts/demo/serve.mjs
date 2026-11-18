@@ -104,7 +104,20 @@ function desktopStub() {
     showPage: () => ({ reused: false }), focus() {}, quit() {}, popOut() {}, dockClaude() {}, claudeOnTop() {}, claudeWindow: () => ({ shown: false, onTop: true }),
     notify: () => ({ delivered: true }), openExternal: async () => ({ ok: true }), openTerminal: () => ({ shown: true }), restartTerminal: () => ({ shown: true }), pasteTerminal: async () => true,
     onTerminalTyped: () => () => {}, terminalAssets: found, showOverlay: () => { opened.overlay += 1; return { shown: 1 }; }, closeOverlay() {}, hotkeys: null,
+    ...demoWorkspaces(),
   };
+}
+
+// A second workspace to switch to, as the app would list it; the demo runs only the one it shows.
+function demoWorkspaces() {
+  const workspaces = [
+    { id: 'default', name: 'Acme', colour: 'blue', account: '1', port: 47321, count: 0, state: 'running', active: true, here: true },
+    { id: 'side-project', name: 'Side project', colour: 'rose', account: '2', port: 47322, count: 2, state: 'running', active: false, here: false },
+  ];
+  const kept = async () => {
+    throw Object.assign(new Error('The demo shows one workspace and keeps the list as it is'), { status: 409 });
+  };
+  return { workspaces: () => ({ workspaces }), switchWorkspace: kept, createWorkspace: kept, updateWorkspace: kept, removeWorkspace: kept };
 }
 
 async function ready() {

@@ -269,10 +269,14 @@ function linkRef(label, link, refs) {
   return refs.mrs.has(key) ? mrRef(key, label) : null;
 }
 
+// An issue and a pull request share their repo's numbers, so owner/repo#12 is a ticket only when your tickets list it.
+const listedTicket = (key) => ticketsOnGithub() && Boolean(ui.tickets?.data?.tickets?.some((x) => x.key === key));
+
 // In a pull request a bare number is that repo's and owner/repo with a number is another; anywhere else a bare number could be anything, so it stays text.
 function githubRef(whole, project, iid, refs) {
   const projectPath = project?.includes('/') ? project : !project && refs.github ? refs.here : null;
   const key = projectPath && keyOf({ provider: 'github', projectPath, iid });
+  if (key && listedTicket(key)) return ticketRef(key);
   return key && refs.mrs.has(key) ? mrRef(key, whole) : null;
 }
 

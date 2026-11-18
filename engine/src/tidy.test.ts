@@ -147,7 +147,7 @@ test('Post all on an MR that merges and is archived part way through sends only 
     return new Response(JSON.stringify({ id: `disc-${sent}` }), { status: 201, headers: { 'content-type': 'application/json' } });
   };
   const results = await withGitLab(answer, async () => {
-    const posting = postAllFor(ENGINE, MERGED);
+    const posting = postAllFor({ projectPath: ENGINE, iid: MERGED });
     await new Promise((resolve) => setTimeout(resolve, 5));
     await tidy.tidyQueue(openList, { ask: askFrom({ [keyOf(MERGED)]: 'merged' }) });
     const group = tidy.archivable(store.loadQueue(), openList).find((g) => g.key === keyOf(MERGED));

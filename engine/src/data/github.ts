@@ -223,8 +223,10 @@ export async function rest<T>(path: string, init: RequestInit = {}): Promise<T> 
   const res = await send(url, cached ? { ...init, headers: { ...(init.headers as Record<string, string>), 'If-None-Match': cached.etag } } : init);
   if (res.status === 304 && cached) return cached.body as T;
   if (!res.ok) throw await refusal(res, path);
-  if (res.status === 204) return undefined as T;
-  const body = (await res.json()) as T;
+  // A re-run answers 201 with nothing in it.
+  const text = res.status === 204 ? '' : await res.text();
+  if (!text) return undefined as T;
+  const body = JSON.parse(text) as T;
   keepEtag(url, res.headers.get('etag'), body);
   return body;
 }
@@ -242,7 +244,7 @@ interface GraphqlBody<T> {
   errors?: { message: string; type?: string }[];
 }
 
-export async function graphql<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+export async function graphql<T>(query: string, variables: Record<string, unknown> = {}, { strict = false } = {}): Promise<T> {
   const res = await send(githubGraphqlUrl(), { method: 'POST', body: JSON.stringify({ query, variables }) });
   if (!res.ok) throw await refusal(res, 'GraphQL');
   const body = (await res.json()) as GraphqlBody<T>;
@@ -252,9 +254,12 @@ export async function graphql<T>(query: string, variables: Record<string, unknow
     limits.blockedUntil = reset > 0 ? reset * 1000 : Date.now() + LONGEST_WAIT_MS;
     throw new Error(`GitHub's GraphQL rate limit is spent until ${clock(limits.blockedUntil)} UTC`);
   }
-  if (!body.data) throw new Error(`GitHub GraphQL: ${(body.errors ?? []).map((e) => e.message).join('; ') || 'no data'}`);
+  if (!body.data || (strict && body.errors?.length)) throw new Error(`GitHub GraphQL: ${(body.errors ?? []).map((e) => e.message).join('; ') || 'no data'}`);
   return body.data;
 }
+
+/** GitHub answers a refused mutation with its field null beside the errors, so any error fails it. */
+export const mutate = <T>(query: string, variables: Record<string, unknown> = {}): Promise<T> => graphql<T>(query, variables, { strict: true });
 
 function noteCost(rate: RateLimit): void {
   limits.lastCost = rate.cost;

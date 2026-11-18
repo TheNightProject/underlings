@@ -59,14 +59,14 @@ const failing = (status, text) => ({ ok: false, status, text: async () => text, 
 const answer = (body) => ({ ok: true, status: 200, json: async () => body, text: async () => JSON.stringify(body) });
 
 // Each POST waits on its own reply, so a test can hold one open and see that nothing else is sent meanwhile.
-async function open({ store = memory({ 'cc.ticketLayout': 'board' }), move = () => null, list = tickets() } = {}) {
+async function open({ store = memory({ 'cc.ticketLayout': 'board' }), move = () => null, list = tickets(), source = null, columns = null } = {}) {
   const posts = [];
   let inFlight = 0;
   let mostAtOnce = 0;
   const page = await openPage({
     respond(path) {
       const url = new URL(path, 'http://page');
-      if (url.pathname === '/api/matrix/tickets') return { read: true, loading: false, error: null, mergedError: null, fetchedAt: AT, tickets: list };
+      if (url.pathname === '/api/matrix/tickets') return { read: true, loading: false, error: null, mergedError: null, fetchedAt: AT, tickets: list, source, columns };
       if (url.pathname === '/api/matrix/ticket') return { ...list.find((x) => x.key === url.searchParams.get('key')), type: 'Task', description: '', url: 'https://example.atlassian.net/browse/x', mine: true };
       if (url.pathname === '/api/matrix/own-mrs') return { mrs: {} };
       return null;
@@ -90,7 +90,9 @@ async function open({ store = memory({ 'cc.ticketLayout': 'board' }), move = () 
       inFlight -= 1;
     }
   };
-  page.show(snapshot(), 'tickets');
+  const shown = snapshot();
+  shown.matrix.ticketSource = source;
+  page.show(shown, 'tickets');
   await page.settle(60);
   return Object.assign(page, { posts, list, mostAtOnce: () => mostAtOnce });
 }
@@ -411,4 +413,22 @@ test('at phone width the ticket board stacks its columns, as the MR board does',
   assert.match(narrow, /\.kanban \{ grid-auto-flow: row;/);
   const p = await open();
   assert.ok(p.$('#main .kanban.ticket-board'), 'the ticket board is a kanban, so the rule applies');
+});
+
+test('from a GitHub Project the columns are its Status options in its order, then Open and Closed for issues off it, and keys are owner/repo#12', async () => {
+  const columns = ['Todo', 'In Progress', 'In Review', 'Done'];
+  const list = [
+    ticket('acme/web#9', 'Token lookups are slow', 'In Progress', null, { targets: columns.filter((s) => s !== 'In Progress') }),
+    ticket('acme/engine#4', 'Split the engine', 'Todo', null, { targets: columns.filter((s) => s !== 'Todo') }),
+    ticket('octo/api#30', 'Document the client', 'Open', null, { targets: ['Closed'] }),
+  ];
+  const p = await open({ list, columns, source: { id: 'github', name: 'GitHub' } });
+  assert.deepEqual(p.errors, []);
+  assert.deepEqual(lanes(p), [['Todo', ['acme/engine#4']], ['In Progress', ['acme/web#9']], ['In Review', []], ['Done', []], ['Open', ['octo/api#30']]]);
+  drop(p, 'acme/web#9', 'In Review');
+  await p.settle(30);
+  buttonIn(card(p, 'acme/web#9'), 'Move to In Review').click();
+  buttonIn(card(p, 'acme/web#9'), 'Move acme/web#9 to In Review?').click();
+  await p.settle(60);
+  assert.deepEqual(p.posts.map(([, body]) => [body.key, body.status, body.expect]), [['acme/web#9', 'In Review', { status: 'In Progress' }]]);
 });

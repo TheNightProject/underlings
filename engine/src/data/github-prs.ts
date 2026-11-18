@@ -16,7 +16,7 @@ const DISCOVERY_PAGES = 5;
 const STALE_DAYS = 90;
 const LOG_TAIL_CHARS = 256 * 1024;
 
-const RATE = 'rateLimit { cost remaining resetAt }';
+export const RATE = 'rateLimit { cost remaining resetAt }';
 
 const PR_FIELDS = `
 fragment pr on PullRequest {
@@ -33,12 +33,16 @@ fragment pr on PullRequest {
   commits(last: 1) { nodes { commit { statusCheckRollup { state } checkSuites(first: 20) { nodes { workflowRun { databaseId } } } } } }
 }`;
 
-/** Each search is one way a pull request can involve you, so a request for your review is known even when it was asked of your team. */
+/**
+ * Each search is one way a pull request can involve you, so a request for your review is known even when it was asked of your team.
+ * Any review you send takes the request away, so one you have reviewed is searched for too.
+ */
 export const INVOLVED = {
   requested: 'review-requested:@me',
   authored: 'author:@me',
   assigned: 'assignee:@me',
   mentioned: 'mentions:@me',
+  reviewed: 'reviewed-by:@me',
 } as const;
 
 type Involvement = keyof typeof INVOLVED;
@@ -173,7 +177,7 @@ const ownerAndName = (path: string): { owner: string; name: string } => {
   return { owner, name };
 };
 
-const prVars = (r: MrRef): Record<string, unknown> => ({ ...ownerAndName(r.projectPath), number: r.iid });
+export const prVars = (r: MrRef): Record<string, unknown> => ({ ...ownerAndName(r.projectPath), number: r.iid });
 
 const inScope = (mrs: Mr[]): Mr[] => {
   const filter = githubSettings().repos;

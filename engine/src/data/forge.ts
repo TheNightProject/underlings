@@ -116,7 +116,8 @@ export interface Forge {
   resolve(r: ForgeRef, threadId: string, resolved: boolean): Promise<void>;
   note(r: ForgeRef, body: string): Promise<{ id: number }>;
   approve(r: ForgeRef, on: boolean): Promise<void>;
-  hold(r: MrRef, on: boolean): Promise<{ status: string | null; warning?: string }>;
+  /** The note says why; said means it went up with the hold, so it is not posted again as a comment. */
+  hold(r: MrRef, on: boolean, note?: string): Promise<{ status: string | null; warning?: string; said?: boolean }>;
   merge(r: ForgeRef, how: { sha: string; whenGreen: boolean }): Promise<MergeOutcome>;
   cancelAutoMerge(r: ForgeRef): Promise<void>;
   rebase(r: ForgeRef): Promise<void>;

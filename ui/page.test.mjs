@@ -62,7 +62,7 @@ test('the rail has the game first, Tickets, Standup, Calendar, Email, Slack and 
     ['Work', ['#tickets', '#standup', '#calendar', '#email', '#slack', '#scheduled']],
     ['Team', ['#qa']],
     ['Agents', ['#agents', '#artifacts']],
-    ['Reviews', ['#merge-requests', '#review-queue', '#full-auto', '#review-runs', '#watching', '#leaderboard', '#settings']],
+    ['Reviews', ['#merge-requests', '#review-queue', '#full-auto', '#review-runs', '#watching', '#leaderboard', '#workspaces', '#settings']],
   ]);
   const foot = page.$$('#health .release-version').map((a) => a.getAttribute('href'));
   assert.deepEqual([...groups.flatMap(([, links]) => links), ...foot, '#setup'].sort(), JSON.parse(page.run('JSON.stringify(Object.keys(VIEWS).map((v) => "#" + v).sort())')));

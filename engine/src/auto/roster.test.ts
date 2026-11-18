@@ -77,3 +77,9 @@ test('a typed name can be added only when it could be a GitLab username', () => 
   assert.equal(typedUsername(''), null);
   assert.equal(typedUsername('.dot'), null);
 });
+
+test('a pull request\'s author is listed beside the merge requests\' authors, asking you by your GitHub login, and that login is never listed', () => {
+  const pr = mr({ provider: 'github', iid: 30, author: 'ivan', reviewers: ['frank-gh'] });
+  const rows = roster([mr({ iid: 1, author: 'heidi' }), pr, mr({ provider: 'github', iid: 31, author: 'frank-gh', reviewers: ['ivan'] }), mr({ provider: 'github', iid: 32, author: 'judy', reviewers: [ME] })], ME, [], { gitlab: ME, github: 'frank-gh' });
+  assert.deepEqual(rows.map((r) => [r.username, r.askingYou, r.open]), [['ivan', 1, 1], ['heidi', 1, 1], ['judy', 0, 1]]);
+});

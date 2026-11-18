@@ -29,13 +29,13 @@ beforeEach(() => {
 
 const keys = (mrs: { projectPath: string; iid: number }[]) => mrs.map((m) => `${m.projectPath}#${m.iid}`);
 
-test('the involved search is one query of four searches, each for open, unarchived pull requests that involve you', async () => {
+test('the involved search is one query of five searches, each for open, unarchived pull requests that involve you', async () => {
   const { mrs } = await forge().listOpen([]);
   assert.equal(h.fake.asked('Involved').length, 1);
   assert.equal(h.fake.requests.length, 1);
   const vars = (h.fake.asked('Involved')[0]!.body as { variables: Record<string, string> }).variables;
-  assert.deepEqual(Object.keys(vars), ['requested', 'authored', 'assigned', 'mentioned']);
-  for (const [name, term] of [['requested', 'review-requested:@me'], ['authored', 'author:@me'], ['assigned', 'assignee:@me'], ['mentioned', 'mentions:@me']] as const) {
+  assert.deepEqual(Object.keys(vars), ['requested', 'authored', 'assigned', 'mentioned', 'reviewed']);
+  for (const [name, term] of [['requested', 'review-requested:@me'], ['authored', 'author:@me'], ['assigned', 'assignee:@me'], ['mentioned', 'mentions:@me'], ['reviewed', 'reviewed-by:@me']] as const) {
     assert.match(vars[name]!, /^is:pr is:open archived:false /);
     assert.ok(vars[name]!.endsWith(term), vars[name]);
   }

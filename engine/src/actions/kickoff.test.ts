@@ -84,3 +84,16 @@ test('a key that is not a Jira key starts nothing', async () => {
   assert.equal(claudeAgents().length, 0);
   assert.deepEqual(loadRuns(), {});
 });
+
+test('a kickoff on a GitHub issue starts on its owner/repo#12 key, and asks before a pull request or a move of the issue', async () => {
+  const issue = 'acme/web#12';
+  assert.equal(kickoffPrompt(issue), [
+    '/team:kickoff acme/web#12',
+    'Before any git push, pull request, move of the issue or comment, stop and ask me with the AskUserQuestion tool and wait for my answer.',
+  ].join('\n'));
+  const { handle, name } = await launchKickoff(issue, 'https://github.com/acme/web/issues/12');
+  assert.equal(name, 'kickoff-acme/web#12');
+  assert.equal(claudeAgents().find((a) => a.handle === handle)?.ticket, issue);
+  assert.equal(loadRuns()[`ticket:${issue}`]?.terminal, handle);
+  await assert.rejects(launchKickoff('acme/web#12; rm -rf ~'), /not a Jira key or a GitHub issue/);
+});

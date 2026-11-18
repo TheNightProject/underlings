@@ -20,12 +20,16 @@ async function current(mr: Mr): Promise<Mr> {
   return fresh ? { ...fresh, repoLabel: mr.repoLabel } : mr;
 }
 
-async function liftHold(mr: Mr, note: string): Promise<boolean> {
+/** The note follows the hold as a comment, unless the forge said it with the hold itself. */
+export async function holdSaying(mr: Mr, held: boolean, note: string): Promise<{ status: string | null; warning?: string }> {
   const forge = forgeOf(mr);
-  const lifted = await forge.hold(mr, false).catch(() => null);
-  if (!lifted) return false;
-  await forge.note(mr, note).catch(() => undefined);
-  return true;
+  const { said, ...result } = await forge.hold(mr, held, note);
+  if (!said) await forge.note(mr, note).catch(() => undefined);
+  return result;
+}
+
+async function liftHold(mr: Mr, note: string): Promise<boolean> {
+  return Boolean(await holdSaying(mr, false, note).catch(() => null));
 }
 
 export interface ReviewStarted {
@@ -51,11 +55,8 @@ export async function startReview(mr: Mr, launch: Launch = startAutoReview, { ho
   if (!hold || !forge.caps.hold) return launched;
   const fresh = await current(mr);
   if (!loadSettings().holdWhileReviewing || isHeld(fresh)) return launched;
-  const held = await forge.hold(mr, true).catch(() => null);
-  if (held) {
-    noteReviewHold(mrKey(mr), fresh.sha);
-    await forge.note(mr, holdNoteOf(loadSettings())).catch(() => undefined);
-  }
+  const held = await holdSaying(mr, true, holdNoteOf(loadSettings())).catch(() => null);
+  if (held) noteReviewHold(mrKey(mr), fresh.sha);
   return held?.warning ? { ...launched, holdWarning: held.warning } : launched;
 }
 
@@ -78,17 +79,16 @@ export async function setHeld(mr: Mr, held: boolean): Promise<{ warning?: string
   const forge = forgeOf(mr);
   needs(forge, 'hold', 'hold a merge');
   const posted = loadQueue().some((c) => c.status === 'posted' && mrKey(c) === mrKey(mr));
-  const result = await forge.hold(mr, held);
+  const note = held ? holdNoteOf(loadSettings()) : posted ? RELEASE_NOTE_WITH_COMMENTS : RELEASE_NOTE_BARE;
+  const result = await holdSaying(mr, held, note);
   if (held) recordVerdict(mrKey(mr), 'changes', mr.sha);
   forgetReviewHold(mrKey(mr));
-  const note = held ? holdNoteOf(loadSettings()) : posted ? RELEASE_NOTE_WITH_COMMENTS : RELEASE_NOTE_BARE;
-  await forge.note(mr, note).catch(() => undefined);
   return result.warning ? { warning: result.warning } : {};
 }
 
 /** `P`. The comments being up is what the hold was waiting for, so it comes off once all of them are. */
 export async function postAll(mr: Mr): Promise<{ posted: number; total: number; liftedHold: boolean }> {
-  const results = await postAllFor(mr.projectPath, mr.iid);
+  const results = await postAllFor(mr);
   const posted = results.filter((r) => r.ok).length;
   const done = { posted, total: results.length, liftedHold: false };
   if (posted === 0 || posted < results.length || !isHeld(await current(mr))) return done;

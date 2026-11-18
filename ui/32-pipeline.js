@@ -56,7 +56,7 @@ function drawerPipeline(ctx) {
 
 function pipelineHead(v, retry) {
   const d = v.data;
-  const stopped = d.jobs.filter((j) => RETRYABLE_JOBS.has(j.status));
+  const stopped = d.jobs.filter((j) => RETRYABLE_JOBS.has(j.status) && j.logs !== false);
   const [iconName, tone, label] = pipeState(d.status ?? '');
   return el('div', { class: 'foot' },
     el('div', { class: 'row-head' },
@@ -78,7 +78,7 @@ function jobRow(job, v, retry) {
         el('span', { class: 'pill ' + (allowed ? 's-working' : tone), title: allowed ? 'This job may fail without failing the pipeline' : null }, icon(iconName), allowed ? 'failed, allowed' : label),
         job.duration != null ? el('span', { class: 'meta' }, took(job.duration)) : null,
         logged ? null : outside(job.webUrl, 'Open ' + job.stage)),
-      retry && RETRYABLE_JOBS.has(job.status) ? guarded('retry-job:' + job.id, 'Retry job', 'rotate-ccw', 'Retry ' + job.name + '?', () => retryJobNow(v, job)) : null),
+      retry && logged && RETRYABLE_JOBS.has(job.status) ? guarded('retry-job:' + job.id, 'Retry job', 'rotate-ccw', 'Retry ' + job.name + '?', () => retryJobNow(v, job)) : null),
     open ? jobLog(job, v) : null);
 }
 

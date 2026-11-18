@@ -1,5 +1,5 @@
 import { forgeOf, GITLAB, type ActivityEvent, type MrBrief } from '../data/forge.js';
-import { ticketsInProgress, ticketsMovedTo } from '../data/jira.js';
+import { ticketsInProgress, ticketsMovedTo } from '../ticketsource.js';
 import type { Ticket } from '../types.js';
 import { fetchCalendar, meetingsOn, type Meeting } from './calendar.js';
 import {

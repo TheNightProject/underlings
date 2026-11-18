@@ -97,7 +97,7 @@ Call `queue_findings` once with every finding. Each item is:
 
 - `body` is the comment line exactly as written in chat, without the quoted code and without any footer.
 - `position` comes from the latest version of the merge request (`/versions` on GitLab). Leave it out for a point about the change as a whole.
-- For a pull request, `projectPath` is `owner/repo` and `iid` is the pull request number.
+- For a pull request, add `"provider": "github"`, `projectPath` is `owner/repo`, `iid` is the pull request number and `projectId` is left out. Its `position` needs only `new_path` and `new_line` from the pull request's diff, or `old_path` and `old_line` for a removed line.
 
 Close by saying how many were queued and that they are waiting in Underlings.
 

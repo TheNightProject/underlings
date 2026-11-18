@@ -33,8 +33,8 @@ function messageTicketPanel(src, ref, flow, box) {
 function messageTicketForm(src, ref, flow, box, id, cancel) {
   const busyId = src.name + '-ticket:' + ref;
   const busy = ui.busy.has(busyId);
-  const epic = () => flow.epic.trim().toUpperCase();
-  const ready = () => Boolean(flow.summary.trim() && flow.description.trim() && TICKET_KEY.test(epic()));
+  const epic = () => parentKeyOf(flow.epic);
+  const ready = () => Boolean(flow.summary.trim() && flow.description.trim() && isParentKey(epic()));
   const create = guarded(busyId, 'Create ticket', 'ticket', 'Create a ticket under ' + epic() + '?', () => createMessageTicket(src, ref, flow, box, busyId), true);
   create.disabled = busy || !ready();
   const typed = (field) => (e) => {
@@ -50,16 +50,16 @@ function messageTicketForm(src, ref, flow, box, id, cancel) {
       el('input', { id: id('summary'), type: 'text', value: flow.summary, maxlength: 255, readonly: busy, spellcheck: 'true', autocomplete: 'off', oninput: typed('summary') })),
     el('div', { class: 'ticket-field' }, el('label', { for: id('description') }, 'Description'),
       el('textarea', { id: id('description'), maxlength: 20000, readonly: busy, oninput: typed('description') }, flow.description)),
-    el('div', { class: 'ticket-field' }, el('label', { for: id('epic') }, 'Parent epic'),
+    el('div', { class: 'ticket-field' }, el('label', { for: id('epic') }, parentLabel()),
       el('div', { class: 'ticket-epic' }, el('input', { id: id('epic'), type: 'text', value: flow.epic, placeholder: exampleKey(), readonly: busy, spellcheck: 'false', autocomplete: 'off', oninput: typed('epic') }),
-        el('span', { class: 'meta' }, flow.epic && !TICKET_KEY.test(epic()) ? 'An epic key looks like ' + exampleKey() + '.' : ''))),
+        el('span', { class: 'meta' }, flow.epic && !isParentKey(epic()) ? parentHint() : ''))),
     el('p', { class: 'meta' }, newTicketType() + ', assigned to you. Nothing is sent to the person who wrote.'),
     el('div', { class: 'actions' }, create, cancel),
   ];
 }
 
 async function createMessageTicket(src, ref, flow, box, busyId) {
-  const done = await busyAct(src.path + '/ticket', { ...src.body(ref), summary: flow.summary, description: flow.description, epic: flow.epic.trim().toUpperCase() }, busyId);
+  const done = await busyAct(src.path + '/ticket', { ...src.body(ref), summary: flow.summary, description: flow.description, epic: parentKeyOf(flow.epic) }, busyId);
   if (!done) return;
   box.tickets.delete(ref);
   box.at = null;

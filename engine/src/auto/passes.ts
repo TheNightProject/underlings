@@ -10,7 +10,7 @@ import { ineligible } from './guards.js';
 import { sendAt } from './hold.js';
 import { closePass, foundBy, passIdOf, retireShadows, settle, supersedePass } from './ledger.js';
 import { askedOnly, levelForMr } from './people.js';
-import type { AutoContext, AutoPorts } from './ports.js';
+import { meOn, type AutoContext, type AutoPorts } from './ports.js';
 import { cheapTrigger, hasNewReply, passActive, passExpired } from './triggers.js';
 
 export const HEAD_MOVED = 'the head moved while it was being reviewed';
@@ -31,14 +31,16 @@ function hasVerdict(queue: QueuedComment[], pass: AutoPass): boolean {
 }
 
 function queueVerdict(pass: AutoPass, mr: Mr, ctx: AutoContext, now: number): void {
-  const level = levelForMr(mr, ctx.me, ctx.config);
+  const me = meOn(ctx, mr);
+  const level = levelForMr(mr, me, ctx.config);
   if (level !== 'verdict' && level !== 'shadow') return;
   const queue = loadQueue();
   if (hasVerdict(queue, pass)) return;
-  const verdict = verdictFor(pass, mr, queue, ctx.me ?? '');
+  const verdict = verdictFor(pass, mr, queue, me ?? '');
   if (!verdict) return;
   addToQueue([
     {
+      ...(mr.provider ? { provider: mr.provider } : {}),
       projectPath: mr.projectPath,
       projectId: mr.projectId,
       iid: mr.iid,
@@ -123,7 +125,7 @@ async function startPass(mr: Mr, trigger: AutoTrigger, me: string, ctx: AutoCont
   updateAutoMemory(key, (m) => ({ ...m, pass, notesSeen: mr.notes }));
   const since = trigger === 'new' ? null : pass.previousSha;
   try {
-    await ports.launch(mr, autoReviewPrompt({ webUrl: mr.webUrl, passId: pass.id, me, since }));
+    await ports.launch(mr, autoReviewPrompt({ webUrl: mr.webUrl, passId: pass.id, me, since, ...(mr.provider ? { provider: mr.provider } : {}) }));
     return null;
   } catch (e) {
     settle(key, 'failed');
@@ -141,11 +143,11 @@ export interface LaunchReport {
 /** Bounded per poll, so switching someone on does not start an agent on every MR at once; pause is read before each one. */
 export async function launchPasses(ctx: AutoContext, ports: AutoPorts): Promise<LaunchReport> {
   const report: LaunchReport = { launched: [], asked: [], errors: [] };
-  const me = ctx.me;
-  if (!me) return report;
   const stopped = (): boolean => ports.paused() || Boolean(ctx.noLaunch);
   for (const mr of ctx.mrs) {
     if (report.launched.length + report.errors.length >= MAX_LAUNCHES_PER_POLL || stopped()) break;
+    const me = meOn(ctx, mr);
+    if (!me) continue;
     const trigger = await triggerFor(mr, me, ctx, ports);
     if (!trigger || stopped() || ctx.agentOn?.(mr)) continue;
     const error = await startPass(mr, trigger, me, ctx, ports);

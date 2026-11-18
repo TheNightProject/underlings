@@ -16,6 +16,8 @@ import {
   fetchPrSince,
   listOpenPrs,
 } from './github-prs.js';
+import { cancelPrAutoMerge, markPrReady, mergePr, prBranchState, rerequestPrReview, retryPrChecks, retryPrJob, setPrReviewers, updatePrBranch } from './github-own.js';
+import { postPrComment, postPrFinding, replyOnPr, resolveOnPr, setPrApproval, setPrHold } from './github-writes.js';
 import { threadStateOf } from './shared.js';
 
 const notYet = (what: string) => async (): Promise<never> => {
@@ -24,22 +26,22 @@ const notYet = (what: string) => async (): Promise<never> => {
 
 const none = async (): Promise<never[]> => [];
 
-/** Reads only, for now: every write says so rather than half working. */
+/** A write it cannot do yet says so rather than half working. */
 export const githubForge: Forge = {
   id: 'github',
   name: 'GitHub',
   caps: {
-    hold: false,
-    withdrawApproval: false,
-    rebase: false,
-    autoMerge: false,
+    hold: true,
+    withdrawApproval: true,
+    rebase: true,
+    autoMerge: true,
     jobLogs: 'actions',
-    retry: false,
+    retry: 'actions',
     todos: false,
     generalThreads: false,
-    post: false,
-    agents: false,
-    ownMr: false,
+    post: true,
+    agents: true,
+    ownMr: true,
   },
   me: () => viewerLogin(),
   myName: async () => (await graphql<{ viewer: { name: string | null } }>('query ViewerName { viewer { name } }')).viewer.name ?? '',
@@ -58,21 +60,21 @@ export const githubForge: Forge = {
   file: (r, path, at, maxBytes) => fetchPrFile(r, path, at, maxBytes),
   checks: (r, sha) => fetchPrChecks(r, sha),
   jobLog: (r, jobId, lines) => fetchPrJobLog(r, jobId, lines),
-  retryJob: notYet('retrying a job'),
-  retryChecks: notYet('retrying checks'),
-  postFinding: notYet('posting a finding'),
-  reply: notYet('replying'),
-  resolve: notYet('resolving a thread'),
-  note: notYet('commenting'),
-  approve: notYet('approving'),
-  hold: notYet('holding a merge'),
-  merge: notYet('merging'),
-  cancelAutoMerge: notYet('cancelling auto-merge'),
-  rebase: notYet('updating a branch'),
-  rebaseState: notYet('updating a branch'),
-  ready: notYet('marking ready'),
-  setReviewers: notYet('choosing reviewers'),
-  rerequest: notYet('asking for a review again'),
+  retryJob: (r, jobId) => retryPrJob(r, jobId),
+  retryChecks: (r, pipelineId) => retryPrChecks(r, pipelineId),
+  postFinding: (item, how) => postPrFinding(item, how),
+  reply: (r, threadId, body) => replyOnPr(r, threadId, body),
+  resolve: (r, threadId, resolved) => resolveOnPr(r, threadId, resolved),
+  note: (r, body) => postPrComment(r, body),
+  approve: (r, on) => setPrApproval(r, on),
+  hold: (r, on, note) => setPrHold(r, on, note),
+  merge: (r, how) => mergePr(r, how),
+  cancelAutoMerge: (r) => cancelPrAutoMerge(r),
+  rebase: (r) => updatePrBranch(r),
+  rebaseState: (r) => prBranchState(r),
+  ready: (r) => markPrReady(r),
+  setReviewers: (r, names) => setPrReviewers(r, names),
+  rerequest: (r, name) => rerequestPrReview(r, name),
   brief: notYet('reading activity'),
   approvers: notYet('reading activity'),
   myEvents: none,

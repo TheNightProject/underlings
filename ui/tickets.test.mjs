@@ -258,3 +258,13 @@ test('a run on the Review runs page opens its ticket in place', async () => {
   await p.settle(60);
   assert.equal(p.$('#drawer .drawer').getAttribute('aria-label'), 'Ticket ABC-12');
 });
+
+test('from GitHub Issues the banners name GitHub, and each reason Tickets is off says what to do about it', async () => {
+  const github = { id: 'github', name: 'GitHub' };
+  const down = await open({ list: { read: false, loading: false, error: 'GitHub has no Project acme/4 that this token can read', fetchedAt: AT, tickets: [], source: github } });
+  assert.match(down.$('#main .banner.warn').textContent, /GitHub cannot be read right now, so there is no list to show\. GitHub said: GitHub has no Project acme\/4/);
+  const words = async (offWhy) => (await open({ list: { read: true, loading: false, error: null, tickets: [], off: true, offWhy, source: null } })).$('#main .banner').textContent;
+  assert.match(await words('github'), /^Tickets come from GitHub Issues, which wait until GitHub is switched on\. Set up tickets$/);
+  assert.match(await words('chosen'), /^Tickets are switched off under Ticket settings\./);
+  assert.match(await words('jira'), /^Tickets are off until you set your Jira site\./);
+});

@@ -7,8 +7,8 @@
 Underlings is a macOS app. Review agents read your merge requests, fix agents answer the comments
 on yours, and ticket agents start the work, all in the background. What they find waits in a queue
 for you to read, and nothing reaches GitLab until you post it, unless you turn on full auto and
-name the people it may act for. GitLab is the full experience; GitHub pull requests are read only
-for now.
+name the people it may act for. GitHub pull requests take the same reviews, posts, verdicts,
+merges and agents; the standup, the board and the stats read GitLab alone for now.
 
 Every clip below is the real page, recorded against invented data; the Claude Code terminal
 replays a script, as the demo never starts a real one. The whole walk-through is
@@ -89,7 +89,7 @@ It also reads your standup and artifacts. Each part is off or optional; the
 - [Claude Code](https://docs.claude.com/en/docs/claude-code), installed and signed in
   (`claude auth login`). Every agent runs as Claude Code on your account.
 - A GitLab token with the `api` scope, or a GitHub token with `repo` and `read:org`, or both.
-  GitLab is the full experience; GitHub pull requests are read only for now.
+  The standup, the board and the stats read GitLab alone for now.
 - Optional: [`acli`](https://developer.atlassian.com/cloud/acli/) for Jira, signed in. The claude.ai
   Slack and Gmail connectors, signed in through Claude Code, for Slack and email. The secret iCal
   address of your Google Calendar for the calendar and the standup's meetings.

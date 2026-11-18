@@ -16,7 +16,7 @@ import {
 import { MAX_LAUNCHES_PER_POLL } from './config.js';
 import { levelForMr } from './people.js';
 import { hasNewReply } from './triggers.js';
-import type { AutoContext, AutoPorts } from './ports.js';
+import { meOn, type AutoContext, type AutoPorts } from './ports.js';
 
 export interface ReReviewReport {
   reReviewed: string[];
@@ -71,7 +71,7 @@ export function changeSince(watch: Watch, mr: Mr): ChangeSince {
 }
 
 function wanted(watch: Watch | undefined, mr: Mr, ctx: AutoContext): watch is Watch {
-  if (!watch?.auto || levelForMr(mr, ctx.me, ctx.config)) return false;
+  if (!watch?.auto || levelForMr(mr, meOn(ctx, mr), ctx.config)) return false;
   return !ctx.agentOn?.(mr) && movedSince(watch, mr);
 }
 
@@ -149,7 +149,7 @@ async function worthLaunching(watch: Watch, mr: Mr, me: string, ports: AutoPorts
 
 async function launch(mr: Mr, before: Baseline, me: string, ports: AutoPorts, report: ReReviewReport): Promise<void> {
   try {
-    await ports.launch(mr, reReviewPrompt({ webUrl: mr.webUrl, me, since: before.seen.sha, head: mr.sha }));
+    await ports.launch(mr, reReviewPrompt({ webUrl: mr.webUrl, me, since: before.seen.sha, head: mr.sha, ...(mr.provider ? { provider: mr.provider } : {}) }));
     report.reReviewed.push(mrKey(mr));
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);
@@ -161,12 +161,11 @@ async function launch(mr: Mr, before: Baseline, me: string, ports: AutoPorts, re
 /** The baseline on disk is the only guard, so a restart, a reload or the other front end never fires twice. */
 export async function autoReReview(ctx: AutoContext, ports: AutoPorts, watches: Record<string, Watch>): Promise<ReReviewReport> {
   const report: ReReviewReport = { reReviewed: [], errors: [] };
-  const me = ctx.me;
-  if (!me) return report;
   for (const mr of ctx.mrs) {
     if (report.reReviewed.length + report.errors.length >= MAX_LAUNCHES_PER_POLL || ports.paused()) break;
     const watch = watches[mrKey(mr)];
-    if (!wanted(watch, mr, ctx)) continue;
+    const me = meOn(ctx, mr);
+    if (!me || !wanted(watch, mr, ctx)) continue;
     // Fetched again, so an engine write that landed since the list was read is counted on both sides.
     const fresh = await ports.freshMr(mr).catch(() => null);
     if (!fresh || !isOpen(fresh) || ports.paused() || ctx.agentOn?.(mr)) continue;

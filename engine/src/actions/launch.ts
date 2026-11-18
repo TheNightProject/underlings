@@ -18,7 +18,7 @@ import { loadRuns, loadSettings, recordRun } from '../data/store.js';
 import { conflictBrief, fixBrief, fixKey } from '../fix.js';
 import { workspaceForReview } from '../gc.js';
 import { refNumber } from '../refs.js';
-import { TICKET_KEY } from '../ticketkeys.js';
+import { GITHUB_ISSUE, TICKET_KEY } from '../ticketkeys.js';
 import { ticketKey } from '../tickets.js';
 import { mrKey, type Mr, type Ticket } from '../types.js';
 
@@ -101,11 +101,13 @@ export async function launchTicket(
   return { how: started.how, handle: started.handle, path: target };
 }
 
+const ASK_FIRST = {
+  jira: 'Before any git push, merge request, Jira transition or comment, stop and ask me with the AskUserQuestion tool and wait for my answer.',
+  github: 'Before any git push, pull request, move of the issue or comment, stop and ask me with the AskUserQuestion tool and wait for my answer.',
+};
+
 export function kickoffPrompt(key: string, checkouts = discoverCheckouts(root())): string {
-  return [
-    kickoffLine(key, checkouts, root()),
-    'Before any git push, merge request, Jira transition or comment, stop and ask me with the AskUserQuestion tool and wait for my answer.',
-  ].join('\n');
+  return [kickoffLine(key, checkouts, root()), ASK_FIRST[GITHUB_ISSUE.test(key) ? 'github' : 'jira']].join('\n');
 }
 
 // A command of your own finds its repos itself; the kickoff skill is handed the ones found here.
@@ -117,7 +119,7 @@ function kickoffCheckouts(): Checkout[] {
 
 /** The kickoff agent finds the repo and cuts the checkout itself, so it starts in the code folder. */
 export async function launchKickoff(key: string, url = ''): Promise<LaunchOutcome> {
-  if (!TICKET_KEY.test(key)) throw new Error(`${key} is not a Jira key`);
+  if (!TICKET_KEY.test(key) && !GITHUB_ISSUE.test(key)) throw new Error(`${key} is not a Jira key or a GitHub issue`);
   const prompt = kickoffPrompt(key, kickoffCheckouts());
   const journal = ticketKey(key);
   if (launching.has(journal)) throw new Error(`an agent is already starting on ${key}`);
@@ -167,7 +169,7 @@ export interface FixOptions {
 function fixRefusal(mr: Mr, threads: Discussion[], { me, head, conflicts }: FixOptions): string | null {
   if (mr.author !== me) return `${refNumber(mr)} is ${mr.author}'s MR, so no agent changes it for you`;
   if (!mr.sha || mr.sha !== head) return `the head of ${refNumber(mr)} moved since you looked`;
-  if (conflicts && !mr.conflicts) return `GitLab reports no conflicts on ${refNumber(mr)}`;
+  if (conflicts && !mr.conflicts) return `${mr.provider === 'github' ? 'GitHub' : 'GitLab'} reports no conflicts on ${refNumber(mr)}`;
   if (!conflicts && threads.length === 0) return `nothing on ${refNumber(mr)} is left to fix`;
   if (!BRANCH_NAME.test(mr.sourceBranch)) return `${mr.sourceBranch} is not a branch an agent can start from`;
   if (launching.has(mrKey(mr))) return `a fix agent is already starting on ${refNumber(mr)}`;

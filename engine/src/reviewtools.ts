@@ -21,9 +21,10 @@ const POSITION = {
 const ITEM = {
   type: 'object',
   properties: {
-    projectPath: { type: 'string', description: 'The project as group/repo' },
-    projectId: { type: 'integer' },
-    iid: { type: 'integer', description: 'The merge request\'s number in its project' },
+    provider: { type: 'string', enum: ['gitlab', 'github'], description: 'github for a GitHub pull request; leave it out for a GitLab merge request' },
+    projectPath: { type: 'string', description: 'The project as group/repo, or owner/repo on GitHub' },
+    projectId: { type: 'integer', description: 'GitLab\'s project id; not needed for a GitHub pull request' },
+    iid: { type: 'integer', description: 'The merge request\'s number in its project, or the pull request\'s number' },
     webUrl: { type: 'string' },
     severity: { type: 'string', enum: SEVERITY_ORDER },
     body: { type: 'string', description: 'The comment exactly as it would be posted' },
@@ -34,7 +35,7 @@ const ITEM = {
     outcome: { type: 'string', enum: ['fixed', 'not-fixed', 'disagree'] },
     createdBy: { type: 'string' },
   },
-  required: ['projectPath', 'projectId', 'iid', 'body'],
+  required: ['projectPath', 'iid', 'body'],
 };
 
 export const REVIEW_TOOLS = [

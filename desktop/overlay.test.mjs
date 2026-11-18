@@ -201,6 +201,7 @@ test('it fades in, except with reduced motion', (t) => {
 
 test('the app hands the worker the overlay, loading the page as a window of its own', async () => {
   const main = await readFile(new URL('./main.mjs', import.meta.url), 'utf8');
-  assert.match(main, /showOverlay: \(\) => overlay\.show\(windowUrl\('meeting'\)\), closeOverlay: overlay\.close/);
+  assert.match(main, /showOverlay: \(\) => overlay\.show\(windowUrl\('meeting', active\)\), closeOverlay: overlay\.close/);
+  assert.match(main, /showOverlay: \(\) => overlay\.show\(windowUrl\('meeting', workspace\.id\)\)/, 'each workspace\'s worker loads its own page');
   assert.match(main, /safePage: SAFE_PAGE,\n\s+reducedMotion: \(\) => systemPreferences\.getAnimationSettings\(\)\.prefersReducedMotion/);
 });

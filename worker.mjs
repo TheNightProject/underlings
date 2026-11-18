@@ -50,6 +50,7 @@ export default async function activate(ctx) {
   ctx.commands.register('latest', () => app.openPage(config, pageUrl, app.latestTarget?.()));
   if (desktop) ctx.commands.register('goto', (target) => app.openPage(config, pageUrl, target));
   if (desktop) ctx.commands.register('claude', () => app.openClaude());
+  if (desktop) ctx.commands.register('changed', (what) => broadcast(String(what)));
   // Not awaited, so the window opens before the first MR fetch, which can take a while.
   app.start(config, shellFor(null)).catch((err) => log(`could not start: ${err.message}`));
 }
