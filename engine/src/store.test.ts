@@ -90,7 +90,9 @@ async function raceOverADeadLock(third: boolean): Promise<void> {
     const lock = join(dir, 'queue.json.lock');
     writeFileSync(lock, '999999 a writer that died');
     adding = addAcrossTheRace(dir, third, stop.signal);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    // Starting tsx can take seconds on a busy machine, so the race is waited for, then given time to go wrong.
+    for (let waited = 0; readFileSync(lock, 'utf8').startsWith('999999') && waited < 20_000; waited += 50) await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 600));
     assert.equal(readFileSync(lock, 'utf8'), `${process.pid} the other waiter`, 'the new holder still has its lock');
     assert.equal(existsSync(join(dir, 'queue.json')), false, 'and the waiter is still waiting');
     rmSync(lock);
