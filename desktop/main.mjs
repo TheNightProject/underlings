@@ -237,7 +237,9 @@ function switchTo(workspace, url) {
   const [oldWin, oldTermWin] = [win, termWin];
   if (oldWin) writeFileSync(WINDOW_FILE, JSON.stringify({ ...readSaved(WINDOW_FILE), ...oldWin.getNormalBounds() }));
   startHidden = false;
-  win = createWindow(url);
+  const switched = new URL(url);
+  switched.searchParams.set('switched', '1');
+  win = createWindow(switched.href);
   termWin = null;
   reveal();
   oldTermWin?.destroy();

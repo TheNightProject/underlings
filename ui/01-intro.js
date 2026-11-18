@@ -40,9 +40,10 @@ function introReplay(clock = INTRO_CLOCK) {
   if (!introRun) introPlay(clock);
 }
 
-// A page that cannot say when it last played plays, as a cold load would.
+// A page that cannot say when it last played plays, as a cold load would; one opened by switching workspace never does.
 function introWanted(clock) {
-  if (new URLSearchParams(location.search).has('window') || !introOn()) return false;
+  const params = new URLSearchParams(location.search);
+  if (params.has('window') || params.has('switched') || !introOn()) return false;
   try {
     const since = clock.wall() - Number(sessionStorage.getItem(INTRO_SEEN_KEY));
     return !(since >= 0 && since < INTRO_AGAIN_MS);
