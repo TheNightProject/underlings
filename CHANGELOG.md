@@ -2,6 +2,25 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.4.0 (2026-11-18)
+
+### New
+
+- Run several workspaces side by side, each with its own Claude account through cswap, its own tokens, settings, agents and window, all polling and running full auto at once, with a switcher at the top of the rail
+- Post findings and replies, approve, hold, merge, update the branch and retry checks on GitHub pull requests, and run review and fix agents and full auto on them
+- Take tickets from GitHub Issues, with a GitHub Project's Status as the board
+- Switch GitLab off for a workspace that has none
+- Narrow Needs you to one repo
+- Pick the Code folder with the Mac's folder picker
+
+### Fixed
+
+- A failing read of your MRs no longer asks again every second
+
+### Changed
+
+- The review agent and the worktrees Clean up removes are no longer called workspaces
+
 ## 1.3.0 (2026-11-17)
 
 ### New
