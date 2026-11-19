@@ -2,6 +2,16 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.5.2 (2026-11-19)
+
+### Changed
+
+- Homebrew no longer warns about the cask's syntax when it installs or upgrades the app
+
+### Look and feel
+
+- The app icon fills its tile in the Dock on macOS 26 and later, instead of sitting in a light frame
+
 ## 1.5.1 (2026-11-19)
 
 ### Look and feel
