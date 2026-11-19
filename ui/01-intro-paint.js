@@ -1,5 +1,14 @@
 const INTRO_NODES = 112;
-const INTRO_GLYPH = [[40.3, 35.4], [40.3, 64.6], [59.7, 50]];
+// The underling is drawn as the app icon is, 1024 to a side, and shrunk into the mark's 100.
+const INTRO_UNDERLING = { x: 512, y: 515, scale: 0.14 };
+const introUnit = ([x, y]) => [50 + (x - INTRO_UNDERLING.x) * INTRO_UNDERLING.scale, 50 + (y - INTRO_UNDERLING.y) * INTRO_UNDERLING.scale];
+const INTRO_EYES = [[446, 470], [578, 470]];
+const INTRO_BALL = [512, 248];
+// The cloud gathers into the two eyes and the antenna's tip.
+const INTRO_GLYPH = [...INTRO_EYES, INTRO_BALL].map(introUnit);
+const INTRO_LOOK = { body: '#11141a', belly: '#232833', rim: 'rgba(138, 168, 255, 0.8)', ink: '#07090d', antenna: '#e8aa3e' };
+const INTRO_BODY = 'M512 330 C642 330 704 432 704 562 C704 692 622 764 512 764 C402 764 320 692 320 562 C320 432 382 330 512 330 Z';
+const INTRO_ARMS = [{ path: 'M352 548 Q262 528 276 372', at: [352, 548], down: -2.4 }, { path: 'M672 548 Q762 528 748 372', at: [672, 548], down: 2.4 }];
 const INTRO_GLOW = [[0, 1], [0.1, 0.72], [0.24, 0.36], [0.48, 0.12], [0.74, 0.03], [1, 0]];
 const INTRO_BOKEH = [[0, 0.38], [0.6, 0.34], [0.84, 0.3], [0.95, 0.1], [1, 0]];
 const INTRO_BRANCH_SIZE = 20;
@@ -73,13 +82,12 @@ function introLook(ctx) {
   const accent = token('--accent', '#8aa8ff');
   const strong = token('--accent-strong', '#5f86ff');
   const far = token('--moved', '#c58cff');
-  const stops = [...document.querySelectorAll('#logo-ring stop')].map((s) => s.getAttribute('stop-color'));
   return {
     light, bg, blend: light ? 'source-over' : 'lighter',
     near: light ? strong : accent, far, core: light ? strong : token('--fg', '#e6eaf1'),
     halo: introSprite(accent, INTRO_GLOW), haze: introSprite(far, INTRO_GLOW), bokeh: introSprite(light ? strong : accent, INTRO_BOKEH),
     pulse: introSprite(token('--info', '#55cfd2'), INTRO_GLOW, light ? strong : '#ffffff'), white: introSprite('#ecf0f7', INTRO_GLOW),
-    ring: [stops[0] ?? accent, stops[1] ?? strong], shadow: introShadow(),
+    ring: [accent, strong], shadow: introShadow(),
     branches: INTRO_STEPS.map(([, , tone]) => introTone(token(tone, accent))),
     failed: introTone(token('--need', '#ff7a66')),
   };
@@ -678,65 +686,91 @@ function introDrawTile(sc, pose, alpha, grow) {
 function introDrawMark(sc, pose, p, glow) {
   const { ctx } = sc;
   introInMark(sc, pose);
-  ctx.globalAlpha = pose.alpha;
-  ctx.lineCap = 'round';
-  introDrawRing(sc, p, pose.alpha);
-  introDrawStrokes(sc, p, pose.alpha);
-  introDrawGlyphNodes(sc, p, pose.alpha);
+  introDrawUnderling(ctx, p, pose.alpha);
   introDrawGlints(sc, p, pose.alpha * glow);
   ctx.setTransform(sc.dpr, 0, 0, sc.dpr, 0, 0);
   ctx.globalAlpha = 1;
 }
 
-function introDrawRing(sc, p, alpha) {
-  const { ctx, look } = sc;
-  if (p.track <= 0) return;
-  ctx.globalAlpha = alpha * p.track;
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-  ctx.lineWidth = 7;
-  ctx.beginPath();
-  ctx.arc(50, 50, 32.5, 0, Math.PI * 2);
-  ctx.stroke();
-  if (p.sweep <= 0) return;
-  const grad = ctx.createLinearGradient(17.5, 17.5, 82.5, 72.98);
-  grad.addColorStop(0, look.ring[0]);
-  grad.addColorStop(1, look.ring[1]);
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = grad;
-  ctx.beginPath();
-  ctx.arc(50, 50, 32.5, Math.PI * 0.75, Math.PI * (0.75 + 1.5 * p.sweep));
-  ctx.stroke();
-}
-
-function introDrawStrokes(sc, p, alpha) {
-  const { ctx } = sc;
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = '#ecf0f7';
-  ctx.lineWidth = 4.2;
-  ctx.beginPath();
-  if (p.stem > 0) {
-    ctx.moveTo(40.3, 35.4);
-    ctx.lineTo(40.3, 35.4 + 29.2 * p.stem);
-  }
+// The eyes and the antenna's tip land first, where the cloud gathered, then the body, the arms going up, and the antenna.
+function introDrawUnderling(ctx, p, alpha) {
+  const L = INTRO_LOOK;
+  ctx.save();
+  ctx.translate(50, 50);
+  ctx.scale(INTRO_UNDERLING.scale, INTRO_UNDERLING.scale);
+  ctx.translate(-INTRO_UNDERLING.x, -INTRO_UNDERLING.y);
+  ctx.lineCap = 'round';
   if (p.curve > 0) {
-    const u = p.curve;
-    ctx.moveTo(40.3, 35.4);
-    ctx.quadraticCurveTo(40.3, 35.4 + 14.6 * u, 40.3 + 19.4 * u * u, 35.4 + 14.6 * (2 * u - u * u));
+    ctx.globalAlpha = alpha * Math.min(1, p.curve * 3);
+    for (const arm of INTRO_ARMS) {
+      ctx.save();
+      ctx.translate(...arm.at);
+      ctx.rotate(arm.down * (1 - p.curve));
+      ctx.translate(-arm.at[0], -arm.at[1]);
+      const line = new Path2D(arm.path);
+      introStroke(ctx, line, L.rim, 76);
+      introStroke(ctx, line, L.body, 54);
+      ctx.restore();
+    }
   }
-  ctx.stroke();
+  if (p.sweep > 0) {
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = L.antenna;
+    ctx.lineWidth = 16;
+    ctx.beginPath();
+    ctx.moveTo(512, 340);
+    ctx.lineTo(512, 340 - 78 * p.sweep);
+    ctx.stroke();
+  }
+  if (p.stem > 0) {
+    ctx.globalAlpha = alpha * p.stem;
+    const grow = 0.85 + 0.15 * p.stem;
+    ctx.save();
+    ctx.translate(512, 547);
+    ctx.scale(grow, grow);
+    ctx.translate(-512, -547);
+    ctx.fillStyle = L.ink;
+    for (const x of [446, 578]) introBlob(ctx, x, 782, 64, 27, L.rim, 6);
+    const body = new Path2D(INTRO_BODY);
+    ctx.fillStyle = L.body;
+    ctx.fill(body);
+    introStroke(ctx, body, L.rim, 22);
+    ctx.fillStyle = L.belly;
+    introBlob(ctx, 512, 652, 116, 74);
+    ctx.fillStyle = '#fff';
+    ctx.fill(new Path2D('M448 624 L576 624 Q562 682 512 684 Q462 682 448 624 Z'));
+    ctx.restore();
+  }
+  if (p.nodes > 0) {
+    const pop = 0.6 + 0.4 * p.nodes;
+    ctx.globalAlpha = alpha * p.nodes;
+    ctx.fillStyle = L.antenna;
+    introBlob(ctx, ...INTRO_BALL, 28 * pop, 28 * pop);
+    for (const [x, y] of INTRO_EYES) {
+      ctx.fillStyle = '#fff';
+      introBlob(ctx, x, y, 64 * pop, 64 * pop);
+      ctx.fillStyle = L.ink;
+      introBlob(ctx, x + 12, y + 2, 25 * pop, 25 * pop);
+      ctx.fillStyle = '#fff';
+      introBlob(ctx, x + 21, y - 8, 9 * pop, 9 * pop);
+    }
+  }
+  ctx.restore();
 }
 
-function introDrawGlyphNodes(sc, p, alpha) {
-  const { ctx } = sc;
-  if (p.nodes <= 0) return;
-  ctx.globalAlpha = alpha * p.nodes;
-  ctx.lineWidth = 4.2;
-  ctx.fillStyle = '#1a202b';
-  ctx.strokeStyle = '#ecf0f7';
-  for (const [x, y] of INTRO_GLYPH) {
-    ctx.beginPath();
-    ctx.arc(x, y, 5 * (0.6 + 0.4 * p.nodes), 0, Math.PI * 2);
-    ctx.fill();
+function introStroke(ctx, path, colour, width) {
+  ctx.strokeStyle = colour;
+  ctx.lineWidth = width;
+  ctx.stroke(path);
+}
+
+function introBlob(ctx, x, y, rx, ry, rim, width) {
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+  if (rim) {
+    ctx.strokeStyle = rim;
+    ctx.lineWidth = width;
     ctx.stroke();
   }
 }
@@ -750,17 +784,10 @@ function introDrawGlints(sc, p, alpha) {
     introSpriteAt(ctx, look.halo, x, y, 36, alpha * p.bloom * 0.75);
     introSpriteAt(ctx, look.white, x, y, 14, alpha * p.bloom * 0.35);
   }
-  if (p.stem > 0 && p.stem < 1) introSpriteAt(ctx, spark, 40.3, 35.4 + 29.2 * p.stem, 24, alpha);
-  if (p.curve > 0 && p.curve < 1) introSpriteAt(ctx, spark, 40.3 + 19.4 * p.curve ** 2, 35.4 + 14.6 * (2 * p.curve - p.curve ** 2), 24, alpha);
-  if (p.sweep > 0 && p.sweep < 1) introRingGlint(ctx, spark, p.sweep, 30, alpha * Math.sin(Math.PI * p.sweep) ** 0.5);
+  if (p.sweep > 0 && p.sweep < 1) introSpriteAt(ctx, spark, ...introUnit([512, 340 - 78 * p.sweep]), 24, alpha * Math.sin(Math.PI * p.sweep) ** 0.5);
   ctx.globalCompositeOperation = look.blend;
   if (p.lock > 0 && p.lock < 1) introShock(ctx, look, p.lock, alpha);
   ctx.globalCompositeOperation = 'source-over';
-}
-
-function introRingGlint(ctx, sprite, at, size, alpha) {
-  const a = Math.PI * (0.75 + 1.5 * at);
-  introSpriteAt(ctx, sprite, 50 + Math.cos(a) * 32.5, 50 + Math.sin(a) * 32.5, size, alpha);
 }
 
 function introShock(ctx, look, k, alpha) {

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
+import vm from 'node:vm';
 import { openPage } from './testkit.mjs';
 
 const WALL = Date.parse('2026-11-10T12:00:00Z');
@@ -557,4 +559,16 @@ test('a page opened by switching workspace does not play the intro, though it ha
   p.window.matchMedia = () => ({ matches: false });
   assert.equal(p.window.introBoot(fakeClock().clock), false);
   assert.equal(shown(p), 0);
+});
+
+test('the cloud gathers into the eyes and antenna tip the header logo draws, so the intro lands on the same underling', async () => {
+  const html = await readFile(new URL('../dashboard.html', import.meta.url), 'utf8');
+  const mark = html.match(/<svg class="mark"[\s\S]*?<\/svg>/)[0];
+  const [, tx, ty, k, ox, oy] = mark.match(/translate\(([\d.]+) ([\d.]+)\) scale\(([\d.]+)\) translate\((-[\d.]+) (-[\d.]+)\)/).map(Number);
+  const at = (r) => [...mark.matchAll(new RegExp(`<circle cx="([\\d.]+)" cy="([\\d.]+)" r="${r}"`, 'g'))].map(([, x, y]) => [tx + (Number(x) + ox) * k, ty + (Number(y) + oy) * k]);
+  const drawn = [...at(64), ...at(28)];
+  const paint = await readFile(new URL('./01-intro-paint.js', import.meta.url), 'utf8');
+  const gathers = JSON.parse(vm.runInNewContext(`${paint}\nJSON.stringify(INTRO_GLYPH)`));
+  assert.equal(drawn.length, 3, 'two eyes and an antenna tip');
+  assert.deepEqual(gathers.map((p) => p.map((v) => v.toFixed(2))), drawn.map((p) => p.map((v) => v.toFixed(2))));
 });
