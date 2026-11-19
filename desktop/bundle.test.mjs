@@ -122,3 +122,14 @@ test('the app packs the third-party notices, which name each runtime dependency 
   assert.match(notices, /Mozilla Public License Version 2\.0/);
   assert.match(notices, /https:\/\/github\.com\/kewisch\/ical\.js/);
 });
+
+// macOS 26 boxes an old .icns in a light frame, so the icon is an Icon Composer bundle that actool compiles.
+test('the app icon is an Icon Composer bundle whose every layer is in it', async () => {
+  assert.match(build.mac.icon, /\.icon$/);
+  const bundle = join(DESKTOP, build.mac.icon);
+  const { fill, groups } = JSON.parse(await readFile(join(bundle, 'icon.json'), 'utf8'));
+  assert.ok(fill, 'the background is the icon\'s own fill');
+  const images = groups.flatMap((g) => g.layers.map((l) => l['image-name']));
+  assert.ok(images.length);
+  for (const name of images) await readFile(join(bundle, 'Assets', name));
+});
