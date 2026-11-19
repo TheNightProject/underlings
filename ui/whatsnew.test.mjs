@@ -134,6 +134,17 @@ test('a copy installed from a release lists the newer release and says to update
   assert.deepEqual([p.$('#g-update-now'), p.$('#channel-main')], [null, null]);
 });
 
+test('a copy Homebrew installed offers Update now, which says it quits and runs brew, still with no channel', async () => {
+  const updates = { channel: 'releases', count: 1, lines: { Fixed: ['Stop the loop'] }, mode: 'release', brewed: true, upgrade: 'brew upgrade --cask underlings', target: { ref: 'v1.2.0', version: '1.2.0' } };
+  const p = await page({ snap: snapshot({ updates: { count: 1 } }), view: whatsNew(updates), hash: 'whats-new' });
+  assert.match(p.$('#main .updates').textContent, /Quits, runs brew upgrade --cask underlings, then opens the new version\./);
+  assert.equal(p.$('#channel-main'), null);
+  p.$('#g-update-now').click();
+  assert.equal(p.$('#g-update-now').textContent, 'Update to v1.2.0 now?');
+  p.$('#g-update-now').click();
+  assert.deepEqual(p.posts, [['/api/updates/apply', {}]]);
+});
+
 test('Check for updates and the channel ask the worker, and a channel already picked asks nothing', async () => {
   const p = await page({ hash: 'whats-new' });
   buttonNamed(p, 'Check for updates').click();

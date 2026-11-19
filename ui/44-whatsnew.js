@@ -112,7 +112,7 @@ function releaseGroup(name, lines) {
 
 // A copy installed from a release has no checkout to build in, so Homebrew brings the next one.
 function updateOffer(u) {
-  if (u.mode === 'release') return el('div', { class: 'updates-offer' }, el('p', { class: 'meta' }, 'To update, run ', el('code', {}, u.upgrade), ' in a terminal, then open the app again.'));
+  if (u.mode === 'release' && !u.brewed) return el('div', { class: 'updates-offer' }, el('p', { class: 'meta' }, 'To update, run ', el('code', {}, u.upgrade), ' in a terminal, then open the app again.'));
   const to = u.channel === 'releases' ? u.target?.ref : 'main at ' + (u.target?.sha ?? '').slice(0, 8);
   return el('div', { class: 'updates-offer' },
     guarded('update-now', 'Update now', 'download', 'Update to ' + to + ' now?', applyUpdate, true),
@@ -120,6 +120,7 @@ function updateOffer(u) {
 }
 
 function updatePlan(u) {
+  if (u.mode === 'release') return 'Quits, runs ' + u.upgrade + ', then opens the new version.';
   const pull = u.channel === 'releases' ? 'Fast-forwards ' + u.repo + ' to ' + (u.target?.ref ?? 'the release') : 'Pulls main into ' + u.repo;
   const then = { app: ', builds the app, then quits, puts the new build in place and opens it again.', dev: '. Then quit the app and run npm start again.' }[u.mode] ?? '.';
   return pull + ' and runs npm run setup and npm run build' + then + ' A checkout that is dirty or not on main is left as it is.';
