@@ -1,3 +1,5 @@
+<img src="docs/media/logo.svg" alt="The Underlings logo: a yellow underling with both arms up" width="128" align="right">
+
 # Underlings
 
 **Your merge requests, your tickets and a team of Claude Code agents, on one page, in a little 3D office.**
