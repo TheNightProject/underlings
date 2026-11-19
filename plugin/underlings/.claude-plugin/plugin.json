@@ -1,6 +1,6 @@
 {
   "name": "underlings",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "The workflows Underlings' agents run: review a merge request, check a branch before raising one, take a ticket to Draft merge requests, and keep your standup, progress log and tickets up to date.",
   "author": { "name": "TheNightProject" },
   "homepage": "https://github.com/TheNightProject/underlings",
