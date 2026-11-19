@@ -1,4 +1,4 @@
-<img src="docs/media/logo.svg" alt="The Underlings logo: a yellow underling with both arms up" width="128" align="right">
+<img src="docs/media/logo.svg" alt="The Underlings logo: a dark underling with both arms up and a yellow antenna" width="128" align="right">
 
 # Underlings
 
