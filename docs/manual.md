@@ -1288,9 +1288,14 @@ it cannot sign in to says so on What's new, as does being offline.
 A copy installed with Homebrew was built by the Release workflow, whose `build.json` says
 `"release": true` and names no checkout. It follows releases only and uses no git: the check reads
 the newest releases from GitHub's API, without a token, and lists what the ones above this version
-say in their notes. In place of **Update now**, What's new says to run
-`brew upgrade --cask underlings`. Setting `repoPath` in `config.json` makes it follow that
-checkout instead, as a build from source does.
+say in their notes. **Update now** quits the app and hands over to a helper, which runs
+`brew update` and `brew upgrade --cask underlings` once the app has gone, then opens the new
+version. The helper writes what brew printed to `update-install.log` in the state folder, and if
+brew fails, What's new says why when the old version opens again. A release copy Homebrew did not
+install, with no `Caskroom/underlings` under `/opt/homebrew` or `/usr/local`, says to run
+`brew upgrade --cask underlings` instead. Setting `repoPath` in `config.json` makes such a copy
+follow that checkout, as a build from source does. A copy Homebrew installed stays with Homebrew,
+so the next build from a checkout does not replace it.
 
 **Update now** takes two clicks and works in the checkout: `repoPath` from `config.json`, else the
 checkout `npm start` runs from, else the one `build.json` says the app was built in, else

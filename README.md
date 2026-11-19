@@ -102,7 +102,7 @@ open -a Underlings
 ```
 
 Homebrew puts `Underlings.app` in `/Applications`. What's new says when a release is out, and
-`brew upgrade --cask underlings` installs it. The app is not notarised by Apple yet, so the cask
+**Update now** there runs `brew upgrade --cask underlings` for you and reopens the app. The app is not notarised by Apple yet, so the cask
 clears macOS's quarantine flag on it, or macOS would refuse to open it.
 
 ### From source
