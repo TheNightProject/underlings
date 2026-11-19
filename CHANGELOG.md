@@ -2,6 +2,16 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.5.0 (2026-11-19)
+
+### New
+
+- Update now on What's new updates a copy Homebrew installed: the app quits, Homebrew installs the new version and the app opens again
+
+### Look and feel
+
+- A new logo and app icon: a yellow underling with both arms up
+
 ## 1.4.1 (2026-11-18)
 
 ### Fixed
