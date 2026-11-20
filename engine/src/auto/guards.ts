@@ -44,6 +44,13 @@ export function openedBy(thread: Discussion, me: string): boolean {
   return thread.notes[0]?.author === me;
 }
 
+export const WAITS_ON_AUTHOR = 'the author has not answered it, so it waits on them';
+
+/** On a thread its author has not answered, only fixed says anything new; the open thread already says the rest. */
+export function waitsOnAuthor(item: QueuedComment, thread: Discussion, me: string): boolean {
+  return item.outcome !== 'fixed' && lastNote(thread)?.author === me;
+}
+
 export function replyBlocker(thread: Discussion | undefined, me: string): string | null {
   if (!thread) return 'the thread has gone';
   if (!openedBy(thread, me)) return 'it is not a thread you opened';

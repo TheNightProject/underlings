@@ -282,4 +282,6 @@ export interface AutoMemory {
   handedBack?: string[];
   /** The change request standing on it is one auto placed, so auto may lift it. */
   autoHeld?: boolean;
+  /** A head you reviewed by hand, so auto waits for the next push as it would after a pass of its own. */
+  yours?: { sha: string; at: string };
 }
