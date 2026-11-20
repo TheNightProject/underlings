@@ -2,6 +2,14 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.5.3 (2026-11-20)
+
+### Fixed
+
+- Full auto no longer reviews a head you have just reviewed yourself; it waits for the next push or reply
+- Full auto no longer replies "not fixed" on a thread the author has not answered; the point waits on them
+- Full auto drafts no approval while a thread of yours is open or you have requested changes
+
 ## 1.5.2 (2026-11-19)
 
 ### Changed
