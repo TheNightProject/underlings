@@ -71,6 +71,37 @@ test('nobody else is reviewed, however their merge request looks', async () => {
   assert.equal(fake.calls.launched.length, 0);
 });
 
+function yourFinding(sha: string, status?: 'posted'): void {
+  const [item] = addToQueue([{
+    projectPath: 'acme/engine', projectId: 1001, iid: 621, webUrl: '', severity: 'MAJOR', body: 'MAJOR: off by one', createdBy: 'review',
+    position: { base_sha: 'base', start_sha: 'base', head_sha: sha, new_path: 'src/app.ts', new_line: 3 },
+  }]);
+  if (status && item) updateQueueItem(item.id, { status });
+}
+
+test('a head you reviewed by hand waits for a push, whether your findings are posted yet or not', async () => {
+  for (const status of [undefined, 'posted'] as const) {
+    resetState();
+    const fake = fakeWorld();
+    yourFinding('head-1', status);
+    await autoPoll(context(fake.world), fake.ports);
+    await autoPoll(context(fake.world), fake.ports);
+    assert.equal(fake.calls.launched.length, 0, `nothing launched over your own review (${status ?? 'pending'})`);
+    fake.world.mrs = [mr({ sha: 'head-2' })];
+    await autoPoll(context(fake.world), fake.ports);
+    assert.equal(fake.calls.launched.length, 1, 'the push is reviewed');
+    assert.equal(loadAutoMemory()[KEY]?.pass?.trigger, 'commit');
+    assert.match(fake.calls.launched[0]?.prompt ?? '', /reviewed head-1/, 'from the head you read');
+  }
+});
+
+test('your review of an older head does not stop a pass on the new one', async () => {
+  const fake = fakeWorld({ mrs: [mr({ sha: 'head-2' })] });
+  yourFinding('head-1', 'posted');
+  await autoPoll(context(fake.world), fake.ports);
+  assert.equal(fake.calls.launched.length, 1);
+});
+
 test('a new commit starts a re-review that reads the change since the last one', async () => {
   const fake = fakeWorld();
   const first = await launchOne(fake);
@@ -175,6 +206,18 @@ test('the author disagreeing twice on a thread hands it back', async () => {
   assert.equal(fake.calls.posted.length, 1);
   assert.match(loadQueue()[1]?.auto?.held ?? '', /disagreed twice/);
   assert.ok(loadAutoMemory()[KEY]?.handedBack?.includes('t1'));
+});
+
+test('on a thread its author has not answered, only fixed is sent; the rest is dropped, not handed to you', async () => {
+  const fake = fakeWorld();
+  const pass = await launchOne(fake);
+  fake.world.threads = ['t1', 't2', 't3'].map((id) => thread(id, [note(ME, 'MAJOR: off by one', '2026-11-01T00:00:00Z')]));
+  agentQueues(pass, [reply('t1', 'not-fixed', 'Still off by one.'), reply('t2', 'disagree', 'It is still wrong.'), reply('t3', 'fixed')]);
+  await afterHold(fake);
+  assert.deepEqual(fake.calls.posted.map((p) => p.item.replyTo), ['t3']);
+  const dropped = loadQueue().filter((c) => c.status === 'discarded');
+  assert.deepEqual(dropped.map((c) => [c.replyTo, c.auto?.superseded]), [['t1', 'the author has not answered it, so it waits on them'], ['t2', 'the author has not answered it, so it waits on them']]);
+  assert.deepEqual(loadAutoMemory()[KEY]?.handedBack ?? [], [], 'nothing handed back');
 });
 
 test('a reply to a bot is never sent, so two reviewers cannot ping-pong', async () => {
@@ -389,6 +432,35 @@ test('comments level never decides', async () => {
   assert.ok(!loadQueue().some((c) => c.kind === 'verdict'));
 });
 
+test('no approval is drafted while a thread of yours stands and the pass has not answered it fixed', async () => {
+  const fake = fakeWorld();
+  fake.world.threads = [thread('t1', [note(ME, 'MAJOR: off by one', '2026-11-01T00:00:00Z')])];
+  await finishedPass(fake);
+  assert.ok(!loadQueue().some((c) => c.kind === 'verdict'));
+});
+
+test('a thread of yours the pass answers fixed still lets it approve', async () => {
+  const fake = fakeWorld();
+  fake.world.threads = [thread('t1', [note(ME, 'MAJOR: off by one', '2026-11-01T00:00:00Z')])];
+  await finishedPass(fake, 'heidi:verdict', [reply('t1', 'fixed')]);
+  assert.equal(loadQueue().find((c) => c.kind === 'verdict')?.verdict, 'approve');
+});
+
+test('no approval is drafted over changes you requested yourself, or when your threads cannot be read', async () => {
+  const fake = fakeWorld({ mrs: [mr({ mergeStatus: 'REQUESTED_CHANGES', reviewStates: { [ME]: 'REQUESTED_CHANGES' } })] });
+  await finishedPass(fake);
+  assert.ok(!loadQueue().some((c) => c.kind === 'verdict'));
+  resetState();
+  const blind = fakeWorld();
+  const pass = await launchOne(blind);
+  blind.ports.discussions = async () => {
+    throw new Error('502');
+  };
+  markPassDone(pass);
+  await autoPoll(context(blind.world), blind.ports);
+  assert.ok(!loadQueue().some((c) => c.kind === 'verdict'));
+});
+
 const GATES: [string, (fake: Fake) => void, RegExp][] = [
   ['a red pipeline', (f) => (f.world.mrs = [mr({ pipeline: 'FAILED' })]), /pipeline is failed/],
   ['an open thread of yours', (f) => (f.world.threads = [thread('t1', [note(ME, 'MINOR: hm', '2026-11-01T00:00:00Z')])]), /threads are unresolved/],
@@ -537,7 +609,7 @@ test('a launch that fails is said once, not retried every poll', async () => {
 test('a GitLab hiccup leaves items waiting rather than handing them back', async () => {
   const fake = fakeWorld();
   const pass = await launchOne(fake);
-  fake.world.threads = [thread('t1', [note(ME, 'MAJOR: off by one', '2026-11-01T00:00:00Z')])];
+  fake.world.threads = [thread('t1', [note(ME, 'MAJOR: off by one', '2026-11-01T00:00:00Z'), note('heidi', 'Done', '2026-11-03T10:01:00Z')])];
   agentQueues(pass, [finding(), reply('t1', 'not-fixed', 'Still off by one.')]);
   const { freshMr, discussions } = fake.ports;
   fake.ports.freshMr = async () => {

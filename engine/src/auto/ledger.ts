@@ -29,6 +29,10 @@ function dropUnsent(match: (c: QueuedComment) => boolean, reason: string): void 
   for (const c of loadQueue()) if (drop(c)) changeUnsent(c.id, drop);
 }
 
+export function dropItem(item: QueuedComment, reason: string): void {
+  dropUnsent((c) => c.id === item.id, reason);
+}
+
 /** Findings about a head that has gone are dropped, and the next poll reviews the new one. */
 export function supersedePass(pass: AutoPass, reason: string): void {
   dropUnsent((c) => c.auto?.pass === pass.id, reason);

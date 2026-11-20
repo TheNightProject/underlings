@@ -12,9 +12,9 @@ import {
 import { isOpen, type AutoPass, type Mr, type QueuedComment } from '../types.js';
 import type { AutoConfig } from './config.js';
 import { approvalBlockers, fixedInCode, passBlocking, type ApprovalFacts } from './gates.js';
-import { ineligible, replyBlocker } from './guards.js';
+import { ineligible, replyBlocker, WAITS_ON_AUTHOR, waitsOnAuthor } from './guards.js';
 import { dueItems } from './hold.js';
-import { foundBy, handBack, holdItem, keyOf, supersedePass } from './ledger.js';
+import { dropItem, foundBy, handBack, holdItem, keyOf, supersedePass } from './ledger.js';
 import { HEAD_MOVED } from './passes.js';
 import { atLeast, levelForMr } from './people.js';
 import { meOn, type AutoContext, type AutoPorts } from './ports.js';
@@ -50,13 +50,16 @@ function readiness(item: QueuedComment, mr: Mr | null, me: string, config: AutoC
 
 interface Check {
   why?: string;
+  /** Nothing to hand you either, so it is dropped rather than held. */
+  drop?: string;
   thread?: Discussion;
 }
 
 async function replyCheck(item: QueuedComment, mr: Mr, me: string, ports: AutoPorts): Promise<Check> {
   const thread = (await ports.discussions(mr)).find((t) => t.id === item.replyTo);
   const why = replyBlocker(thread, me);
-  return why ? { why } : { thread };
+  if (why || !thread) return { why: why ?? 'the thread has gone' };
+  return waitsOnAuthor(item, thread, me) ? { drop: WAITS_ON_AUTHOR } : { thread };
 }
 
 async function approvalFacts({ mr, pass }: Ready, me: string, ports: AutoPorts): Promise<ApprovalFacts> {
@@ -124,6 +127,10 @@ async function sendClaimed(item: QueuedComment, mr: Mr | null, me: string, ctx: 
   if (typeof ready === 'string') return hold(item, ready, report);
   const check = await kindCheck(item, ready, me, ctx, ports).catch(() => null);
   if (!check) return;
+  if (check.drop) {
+    releaseClaim(item.id, claimer(ctx));
+    return dropItem(item, check.drop);
+  }
   if (check.why) return hold(item, check.why, report);
   const outcome = await ports.post(item, { automatic: true, footer: ctx.config.footer, claimedBy: claimer(ctx) });
   if (!outcome.ok) return hold(item, `sending failed: ${outcome.error ?? 'no reason given'}`, report);

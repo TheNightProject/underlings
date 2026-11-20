@@ -83,8 +83,10 @@ function threadLines(me: string, provider?: 'github'): string[] {
     `For each unresolved thread opened by ${me}, queue a reply instead of a new finding:`,
     '{"kind":"reply","replyTo":"<discussion id>","outcome":"fixed|not-fixed|disagree","body":"<one or two sentences>"}',
     WHICH_MR[provider ?? 'gitlab'],
-    'fixed only when the code now shows it fixed, not-fixed when it does not,',
-    'disagree when the author has argued against it and you still hold the point.',
+    'fixed only when the code now shows it fixed.',
+    'not-fixed only when the author has answered in the thread that it is done and the code does not show it,',
+    'disagree only when the author has argued against it and you still hold the point.',
+    'A thread the author has not answered and the code has not fixed is waiting on them: queue nothing for it.',
     'If the author has convinced you, queue nothing for that thread.',
     'Never raise as a new finding what an open thread already says.',
   ];
