@@ -2,6 +2,12 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.5.4 (2026-11-21)
+
+### Fixed
+
+- Tickets from GitHub Issues load with the GitHub CLI's usual token while no Project is named; one named without the read:project scope says how to add it
+
 ## 1.5.3 (2026-11-20)
 
 ### Fixed
