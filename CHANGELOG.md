@@ -2,6 +2,12 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.5.5 (2026-11-21)
+
+### Fixed
+
+- Update now pressed in a second workspace no longer reopens every workspace as that one, sharing its settings
+
 ## 1.5.4 (2026-11-21)
 
 ### Fixed
