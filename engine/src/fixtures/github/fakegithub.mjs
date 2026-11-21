@@ -152,7 +152,18 @@ function parentOf(world, i) {
 
 const rate = (world) => ({ cost: 1, remaining: 4990, resetAt: new Date(world.clock() + 3_600_000).toISOString() });
 
+const PROJECT_FIELDS = /\bprojectItems\b|\bprojectV2\b/;
+
+/** As GitHub does for a classic token: Project fields need read:project, whatever else it may do. */
+function scopeRefusal(world, query) {
+  if (!world.viewer.enforceScopes || /\b(read:)?project\b/.test(world.viewer.scopes ?? '') || !PROJECT_FIELDS.test(query ?? '')) return null;
+  const message = `Your token has not been granted the required scopes to execute this query. The 'id' field requires one of the following scopes: ['read:project'], but your token has only been granted the: [${(world.viewer.scopes ?? '').split(/,\s*/).map((x) => `'${x}'`).join(', ')}] scopes.`;
+  return { status: 200, body: { data: null, errors: [{ type: 'INSUFFICIENT_SCOPES', message }] } };
+}
+
 function graphqlAnswer(world, shape, { op, body }) {
+  const refused = scopeRefusal(world, body.query);
+  if (refused) return refused;
   const v = body.variables ?? {};
   const open = world.prs.filter((p) => (p.state ?? 'OPEN') === 'OPEN');
   const answers = {

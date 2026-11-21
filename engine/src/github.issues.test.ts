@@ -86,6 +86,16 @@ test('with no Project named, every open issue of yours is Open, and no Project i
   assert.deepEqual(await engine.ticketColumns(), ['Open', 'Closed']);
 });
 
+test('a token without read:project still reads your issues while no Project is named, and says how to add it once one is', async () => {
+  Object.assign(h.world.viewer, { scopes: 'gist, read:org, repo, workflow', enforceScopes: true });
+  use({ tickets: { githubProject: '' } });
+  assert.equal((await engine.fetchMyTickets()).length, 4);
+  assert.doesNotMatch(String(h.fake.asked('MyIssues')[0]!.body.query), /projectItems/, 'no Project field is asked for');
+  forgetBoard();
+  use();
+  await assert.rejects(engine.fetchMyTickets(), /missing the read:project scope this needs\. Signed in with gh, run gh auth refresh -s read:project/);
+});
+
 test('the board columns are the Project\'s Status options in order, read once for a few minutes', async () => {
   assert.deepEqual(await engine.ticketColumns(), BOARD_COLUMNS);
   await engine.fetchMyTickets();

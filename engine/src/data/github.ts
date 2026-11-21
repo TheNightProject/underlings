@@ -254,8 +254,21 @@ export async function graphql<T>(query: string, variables: Record<string, unknow
     limits.blockedUntil = reset > 0 ? reset * 1000 : Date.now() + LONGEST_WAIT_MS;
     throw new Error(`GitHub's GraphQL rate limit is spent until ${clock(limits.blockedUntil)} UTC`);
   }
+  const scope = missingScope(body.errors);
+  if (scope) throw new Error(scopeAdvice(scope));
   if (!body.data || (strict && body.errors?.length)) throw new Error(`GitHub GraphQL: ${(body.errors ?? []).map((e) => e.message).join('; ') || 'no data'}`);
   return body.data;
+}
+
+/** The scope GitHub says a field needs, read off its INSUFFICIENT_SCOPES error. */
+export function missingScope(errors: GraphqlBody<unknown>['errors']): string | null {
+  const refused = errors?.find((e) => e.type === 'INSUFFICIENT_SCOPES');
+  if (!refused) return null;
+  return /following scopes: \['([^']+)'/.exec(refused.message)?.[1] ?? 'a further';
+}
+
+export function scopeAdvice(scope: string): string {
+  return `your GitHub token is missing the ${scope} scope this needs. Signed in with gh, run gh auth refresh -s ${scope}; a token you made yourself needs it ticked at https://github.com/settings/tokens`;
 }
 
 /** GitHub answers a refused mutation with its field null beside the errors, so any error fails it. */

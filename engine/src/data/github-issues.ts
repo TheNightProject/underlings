@@ -18,39 +18,44 @@ const BOARD_MS = 5 * 60_000;
 const FINISHED = ['Done'];
 const RATE = 'rateLimit { cost remaining resetAt }';
 
-const ISSUE_FIELDS = `
+const PROJECT_ITEMS = `projectItems(first: 20) { nodes { id project { id } status: fieldValueByName(name: "${STATUS_FIELD}") { ... on ProjectV2ItemFieldSingleSelectValue { name } } } }`;
+
+/** A Project's columns need the read:project scope, so they are asked for only once a Project is named. */
+export function issueFields(withProject = projectRef() !== null): string {
+  return `
 fragment issue on Issue {
   id number title url state
   repository { nameWithOwner }
   labels(first: 20) { nodes { name } }
   parent { number title repository { nameWithOwner } }
-  projectItems(first: 20) { nodes { id project { id } status: fieldValueByName(name: "${STATUS_FIELD}") { ... on ProjectV2ItemFieldSingleSelectValue { name } } } }
+  ${withProject ? PROJECT_ITEMS : ''}
   closedByPullRequestsReferences(first: 10, includeClosedPrs: false) { nodes { number repository { nameWithOwner } } }
 }`;
+}
 
-const MINE_QUERY = `query MyIssues($assigned: String!) {
+const MINE_QUERY = (): string => `query MyIssues($assigned: String!) {
   ${RATE}
   assigned: search(type: ISSUE, query: $assigned, first: ${SEARCH_FIRST}) { nodes { ...issue } }
 }
-${ISSUE_FIELDS}`;
+${issueFields()}`;
 
-const SEARCH_QUERY = `query IssueSearch($query: String!, $first: Int!) {
+const SEARCH_QUERY = (): string => `query IssueSearch($query: String!, $first: Int!) {
   ${RATE}
   search(type: ISSUE, query: $query, first: $first) { nodes { ...issue } }
 }
-${ISSUE_FIELDS}`;
+${issueFields()}`;
 
-const ISSUE_QUERY = `query Issue($owner: String!, $name: String!, $number: Int!) {
+const ISSUE_QUERY = (): string => `query Issue($owner: String!, $name: String!, $number: Int!) {
   ${RATE}
   repository(owner: $owner, name: $name) { issue(number: $number) { ...issue body } }
 }
-${ISSUE_FIELDS}`;
+${issueFields()}`;
 
-const CHILDREN_QUERY = `query SubIssues($owner: String!, $name: String!, $number: Int!, $last: Int!) {
+const CHILDREN_QUERY = (): string => `query SubIssues($owner: String!, $name: String!, $number: Int!, $last: Int!) {
   ${RATE}
   repository(owner: $owner, name: $name) { issue(number: $number) { subIssues(last: $last) { nodes { ...issue } } } }
 }
-${ISSUE_FIELDS}`;
+${issueFields()}`;
 
 const BOARD_FIELDS = `
 fragment board on ProjectV2 {
@@ -187,7 +192,7 @@ const SEARCH_BASE = 'is:issue is:open archived:false sort:updated-desc';
 /** Open issues assigned to you, as Jira's are, narrowed by GitHub repos, less those the Project calls finished; each read as fully as a view, bar its body. */
 export async function myIssues(limit = SEARCH_FIRST): Promise<TicketView[]> {
   const [data, on] = await Promise.all([
-    graphql<{ assigned: { nodes: (GhIssue | null)[] } }>(MINE_QUERY, { assigned: `${SEARCH_BASE} assignee:@me` }),
+    graphql<{ assigned: { nodes: (GhIssue | null)[] } }>(MINE_QUERY(), { assigned: `${SEARCH_BASE} assignee:@me` }),
     projectBoard(),
   ]);
   const seen = new Map<string, GhIssue>();
@@ -201,7 +206,7 @@ export async function myIssues(limit = SEARCH_FIRST): Promise<TicketView[]> {
 
 async function readIssue(key: string): Promise<GhIssue> {
   const { owner, name, number } = partsOf(key);
-  const data = await graphql<{ repository: { issue: GhIssue | null } | null }>(ISSUE_QUERY, { owner, name, number });
+  const data = await graphql<{ repository: { issue: GhIssue | null } | null }>(ISSUE_QUERY(), { owner, name, number });
   const issue = data.repository?.issue;
   if (!issue) throw new Error(`GitHub has no issue ${key} that this token can read`);
   return issue;
@@ -235,7 +240,7 @@ export async function findIssues(keys: string[]): Promise<Map<string, Ticket>> {
     const vars = batch.map((_, n) => `$o${n}: String!, $n${n}: String!, $k${n}: Int!`).join(', ');
     const asks = batch.map((_, n) => `i${n}: repository(owner: $o${n}, name: $n${n}) { issue(number: $k${n}) { ...issue } }`).join('\n  ');
     const values = Object.fromEntries(batch.flatMap((p, n) => [[`o${n}`, p.owner], [`n${n}`, p.name], [`k${n}`, p.number]]));
-    const data = await graphql<Record<string, { issue: GhIssue | null } | null>>(`query Issues(${vars}) {\n  ${RATE}\n  ${asks}\n}\n${ISSUE_FIELDS}`, values).catch(() => ({}) as Record<string, null>);
+    const data = await graphql<Record<string, { issue: GhIssue | null } | null>>(`query Issues(${vars}) {\n  ${RATE}\n  ${asks}\n}\n${issueFields()}`, values).catch(() => ({}) as Record<string, null>);
     for (let n = 0; n < batch.length; n += 1) {
       const issue = data[`i${n}`]?.issue;
       if (issue) out.set(keyOf(issue), toTicket(issue, on));
@@ -245,7 +250,7 @@ export async function findIssues(keys: string[]): Promise<Map<string, Ticket>> {
 }
 
 async function searchIssues(query: string, first: number): Promise<Ticket[]> {
-  const [data, on] = await Promise.all([graphql<{ search: { nodes: (GhIssue | null)[] } }>(SEARCH_QUERY, { query, first }), projectBoard().catch(() => null)]);
+  const [data, on] = await Promise.all([graphql<{ search: { nodes: (GhIssue | null)[] } }>(SEARCH_QUERY(), { query, first }), projectBoard().catch(() => null)]);
   return issueNodes(data.search.nodes).filter((issue) => issue.repository).map((issue) => toTicket(issue, on));
 }
 
@@ -259,7 +264,7 @@ export async function issuesMentioning(phrases: string[], limit = 5): Promise<Ti
 export async function subIssues(parent: string, limit = 8): Promise<Ticket[]> {
   const { owner, name, number } = partsOf(parent);
   const [data, on] = await Promise.all([
-    graphql<{ repository: { issue: { subIssues: { nodes: (GhIssue | null)[] } } | null } | null }>(CHILDREN_QUERY, { owner, name, number, last: limit }),
+    graphql<{ repository: { issue: { subIssues: { nodes: (GhIssue | null)[] } } | null } | null }>(CHILDREN_QUERY(), { owner, name, number, last: limit }),
     projectBoard().catch(() => null),
   ]);
   return issueNodes(data.repository?.issue?.subIssues.nodes).map((issue) => toTicket(issue, on)).reverse();
