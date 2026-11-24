@@ -31,7 +31,7 @@ function viewFullAuto(d) {
           el('td', { class: 'num' }, p.open || ''),
           el('td', { class: 'num' }, p.reviewing || ''),
           el('td', {}, personLevel(m, p))))))) : empty(q ? 'Nobody matches.' : 'Nobody with an open MR yet.'),
-      el('p', { class: 'meta' }, 'Shadow does everything and sends nothing. Comments posts reviews, replies and re-reviews. Comments + verdict also approves or requests changes, behind the gates. The first row reviews any other MR that asks for you, at shadow only, and never a draft, one you approved, your own or a bot\'s.')),
+      el('p', { class: 'meta' }, 'A person here has every open MR of theirs reviewed, whether it asks for you or not, except drafts and ones you approved. Shadow does everything and sends nothing. Comments posts reviews, replies and re-reviews. Comments + verdict also approves or requests changes, behind the gates. The first row reviews any other MR that asks for you, at shadow only, and never a draft, one you approved, your own or a bot\'s.')),
     m.available ? section('Sending soon', sendingSoon(m)) : null,
     m.driver ? section('Activity', activityList(m.driver)) : null,
     m.available ? section('Sent without you', sentWithoutYou(m)) : null,

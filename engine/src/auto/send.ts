@@ -12,7 +12,7 @@ import {
 import { isOpen, type AutoPass, type Mr, type QueuedComment } from '../types.js';
 import type { AutoConfig } from './config.js';
 import { approvalBlockers, fixedInCode, passBlocking, type ApprovalFacts } from './gates.js';
-import { ineligible, replyBlocker, WAITS_ON_AUTHOR, waitsOnAuthor } from './guards.js';
+import { ineligible, notAsked, replyBlocker, WAITS_ON_AUTHOR, waitsOnAuthor } from './guards.js';
 import { dueItems } from './hold.js';
 import { dropItem, foundBy, handBack, holdItem, keyOf, supersedePass } from './ledger.js';
 import { HEAD_MOVED } from './passes.js';
@@ -43,7 +43,7 @@ function readiness(item: QueuedComment, mr: Mr | null, me: string, config: AutoC
   const pass = loadAutoMemory()[keyOf(item)]?.pass;
   if (!mr || !isOpen(mr)) return 'it is no longer open';
   if (!pass || pass.id !== item.auto?.pass) return 'a newer pass has replaced it';
-  const blocked = ineligible(mr, me) ?? levelBlocker(item, mr, me, config);
+  const blocked = ineligible(mr, me) ?? (pass.asked ? notAsked(mr, me) : null) ?? levelBlocker(item, mr, me, config);
   if (blocked) return blocked;
   return mr.sha === pass.sha ? { mr, pass } : HEAD_MOVED;
 }

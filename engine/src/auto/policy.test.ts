@@ -13,7 +13,7 @@ import {
   sensitiveHits,
   type ApprovalFacts,
 } from './gates.js';
-import { ineligible, mayAnswer, passComments, threadCapReason } from './guards.js';
+import { ineligible, mayAnswer, notAsked, passComments, threadCapReason } from './guards.js';
 import { foundBy } from './ledger.js';
 import { dueItems, rearmed } from './hold.js';
 import { atLeast, describePeople, levelFor, parsePeople } from './people.js';
@@ -81,10 +81,12 @@ test('a cap typed as nonsense falls back to its default rather than to no cap at
 });
 
 
-test('auto leaves alone a draft, an MR you are not reviewing, and one you approved', () => {
+test('auto leaves alone a draft, your own MR and one you approved, and on request only what asks you', () => {
   assert.equal(ineligible(mr(), ME), null);
+  assert.equal(ineligible(mr({ reviewers: ['x'] }), ME), null, 'a person\'s own row takes every MR of theirs');
+  assert.match(notAsked(mr({ reviewers: ['x'] }), ME) ?? '', /not a requested reviewer/);
   assert.match(ineligible(mr({ draft: true }), ME) ?? '', /draft/);
-  assert.match(ineligible(mr({ reviewers: ['x'] }), ME) ?? '', /not a requested reviewer/);
+  assert.match(ineligible(mr({ author: ME.toUpperCase() }), ME) ?? '', /your own/);
   assert.match(ineligible(mr({ approvedBy: [ME] }), ME) ?? '', /approved/);
   assert.match(ineligible(mr(), undefined) ?? '', /not known/);
 });

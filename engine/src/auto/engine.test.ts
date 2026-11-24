@@ -142,8 +142,8 @@ test('a reply from a bot, or one that reads as automated, starts nothing', async
   }
 });
 
-test('a draft, or a merge request you are not a reviewer on, is never reviewed', async () => {
-  for (const subject of [mr({ draft: true }), mr({ reviewers: ['someone'] })]) {
+test('a draft, or one you approved, is never reviewed', async () => {
+  for (const subject of [mr({ draft: true }), mr({ approvedBy: [ME] })]) {
     resetState();
     const fake = fakeWorld({ mrs: [subject] });
     await autoPoll(context(fake.world), fake.ports);
@@ -371,8 +371,16 @@ test('a push inside the hold window stops the send too', async () => {
   assert.equal(loadQueue()[0]?.status, 'discarded');
 });
 
-test('nothing is sent on a merge request that became a draft, or dropped you as reviewer', async () => {
-  for (const changed of [mr({ draft: true }), mr({ reviewers: [] })]) {
+test('every open MR of a person in full auto is reviewed, whoever it asks, and what it finds is sent', async () => {
+  const fake = fakeWorld({ mrs: [mr({ reviewers: ['lee'] })] });
+  const pass = await launchOne(fake);
+  agentQueues(pass, [finding()]);
+  await afterHold(fake);
+  assert.equal(fake.calls.posted.length, 1);
+});
+
+test('nothing is sent on a merge request that became a draft, or that you approved meanwhile', async () => {
+  for (const changed of [mr({ draft: true }), mr({ approvedBy: [ME] })]) {
     resetState();
     const fake = fakeWorld();
     const pass = await launchOne(fake);
