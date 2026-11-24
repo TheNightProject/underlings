@@ -318,7 +318,10 @@ every MR that asks for you, is not a draft, is not approved by you and is not yo
 is reviewed at shadow: queued for you, nothing sent. A person's own row wins, and Off on a row
 means never once the default is on.
 
-Full auto reviews each head once: a new MR, a push, or a person's new note on a thread you opened.
+A person with a row of their own has every open MR of theirs reviewed, whether it asks for you or
+not, except drafts, ones you have approved and your own; your repos and repo filter still bound
+which MRs are seen. Full auto reviews each head once: a new MR, a push, or a person's new note on a
+thread you opened.
 A head you reviewed by hand counts as read, so it waits for the next push. On a thread its author
 has not answered it only ever says fixed; a point still open waits on the author, and no approval
 is drafted while a thread of yours stands or you have requested changes.

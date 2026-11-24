@@ -1,6 +1,6 @@
 import { looksAutomated } from '../leaderboard.js';
 import type { AutoLevel, Mr } from '../types.js';
-import { ineligible } from './guards.js';
+import { ineligible, notAsked } from './guards.js';
 
 export interface AutoPerson {
   username: string;
@@ -74,7 +74,7 @@ export function levelForMr(mr: Mr, me: string | undefined, rules: PeopleRules): 
   if (own) return own;
   if (!rules.onRequest || rules.optedOut.has(author)) return null;
   if (!me || author === me.toLowerCase() || looksAutomated(author)) return null;
-  return ineligible(mr, me) ? null : rules.onRequest;
+  return (ineligible(mr, me) ?? notAsked(mr, me)) ? null : rules.onRequest;
 }
 
 export function askedOnly(mr: Mr, rules: PeopleRules): boolean {

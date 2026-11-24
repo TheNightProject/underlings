@@ -6,12 +6,18 @@ import { MAX_REPLIES_PER_THREAD } from './config.js';
 
 type Note = Discussion['notes'][number];
 
+/** A person with a row of their own has every open MR of theirs reviewed, whoever it asks. */
 export function ineligible(mr: Mr, me: string | undefined): string | null {
   if (!me) return 'who you are is not known yet';
   if (mr.draft) return 'it is a draft';
-  if (!mr.reviewers.includes(me)) return 'you are not a requested reviewer';
+  if (mr.author.toLowerCase() === me.toLowerCase()) return 'it is your own';
   if (mr.approvedBy.includes(me)) return 'you have approved it';
   return null;
+}
+
+/** Reviewing on request takes only what asks you. */
+export function notAsked(mr: Mr, me: string): string | null {
+  return mr.reviewers.includes(me) ? null : 'you are not a requested reviewer';
 }
 
 const AUTOMATED_MARKERS = [
