@@ -372,7 +372,7 @@ test('a push inside the hold window stops the send too', async () => {
 });
 
 test('every open MR of a person in full auto is reviewed, whoever it asks, and what it finds is sent', async () => {
-  const fake = fakeWorld({ mrs: [mr({ reviewers: ['lee'] })] });
+  const fake = fakeWorld({ mrs: [mr({ reviewers: ['olive'] })] });
   const pass = await launchOne(fake);
   agentQueues(pass, [finding()]);
   await afterHold(fake);

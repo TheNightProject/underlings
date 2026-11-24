@@ -3,6 +3,7 @@ const SETTING_GROUPS = [
   ['GitHub', ['github.on', 'github.scope', 'github.repos', 'github.host']],
   ['Repos', ['repoFilter']],
   ['Reviewing', ['holdWhileReviewing', 'closeWorkspaceWhenDone', 'reReviewOnChange']],
+  ['Your MRs', ['resolveFixedThreads']],
   ['Refresh every', ['pollSeconds']],
   ['Code folder', ['workspaceRoot']],
   ['Jira site', ['jiraSite']],

@@ -15,6 +15,8 @@ export interface Settings {
   holdWhileReviewing: boolean;
   /** Remove the review agent once you have approved or requested changes. */
   closeWorkspaceWhenDone: boolean;
+  /** A fix agent resolves each thread it fixed or moved to a ticket; off leaves resolving to the reviewer. */
+  resolveFixedThreads: boolean;
   /** Each MR you review from now on is re-reviewed when it changes. Its findings still wait for you. */
   reReviewOnChange: boolean;
   /** Colour the whole row by what it needs from you, not just its left edge. */
@@ -130,6 +132,7 @@ export const DEFAULT_SETTINGS: Settings = {
   repoFilter: '',
   holdWhileReviewing: true,
   closeWorkspaceWhenDone: true,
+  resolveFixedThreads: true,
   reReviewOnChange: false,
   rowTint: true,
   mouse: true,
@@ -448,6 +451,12 @@ export const SETTING_ROWS: SettingRow[] = [
     key: 'closeWorkspaceWhenDone',
     label: 'Tidy up after a review',
     hint: 'removes the review agent once you have decided.',
+    kind: 'toggle',
+  },
+  {
+    key: 'resolveFixedThreads',
+    label: 'Resolve threads once fixed',
+    hint: 'a fix agent replies on every thread it works through, and resolves the ones it fixed or moved to a ticket. Off leaves resolving to the reviewer.',
     kind: 'toggle',
   },
   {

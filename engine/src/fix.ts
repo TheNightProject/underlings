@@ -38,6 +38,7 @@ export function fixBrief({ mr, targetBranch, threads, checkout }: FixBriefInput)
   const branch = mr.sourceBranch;
   const target = targetBranch ?? 'main';
   const project = followUpProject(mr.ticket);
+  const resolving = loadSettings().resolveFixedThreads;
   return [
     `Address ${threads.length === 1 ? 'one review thread' : `${threads.length} review threads`} on my MR ${refNumber(mr)}: ${mr.webUrl}`,
     `Ticket ${mr.ticket ?? 'none named'}. Branch ${branch} into ${target}, head ${mr.sha}.`,
@@ -46,15 +47,20 @@ export function fixBrief({ mr, targetBranch, threads, checkout }: FixBriefInput)
     '',
     ...threads.flatMap((t, i) => threadText(t, i + 1)),
     'Do this, in order:',
-    '1. Read every thread in full, here and on the MR.',
+    '1. Read every thread in full, here and on the MR, and decide for each: fix it, move it to a ticket, answer it, or push back.',
     `2. Make the code changes in that checkout. Take newer commits on ${branch} with git merge, never a rebase.`,
     `3. For a NAB, a Consider or a follow-up you decide not to do in this MR, raise ${aTicket(project)} ${epicFor(mr.ticket)}, assigned to me,${templateForm()} and note its key.`,
     `4. ${selfReviewStep(target)} Prove each new test fails without its fix.`,
     '5. Then STOP and ask me with the AskUserQuestion tool, offering Yes and No, and wait. Without that tool, ask it as one plain question in this terminal:',
     `   Push <n> commits to ${branch} and post <m> replies on ${refNumber(mr)}? (yes/no)`,
-    '   List under it each reply you will post.',
-    `6. Only after a yes: git push origin HEAD:${branch}. Reply on each thread with "Fixed in <sha>." or "Raised ${project ? `${project}-NNNN` : '<its key>'} for this.", plus at most one sentence: two or three sentences in all, no headings, no quoting back. Resolve each thread you handled, then ask the reviewers who requested changes to look again.`,
-    ...githubWay(mr),
+    '   List under it the reply you will post on every thread, and say which you will resolve.',
+    `6. Only after a yes: git push origin HEAD:${branch} if there are commits. Then reply on every thread above, none left silent, two or three sentences at most, no headings, no quoting back:`,
+    `   - Fixed: "Fixed in <sha>." plus at most one sentence.${resolving ? ' Resolve it.' : ''}`,
+    `   - Moved to a ticket: "Raised ${project ? `${project}-NNNN` : '<its key>'} for this." plus at most one sentence.${resolving ? ' Resolve it.' : ''}`,
+    '   - A question: the answer. Leave it open for the reviewer.',
+    '   - Pushed back on: the reason, in a sentence or two. Leave it open for the reviewer.',
+    `   ${resolving ? 'Resolve nothing else.' : 'Resolve nothing: the reviewer resolves their own threads.'} Then ask the reviewers who requested changes to look again.`,
+    ...githubWay(mr, resolving),
     '',
     `Never merge, never force-push, never touch any other thread. ${rules()}`,
   ].join('\n');
@@ -82,10 +88,11 @@ export function conflictBrief({ mr, targetBranch, checkout }: Omit<FixBriefInput
 }
 
 // The thread ids are GitHub's GraphQL ids, which gh's REST commands do not take.
-function githubWay(mr: Mr): string[] {
+function githubWay(mr: Mr, resolving: boolean): string[] {
   if (mr.provider !== 'github') return [];
+  const resolve = resolving ? ', resolve with resolveReviewThread' : '';
   return [
-    `   This is a GitHub pull request: use gh. Reply with gh api graphql and addPullRequestReviewThreadReply, resolve with resolveReviewThread, each on the thread id above, and ask again with gh pr edit ${mr.iid} --repo ${mr.projectPath} --add-reviewer <login>.`,
+    `   This is a GitHub pull request: use gh. Reply with gh api graphql and addPullRequestReviewThreadReply${resolve}, each on the thread id above, and ask again with gh pr edit ${mr.iid} --repo ${mr.projectPath} --add-reviewer <login>.`,
   ];
 }
 
