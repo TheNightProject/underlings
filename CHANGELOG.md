@@ -2,6 +2,13 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.6.1 (2026-11-24)
+
+### Changed
+
+- A fix agent replies on every thread it works through: what it fixed or moved to a ticket is resolved, an answer or a push back is left open for the reviewer
+- Resolve threads once fixed, under Settings, Your MRs, is on by default; off leaves resolving to the reviewer
+
 ## 1.6.0 (2026-11-24)
 
 ### Changed
