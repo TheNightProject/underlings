@@ -156,12 +156,37 @@ test('the brief stops to ask before anything is pushed or posted, and reads, cha
   const steps = ['1. Read every thread in full', '2. Make the code changes in that checkout', '3. For a NAB, a Consider or a follow-up', '4. Run /underlings:pre-mr-review main there', '5. Then STOP and ask me', '6. Only after a yes: git push origin HEAD:feat/88'];
   const order = steps.map(at);
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'the steps are in order');
-  assert.ok(at('STOP and ask') < at('git push') && at('STOP and ask') < at('Reply on each thread') && at('STOP and ask') < at('Resolve each thread'));
+  assert.ok(at('STOP and ask') < at('git push') && at('STOP and ask') < at('reply on every thread') && at('STOP and ask') < at('Resolve it.'));
   assert.match(text, /git merge, never a rebase/);
-  assert.match(text, /"Fixed in <sha>\." or "Raised ABC-NNNN for this\.", plus at most one sentence/);
+  assert.match(text, /- Fixed: "Fixed in <sha>\." plus at most one sentence\. Resolve it\./);
+  assert.match(text, /- Moved to a ticket: "Raised ABC-NNNN for this\." plus at most one sentence\. Resolve it\./);
   assert.match(text, /Never merge, never force-push, never touch any other thread\./);
   assert.match(text, /comments, no AI attribution\./);
   assert.ok(!text.includes('\u2014'), 'the brief itself has no em dash');
+});
+
+test('every thread gets a reply, none left silent: a fix or a ticket is resolved, an answer or a push back is left for the reviewer', () => {
+  const text = brief(fixableThreads(THREADS));
+  assert.match(text, /decide for each: fix it, move it to a ticket, answer it, or push back\./);
+  assert.match(text, /List under it the reply you will post on every thread, and say which you will resolve\./);
+  assert.match(text, /reply on every thread above, none left silent/);
+  assert.match(text, /- A question: the answer\. Leave it open for the reviewer\./);
+  assert.match(text, /- Pushed back on: the reason, in a sentence or two\. Leave it open for the reviewer\./);
+  assert.match(text, /Resolve nothing else\./);
+});
+
+test('with Resolve threads once fixed off, the agent still replies on every thread and resolves none', () => {
+  changeSettings((s) => ({ ...s, resolveFixedThreads: false }));
+  try {
+    const text = brief(fixableThreads(THREADS));
+    assert.match(text, /reply on every thread above, none left silent/);
+    assert.doesNotMatch(text, /Resolve it\./);
+    assert.match(text, /Resolve nothing: the reviewer resolves their own threads\./);
+    const github = fixBrief({ mr: mr({ provider: 'github', iid: 12 }), targetBranch: 'main', threads: [THREADS[0]!], checkout: CHECKOUT });
+    assert.doesNotMatch(github, /resolveReviewThread/);
+  } finally {
+    changeSettings((s) => ({ ...s, resolveFixedThreads: true }));
+  }
 });
 
 test('the self review is scoped to the branch the MR targets, so a stacked MR is not reviewed as the whole stack', () => {
