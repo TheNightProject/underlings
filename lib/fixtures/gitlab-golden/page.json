@@ -116,7 +116,7 @@
     "standup": [
       "Standup",
       "Worked out from GitLab, Jira and your calendar. Untick what to leave out, then copy the rest for Slack.",
-      "Generate againCopy for Slack",
+      "Generate againShortenCopy for Slack",
       "YesterdayMonday 9 November",
       "Merged1 of 1",
       "[ABC-106] Merged web !18: fix the login redirect",
@@ -136,7 +136,7 @@
       "Tickets in progressnone",
       "Meetingsnone",
       "Add your calendar's secret iCal address in Settings, under Standup, to list your meetings. Settings",
-      "What Copy for Slack copies"
+      "What Copy for Slack copies400 characters"
     ],
     "qa": [
       "QA",

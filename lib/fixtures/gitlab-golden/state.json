@@ -543,13 +543,21 @@
                       "id": "review:acme/engine!7",
                       "tag": "Review - ABC-101",
                       "text": "engine !7, 1 comment: cache the token lookup",
-                      "ticked": true
+                      "ticked": true,
+                      "review": {
+                        "comments": 1,
+                        "approved": false
+                      }
                     },
                     {
                       "id": "review:acme/web!30",
                       "tag": "Review - NoTicket",
                       "text": "web !30, approved: bump the linter",
-                      "ticked": true
+                      "ticked": true,
+                      "review": {
+                        "comments": 0,
+                        "approved": true
+                      }
                     }
                   ],
                   "error": null,

@@ -889,7 +889,15 @@ Each line has a box, and a group's box ticks or unticks all of it. What you unti
 day in `~/.local/state/underlings/standup.json`, readable only by you, and survives
 **Generate again**. A line of your own work with no ticket in its title or branch reads `[?]` and
 stands out, with a field to give it one. **Copy for Slack** copies the ticked lines, opening
-with "Morning", then "Yesterday:" and "Today:"; the page shows what it copies below the list.
+with "Morning", then "Yesterday:" and "Today:"; the page shows what it copies below the list,
+with its length, and says so once it runs past 2,500 characters.
+
+**Shorten** asks Claude for a short version of the ticked lines, kept to the same greeting,
+headings and bullets: at most six bullets under a heading, the lines on one ticket in one, and
+every review in one bullet that opens with totals counted by Underlings, not by Claude, such as
+"Reviewed 100 MRs, 230 comments, 40 approved". It is shown above the list with **Copy short for
+Slack**, kept with the day, and goes once you tick or untick a line, until you shorten again.
+It runs on the Reply drafts model, with no tools, and an answer not in that shape is refused.
 
 A meeting with someone else in it is ticked; a block for yourself, an event with nobody invited
 and an all-day event are listed unticked, and what you declined or was cancelled is left out.

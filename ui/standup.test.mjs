@@ -223,3 +223,30 @@ test('a settings read that fails is not tried again until the page state moves',
   assert.equal(page.requested.filter((path) => path === '/api/standup/settings').length, 1);
   assert.match(text(page.$('#standup-settings')), /Could not read the standup settings/);
 });
+
+test('Shorten asks the worker for a short version and shows it, with its own copy, as what to post', async () => {
+  const short = 'Morning\nYesterday:\n- [ABC-1234] Merged order-book !895\n- Reviewed 2 MRs, 11 comments, 2 approved\nToday:\n- [ABC-4262] Address the review on atlas !45';
+  const page = await open({ answer: (path) => (path === '/api/standup/short' ? { ok: true, text: 'Shortened 7 lines to 3 lines', ...standup(), short } : null) });
+  assert.equal(page.$('.standup-short'), null);
+  byId(page, 'standup-short').click();
+  await page.settle(20);
+  assert.deepEqual(page.posts, [['/api/standup/short', { day: '2026-11-09' }]]);
+  assert.equal(page.$('.standup-short pre').textContent, short);
+  const copy = page.$$('.head button').find((b) => text(b) === 'Copy for Slack');
+  assert.equal(copy.classList.contains('primary'), false, 'the short version is the one to post');
+  const copied = [];
+  page.window.navigator.clipboard = { writeText: async (value) => { copied.push(value); } };
+  page.$$('.standup-short button').find((b) => text(b) === 'Copy short for Slack').click();
+  await page.settle(20);
+  assert.deepEqual(copied, [short]);
+  assert.match(text(page.$('#toast')), /Copied the short standup/);
+});
+
+test('a standup too long to post says so, and one that fits does not', async () => {
+  const long = standup();
+  long.standup.sections[0].groups[3].lines = Array.from({ length: 60 }, (_, n) => line(`review:g/relay!${n}`, `Review - ABC-${n}`, `relay !${n}, 2 comments: narrow the relay subscriptions to the rooms in view`));
+  const page = await open({ data: long });
+  assert.match(text(page.$('.standup-hint-long')), /characters is a lot to post or read/);
+  const fits = await open();
+  assert.equal(fits.$('.standup-hint-long'), null);
+});

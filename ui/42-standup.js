@@ -1,4 +1,6 @@
 const STANDUP_GREETING = 'Morning';
+// Past this a standup is too long to post in one message, or for anyone to read.
+const STANDUP_LONG = 2500;
 
 function standupBox() {
   ui.standup ??= { day: null, asked: null, data: null, error: null, loading: false, at: null, fixing: new Map(), settings: null, address: '', repos: null };
@@ -30,12 +32,13 @@ function viewStandup() {
   const day = box.day ?? data?.day ?? '';
   return [
     header('Standup', 'Worked out from GitLab, Jira and your calendar. Untick what to leave out, then copy the rest for Slack.',
-      standupDayPicker(box, data, day), standupGenerate(data, day), data?.standup ? button('Copy for Slack', 'copy', () => copyStandup(data), true) : null),
+      standupDayPicker(box, data, day), standupGenerate(data, day), data?.standup ? standupShorten(data) : null, data?.standup ? button('Copy for Slack', 'copy', () => copyStandup(data), !data.short) : null),
     box.error ? banner('Could not read the standup: ' + box.error, true) : null,
     data?.error ? banner('Could not work out ' + dayName(day) + ': ' + data.error, true) : null,
     standupWaiting(box, data, day),
+    data?.standup ? standupShort(data) : null,
     data?.standup ? data.standup.sections.map((s) => standupSection(data, s)) : null,
-    data?.standup ? el('details', { class: 'section standup-preview' }, el('summary', {}, 'What Copy for Slack copies'), el('pre', {}, slackText(data))) : null,
+    data?.standup ? el('details', { class: 'section standup-preview' }, el('summary', {}, 'What Copy for Slack copies', el('span', { class: 'meta' }, plural(slackText(data).length, 'character'))), el('pre', {}, slackText(data))) : null,
   ];
 }
 
@@ -74,6 +77,37 @@ function standupGenerate(data, day) {
   const busy = Boolean(data?.generating) || ui.busy.has('standup-generate');
   return el('button', { id: 'standup-generate', disabled: busy || !day, title: 'Read GitLab, Jira and your calendar again. What you unticked stays unticked.', onclick: () => generateStandup(day) },
     icon(busy ? 'clock' : 'refresh'), busy ? 'Working…' : data?.standup ? 'Generate again' : 'Generate');
+}
+
+function standupShorten(data) {
+  const busy = Boolean(data.shortening) || ui.busy.has('standup-short');
+  return el('button', { id: 'standup-short', disabled: busy, title: 'Ask Claude for a short version of the ticked lines, still as bullets, with your reviews totalled in one', onclick: () => shortenStandup(data.day) },
+    icon(busy ? 'clock' : 'sparkles'), busy ? 'Shortening…' : 'Shorten');
+}
+
+async function shortenStandup(day) {
+  const answer = await busyAct('/api/standup/short', { day }, 'standup-short');
+  if (!answer) return;
+  standupBox().data = answer;
+  render(true);
+}
+
+// A long standup says so, and the short version, once there is one for these ticks, is what to post.
+function standupShort(data) {
+  if (data.short) {
+    return el('section', { class: 'section standup-short' },
+      el('h2', {}, icon('sparkles'), 'Short version', el('span', { class: 'meta' }, plural(data.short.length, 'character'))),
+      el('pre', {}, data.short),
+      el('div', { class: 'standup-short-actions' }, button('Copy short for Slack', 'copy', () => copyShort(data.short), true)),
+      el('p', { class: 'hint' }, 'Written by Claude from the lines ticked below. Tick or untick a line and it goes, until you shorten again.'));
+  }
+  const length = slackText(data).length;
+  return length > STANDUP_LONG ? el('p', { class: 'hint standup-hint-long' }, icon('alert'), plural(length, 'character') + ' is a lot to post or read. Shorten asks Claude for a short version, still as bullets.') : null;
+}
+
+async function copyShort(text) {
+  if (await copyText(text)) toast('Copied the short standup for Slack');
+  else toast('Could not copy the standup', true);
 }
 
 async function generateStandup(day) {

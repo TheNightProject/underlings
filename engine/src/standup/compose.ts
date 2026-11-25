@@ -13,6 +13,8 @@ export interface StandupLine {
   text: string;
   ticked: boolean;
   unknown?: boolean;
+  /** On a review, what you said on it, so a short standup can total them without reading the text. */
+  review?: { comments: number; approved: boolean };
 }
 
 export interface OpenMr extends MrBrief {
@@ -120,7 +122,7 @@ function reviewOrder(list: Review[]): Review[] {
 
 function reviewLine({ mr, ticket, comments, approved }: Review): StandupLine {
   const said = [comments ? plural(comments, 'comment') : null, approved ? 'approved' : null].filter(Boolean).join(', ');
-  return { id: `review:${ref(mr)}`, tag: `Review - ${ticket ?? 'NoTicket'}`, text: `${repo(mr)}, ${said}: ${plainTitle(mr.title, ticket)}`, ticked: true };
+  return { id: `review:${ref(mr)}`, tag: `Review - ${ticket ?? 'NoTicket'}`, text: `${repo(mr)}, ${said}: ${plainTitle(mr.title, ticket)}`, ticked: true, review: { comments, approved } };
 }
 
 export function movedLines(moves: Move[]): StandupLine[] {
