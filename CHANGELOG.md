@@ -2,6 +2,13 @@
 
 What changed in each version of Underlings, newest first. Each line is a merged change: `npm run release` drafts the next section from the ones merged since the last release.
 
+## 1.7.0 (2026-11-25)
+
+### New
+
+- Shorten on the Standup page asks Claude for a short version of the ticked lines, still as bullets, with every review in one line that opens with totals Underlings counts itself, and Copy short for Slack copies it
+- The Standup page says when the full standup runs past 2,500 characters, too long to post or read
+
 ## 1.6.1 (2026-11-24)
 
 ### Changed
